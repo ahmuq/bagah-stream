@@ -38,4 +38,14 @@ sealed class Screen(val route: String) {
     object ReelShortPlayer : Screen("reelshort_player/{bookId}/{episodeIndex}") {
         fun createRoute(bookId: String, episodeIndex: Int = 1): String = "reelshort_player/$bookId/$episodeIndex"
     }
+
+    object FreeReelsHome : Screen("freereels_home")
+
+    object FreeReelsDetail : Screen("freereels_detail/{seriesId}") {
+        fun createRoute(seriesId: String): String = "freereels_detail/$seriesId"
+    }
+
+    object FreeReelsPlayer : Screen("freereels_player/{seriesId}/{episodeNum}") {
+        fun createRoute(seriesId: String, episodeNum: Int = 1): String = "freereels_player/$seriesId/$episodeNum"
+    }
 }

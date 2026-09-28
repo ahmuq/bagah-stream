@@ -10,6 +10,12 @@ import com.bagah.streaming.data.model.DramaEpisodeResponse
 import com.bagah.streaming.data.model.DramaEpisodesResponse
 import com.bagah.streaming.data.model.DramaHomeResponse
 import com.bagah.streaming.data.model.DramaSearchResponse
+import com.bagah.streaming.data.model.FreeReelsDetailResponse
+import com.bagah.streaming.data.model.FreeReelsEpisodeResponse
+import com.bagah.streaming.data.model.FreeReelsEpisodesResponse
+import com.bagah.streaming.data.model.FreeReelsForYouResponse
+import com.bagah.streaming.data.model.FreeReelsSearchResponse
+import com.bagah.streaming.data.model.FreeReelsSectionResponse
 import com.bagah.streaming.data.model.ReelShortDetailResponse
 import com.bagah.streaming.data.model.ReelShortEpisodeResponse
 import com.bagah.streaming.data.model.ReelShortEpisodesResponse
@@ -154,4 +160,65 @@ interface StreamingApiService {
         @Query("page") page: Int = 1,
         @Query("lang") lang: String = "id"
     ): ReelShortSearchResponse
+
+    // --- FREEREELS ENDPOINTS ---
+    // Feed memakai cursor: field `next` dari response (mis. "offset=10") dioper ke request
+    // berikutnya, bukan parameter offset manual.
+
+    @GET("api/freereels/foryou")
+    suspend fun getFreeReelsForYou(
+        @Query("lang") lang: String = "id"
+    ): FreeReelsForYouResponse
+
+    @GET("api/freereels/foryou")
+    suspend fun getFreeReelsForYouNext(
+        @Query("next") next: String,
+        @Query("lang") lang: String = "id"
+    ): FreeReelsForYouResponse
+
+    @GET("api/freereels/trending")
+    suspend fun getFreeReelsTrending(
+        @Query("lang") lang: String = "id"
+    ): FreeReelsSectionResponse
+
+    @GET("api/freereels/latest")
+    suspend fun getFreeReelsLatest(
+        @Query("lang") lang: String = "id"
+    ): FreeReelsSectionResponse
+
+    @GET("api/freereels/anime")
+    suspend fun getFreeReelsAnime(
+        @Query("lang") lang: String = "id"
+    ): FreeReelsSectionResponse
+
+    @GET("api/freereels/tab")
+    suspend fun getFreeReelsTab(
+        @Query("tabKey") tabKey: String,
+        @Query("lang") lang: String = "id"
+    ): FreeReelsSectionResponse
+
+    @GET("api/freereels/detail")
+    suspend fun getFreeReelsDetail(
+        @Query("seriesId") seriesId: String,
+        @Query("lang") lang: String = "id"
+    ): FreeReelsDetailResponse
+
+    @GET("api/freereels/episodes")
+    suspend fun getFreeReelsEpisodes(
+        @Query("seriesId") seriesId: String,
+        @Query("lang") lang: String = "id"
+    ): FreeReelsEpisodesResponse
+
+    @GET("api/freereels/episode")
+    suspend fun getFreeReelsEpisode(
+        @Query("seriesId") seriesId: String,
+        @Query("episode") episode: Int,
+        @Query("lang") lang: String = "id"
+    ): FreeReelsEpisodeResponse
+
+    @GET("api/freereels/search")
+    suspend fun searchFreeReels(
+        @Query("keyword") keyword: String,
+        @Query("lang") lang: String = "id"
+    ): FreeReelsSearchResponse
 }

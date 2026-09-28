@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.SlowMotionVideo
 import androidx.compose.material.icons.rounded.VideoLibrary
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -62,6 +63,7 @@ fun BagahBottomNavBar(
         NavItem("Anime", Screen.AnimeHome.route, Icons.Rounded.Movie),
         NavItem("DramaBox", Screen.DramaHome.route, Icons.Rounded.VideoLibrary),
         NavItem("ReelShort", Screen.ReelShortHome.route, Icons.Rounded.PlayCircle),
+        NavItem("FreeReels", Screen.FreeReelsHome.route, Icons.Rounded.SlowMotionVideo),
         NavItem("Cari", Screen.Search.route, Icons.Rounded.Search)
     )
 
