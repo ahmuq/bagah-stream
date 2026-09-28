@@ -38,11 +38,10 @@ class DramaHomeViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             val result = when (index) {
-                0 -> repository.getPopular()
-                1 -> repository.getLatest()
-                2 -> repository.getDubbed()
-                3 -> repository.getVip()
-                else -> repository.getPopular()
+                0 -> repository.getHome()
+                1 -> repository.getForYou()
+                2 -> repository.getCategories()
+                else -> repository.getHome()
             }
             result.onSuccess { list ->
                 _uiState.update { it.copy(isLoading = false, dramaList = list, errorMessage = null) }

@@ -1,118 +1,127 @@
 package com.bagah.streaming.data.model
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class ReelShortBook(
-    val book_id: String = "",
-    val book_title: String = "",
-    val book_pic: String = "",
-    val special_desc: String? = null,
-    val share_text: String? = null,
-    val chapter_count: Int? = null,
-    val like_count: Long? = null,
-    val collect_count: Long? = null,
-    val rank_level: String? = null,
-    val theme: List<String> = emptyList()
-)
-
-@Serializable
-data class ReelShortTab(
-    val tab_id: Long? = null,
-    val tab_name: String = ""
-)
-
-@Serializable
-data class ReelShortListSection(
-    val bs_id: Long? = null,
-    val tab_id: Long? = null,
-    val books: List<ReelShortBook> = emptyList()
+    val id: String = "",
+    val title: String = "",
+    val cover: String = "",
+    val description: String? = null,
+    @SerialName("totalEpisodes")
+    val chapterCount: Int? = null,
+    val tags: List<String> = emptyList()
 )
 
 @Serializable
 data class ReelShortHomepageData(
-    val search_keyword_list: List<String> = emptyList(),
-    val tab_list: List<ReelShortTab> = emptyList(),
-    val lists: List<ReelShortListSection> = emptyList()
+    @SerialName("hall_id")
+    val hallId: Long? = null,
+    @SerialName("search_keyword_list")
+    val searchKeywords: List<String> = emptyList(),
+    val items: List<ReelShortBook> = emptyList()
 )
 
 @Serializable
 data class ReelShortHomepageResponse(
     val success: Boolean = false,
-    val message: String? = null,
     val data: ReelShortHomepageData? = null
 )
 
 @Serializable
-data class ReelShortForYouData(
-    val lists: List<ReelShortBook> = emptyList(),
-    val page: Int? = null,
-    val total_page: Int? = null
-)
-
-@Serializable
-data class ReelShortForYouResponse(
+data class ReelShortTrendingResponse(
     val success: Boolean = false,
+    val title: String? = null,
     val page: Int? = null,
-    val data: ReelShortForYouData? = null
+    val items: List<ReelShortBook> = emptyList()
 )
 
 @Serializable
 data class ReelShortChapter(
-    val index: Int = 1,
+    @SerialName("episodeNum")
+    val episodeNum: Int = 1,
+    @SerialName("chapterId")
     val chapterId: String = "",
     val title: String = "",
-    val isLocked: Boolean = false,
+    val locked: Boolean = false,
+    @SerialName("serialNumber")
     val serialNumber: String = ""
 )
 
 @Serializable
 data class ReelShortDetailResponse(
     val success: Boolean = false,
-    val bookId: String = "",
+    val id: String = "",
     val title: String = "",
     val cover: String = "",
     val description: String = "",
+    @SerialName("totalEpisodes")
     val totalEpisodes: Int = 0,
+    val tags: List<String> = emptyList(),
     val chapters: List<ReelShortChapter> = emptyList()
+)
+
+@Serializable
+data class ReelShortEpisodesResponse(
+    val success: Boolean = false,
+    val bookId: String = "",
+    val title: String = "",
+    @SerialName("totalEpisodes")
+    val totalEpisodes: Int = 0,
+    val items: List<ReelShortChapter> = emptyList()
 )
 
 @Serializable
 data class ReelShortVideoStream(
     val url: String = "",
+    @SerialName("encode")
     val encode: String? = null,
     val quality: String? = null,
-    val bitrate: String? = null
+    val bitrate: Int? = null
 )
 
 @Serializable
 data class ReelShortEpisodeResponse(
     val success: Boolean = false,
-    val isLocked: Boolean = false,
+    val bookId: String = "",
+    @SerialName("episodeNum")
+    val episodeNum: Int = 1,
+    @SerialName("episodeId")
+    val episodeId: String = "",
+    val title: String = "",
+    val locked: Boolean = false,
+    @SerialName("bestUrl")
+    val bestUrl: String = "",
+    @SerialName("videoList")
     val videoList: List<ReelShortVideoStream> = emptyList()
 )
 
 @Serializable
 data class ReelShortSearchResult(
-    val bookId: String = "",
+    val id: String = "",
     val title: String = "",
     val cover: String = "",
-    val description: String = "",
-    val chapterCount: Int = 0
+    val description: String? = null,
+    @SerialName("totalEpisodes")
+    val chapterCount: Int? = null,
+    val tags: List<String> = emptyList()
 ) {
     fun toBook(): ReelShortBook = ReelShortBook(
-        book_id = bookId,
-        book_title = title,
-        book_pic = cover,
-        special_desc = description,
-        chapter_count = chapterCount
+        id = id,
+        title = title,
+        cover = cover,
+        description = description,
+        chapterCount = chapterCount,
+        tags = tags
     )
 }
 
 @Serializable
 data class ReelShortSearchResponse(
     val success: Boolean = false,
-    val keyword: String? = null,
+    val query: String? = null,
+    val page: Int? = null,
     val total: Int = 0,
-    val results: List<ReelShortSearchResult> = emptyList()
+    val items: List<ReelShortSearchResult> = emptyList()
 )

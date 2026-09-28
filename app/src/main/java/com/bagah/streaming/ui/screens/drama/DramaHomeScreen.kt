@@ -63,7 +63,7 @@ fun DramaHomeScreen(
     onDramaClick: (bookId: String) -> Unit,
     onSearchClick: () -> Unit
 ) {
-    val categories = listOf("Populer", "Terbaru", "Sulih Suara", "VIP")
+    val categories = listOf("Beranda", "Untukmu", "Kategori")
     val uiState by viewModel.uiState.collectAsState()
 
     Box(

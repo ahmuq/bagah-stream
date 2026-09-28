@@ -204,11 +204,11 @@ fun ReelShortHomeScreen(
                                         .clip(RoundedCornerShape(16.dp))
                                         .background(SurfaceDark)
                                         .border(1.dp, BorderSubtle, RoundedCornerShape(16.dp))
-                                        .clickable { onBookClick(book.book_id) }
+                                        .clickable { onBookClick(book.id) }
                                 ) {
                                     AsyncImage(
-                                        model = book.book_pic,
-                                        contentDescription = book.book_title,
+                                        model = book.cover,
+                                        contentDescription = book.title,
                                         contentScale = ContentScale.Crop,
                                         modifier = Modifier.fillMaxSize()
                                     )
@@ -254,9 +254,9 @@ fun ReelShortHomeScreen(
                                                     fontWeight = FontWeight.Bold
                                                 )
                                             }
-                                            if (book.chapter_count != null && book.chapter_count > 0) {
+                                            if (book.chapterCount != null && book.chapterCount > 0) {
                                                 Text(
-                                                    text = "${book.chapter_count} Episode",
+                                                    text = "${book.chapterCount} Episode",
                                                     color = TextMuted,
                                                     fontSize = 11.sp,
                                                     fontWeight = FontWeight.Medium
@@ -267,7 +267,7 @@ fun ReelShortHomeScreen(
                                         Spacer(modifier = Modifier.height(4.dp))
 
                                         Text(
-                                            text = book.book_title,
+                                            text = book.title,
                                             color = TextPrimary,
                                             fontSize = 16.sp,
                                             fontWeight = FontWeight.Bold,
@@ -275,9 +275,9 @@ fun ReelShortHomeScreen(
                                             overflow = TextOverflow.Ellipsis
                                         )
 
-                                        if (!book.special_desc.isNullOrBlank()) {
+                                        if (!book.description.isNullOrBlank()) {
                                             Text(
-                                                text = book.special_desc,
+                                                text = book.description,
                                                 color = TextSecondary,
                                                 fontSize = 11.sp,
                                                 maxLines = 2,
@@ -367,7 +367,7 @@ fun ReelShortHomeScreen(
                                 horizontalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
                                 items(uiState.forYouBooks) { book ->
-                                    ReelShortCard(book = book, onClick = { onBookClick(book.book_id) })
+                                    ReelShortCard(book = book, onClick = { onBookClick(book.id) })
                                 }
                             }
                         }
@@ -413,7 +413,7 @@ fun ReelShortHomeScreen(
                 items(books) { book ->
                     ReelShortCard(
                         book = book,
-                        onClick = { onBookClick(book.book_id) },
+                        onClick = { onBookClick(book.id) },
                         modifier = Modifier.fillMaxWidth()
                     )
                 }

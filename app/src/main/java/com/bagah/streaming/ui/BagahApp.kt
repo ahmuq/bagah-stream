@@ -27,9 +27,6 @@ import com.bagah.streaming.ui.screens.anime.AnimeHomeScreen
 import com.bagah.streaming.ui.screens.anime.AnimePlayerScreen
 import com.bagah.streaming.ui.screens.drama.DramaHomeScreen
 import com.bagah.streaming.ui.screens.drama.DramaReelsPlayerScreen
-import com.bagah.streaming.ui.screens.goodshort.GoodShortDetailScreen
-import com.bagah.streaming.ui.screens.goodshort.GoodShortHomeScreen
-import com.bagah.streaming.ui.screens.goodshort.GoodShortPlayerScreen
 import com.bagah.streaming.ui.screens.reelshort.ReelShortDetailScreen
 import com.bagah.streaming.ui.screens.reelshort.ReelShortHomeScreen
 import com.bagah.streaming.ui.screens.reelshort.ReelShortPlayerScreen
@@ -49,7 +46,6 @@ fun BagahApp() {
         Screen.AnimeHome.route,
         Screen.DramaHome.route,
         Screen.ReelShortHome.route,
-        Screen.GoodShortHome.route,
         Screen.Search.route
     )
 
@@ -199,51 +195,7 @@ fun BagahApp() {
                     )
                 }
 
-                // 9. GoodShort Home
-                composable(Screen.GoodShortHome.route) {
-                    GoodShortHomeScreen(
-                        onSeriesClick = { seriesId ->
-                            navController.navigate(Screen.GoodShortDetail.createRoute(seriesId))
-                        },
-                        onSearchClick = {
-                            navController.navigate(Screen.Search.route)
-                        }
-                    )
-                }
-
-                // 10. GoodShort Detail
-                composable(
-                    route = Screen.GoodShortDetail.route,
-                    arguments = listOf(navArgument("seriesId") { type = NavType.StringType })
-                ) { backStack ->
-                    val seriesId = backStack.arguments?.getString("seriesId") ?: ""
-                    GoodShortDetailScreen(
-                        seriesId = seriesId,
-                        onBackClick = { navController.popBackStack() },
-                        onPlayEpisode = { sId, epNum ->
-                            navController.navigate(Screen.GoodShortPlayer.createRoute(sId, epNum))
-                        }
-                    )
-                }
-
-                // 11. GoodShort Player
-                composable(
-                    route = Screen.GoodShortPlayer.route,
-                    arguments = listOf(
-                        navArgument("seriesId") { type = NavType.StringType },
-                        navArgument("episodeNum") { type = NavType.IntType; defaultValue = 1 }
-                    )
-                ) { backStack ->
-                    val seriesId = backStack.arguments?.getString("seriesId") ?: ""
-                    val episodeNum = backStack.arguments?.getInt("episodeNum") ?: 1
-                    GoodShortPlayerScreen(
-                        seriesId = seriesId,
-                        initialEpisode = episodeNum,
-                        onBackClick = { navController.popBackStack() }
-                    )
-                }
-
-                // 12. Search
+                // 9. Search
                 composable(Screen.Search.route) {
                     SearchScreen(
                         onAnimeClick = { url ->
@@ -254,9 +206,6 @@ fun BagahApp() {
                         },
                         onReelShortClick = { bookId ->
                             navController.navigate(Screen.ReelShortDetail.createRoute(bookId))
-                        },
-                        onGoodShortClick = { seriesId ->
-                            navController.navigate(Screen.GoodShortDetail.createRoute(seriesId))
                         }
                     )
                 }

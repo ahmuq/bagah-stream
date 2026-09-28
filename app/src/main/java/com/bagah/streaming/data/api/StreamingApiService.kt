@@ -5,21 +5,17 @@ import com.bagah.streaming.data.model.AnimeDetailWrapper
 import com.bagah.streaming.data.model.AnimeEpisodeData
 import com.bagah.streaming.data.model.AnimeItem
 import com.bagah.streaming.data.model.AnimeScheduleDataWrapper
-import com.bagah.streaming.data.model.DramaApiResponse
-import com.bagah.streaming.data.model.DramaChapter
-import com.bagah.streaming.data.model.DramaItem
-import com.bagah.streaming.data.model.GoodShortDetailResponse
-import com.bagah.streaming.data.model.GoodShortEpisodeResponse
-import com.bagah.streaming.data.model.GoodShortEpisodesResponse
-import com.bagah.streaming.data.model.GoodShortForYouResponse
-import com.bagah.streaming.data.model.GoodShortHomeResponse
-import com.bagah.streaming.data.model.GoodShortSearchResponse
-import com.bagah.streaming.data.model.GoodShortTrendingResponse
+import com.bagah.streaming.data.model.DramaDetailResponse
+import com.bagah.streaming.data.model.DramaEpisodeResponse
+import com.bagah.streaming.data.model.DramaEpisodesResponse
+import com.bagah.streaming.data.model.DramaHomeResponse
+import com.bagah.streaming.data.model.DramaSearchResponse
 import com.bagah.streaming.data.model.ReelShortDetailResponse
 import com.bagah.streaming.data.model.ReelShortEpisodeResponse
-import com.bagah.streaming.data.model.ReelShortForYouResponse
+import com.bagah.streaming.data.model.ReelShortEpisodesResponse
 import com.bagah.streaming.data.model.ReelShortHomepageResponse
 import com.bagah.streaming.data.model.ReelShortSearchResponse
+import com.bagah.streaming.data.model.ReelShortTrendingResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -66,28 +62,48 @@ interface StreamingApiService {
 
     // --- DRAMABOX ENDPOINTS ---
 
-    @GET("api/dramabox/popular")
-    suspend fun getDramaPopular(): DramaApiResponse<List<DramaItem>>
+    @GET("api/dramabox/home")
+    suspend fun getDramaHome(
+        @Query("page") page: Int = 1,
+        @Query("lang") lang: String = "in"
+    ): DramaHomeResponse
 
-    @GET("api/dramabox/latest")
-    suspend fun getDramaLatest(): DramaApiResponse<List<DramaItem>>
+    @GET("api/dramabox/foryou")
+    suspend fun getDramaForYou(
+        @Query("page") page: Int = 1,
+        @Query("lang") lang: String = "in"
+    ): DramaHomeResponse
 
-    @GET("api/dramabox/dubbed")
-    suspend fun getDramaDubbed(): DramaApiResponse<List<DramaItem>>
-
-    @GET("api/dramabox/vip")
-    suspend fun getDramaVip(): DramaApiResponse<List<DramaItem>>
+    @GET("api/dramabox/categories")
+    suspend fun getDramaCategories(
+        @Query("lang") lang: String = "in"
+    ): DramaHomeResponse
 
     @GET("api/dramabox/search")
     suspend fun searchDrama(
-        @Query("keyword") keyword: String
-    ): DramaApiResponse<List<DramaItem>>
+        @Query("keyword") keyword: String,
+        @Query("page") page: Int = 1,
+        @Query("lang") lang: String = "in"
+    ): DramaSearchResponse
 
-    @GET("api/dramabox/chapters")
-    suspend fun getDramaChapters(
+    @GET("api/dramabox/detail")
+    suspend fun getDramaDetail(
         @Query("bookId") bookId: String,
-        @Query("getAll") getAll: Boolean = true
-    ): DramaApiResponse<List<DramaChapter>>
+        @Query("lang") lang: String = "in"
+    ): DramaDetailResponse
+
+    @GET("api/dramabox/episodes")
+    suspend fun getDramaEpisodes(
+        @Query("bookId") bookId: String,
+        @Query("lang") lang: String = "in"
+    ): DramaEpisodesResponse
+
+    @GET("api/dramabox/episode")
+    suspend fun getDramaEpisodeStream(
+        @Query("bookId") bookId: String,
+        @Query("episode") episode: Int = 1,
+        @Query("lang") lang: String = "in"
+    ): DramaEpisodeResponse
 
     // --- REELSHORT ENDPOINTS ---
 
@@ -97,17 +113,33 @@ interface StreamingApiService {
         @Query("lang") lang: String = "id"
     ): ReelShortHomepageResponse
 
+    @GET("api/reelshort/trending")
+    suspend fun getReelShortTrending(
+        @Query("lang") lang: String = "id"
+    ): ReelShortTrendingResponse
+
+    @GET("api/reelshort/latest")
+    suspend fun getReelShortLatest(
+        @Query("lang") lang: String = "id"
+    ): ReelShortTrendingResponse
+
     @GET("api/reelshort/foryou")
     suspend fun getReelShortForYou(
         @Query("page") page: Int = 1,
         @Query("lang") lang: String = "id"
-    ): ReelShortForYouResponse
+    ): ReelShortTrendingResponse
 
     @GET("api/reelshort/detail")
     suspend fun getReelShortDetail(
         @Query("bookId") bookId: String,
         @Query("lang") lang: String = "id"
     ): ReelShortDetailResponse
+
+    @GET("api/reelshort/episodes")
+    suspend fun getReelShortEpisodes(
+        @Query("bookId") bookId: String,
+        @Query("lang") lang: String = "id"
+    ): ReelShortEpisodesResponse
 
     @GET("api/reelshort/episode")
     suspend fun getReelShortEpisode(
@@ -122,47 +154,4 @@ interface StreamingApiService {
         @Query("page") page: Int = 1,
         @Query("lang") lang: String = "id"
     ): ReelShortSearchResponse
-
-    // --- GOODSHORT ENDPOINTS ---
-
-    @GET("api/goodshort/home")
-    suspend fun getGoodShortHome(
-        @Query("lang") lang: String = "id"
-    ): GoodShortHomeResponse
-
-    @GET("api/goodshort/foryou")
-    suspend fun getGoodShortForYou(
-        @Query("lang") lang: String = "id"
-    ): GoodShortForYouResponse
-
-    @GET("api/goodshort/trending")
-    suspend fun getGoodShortTrending(
-        @Query("page") page: Int = 1,
-        @Query("lang") lang: String = "id"
-    ): GoodShortTrendingResponse
-
-    @GET("api/goodshort/detail")
-    suspend fun getGoodShortDetail(
-        @Query("seriesId") seriesId: String,
-        @Query("lang") lang: String = "id"
-    ): GoodShortDetailResponse
-
-    @GET("api/goodshort/episodes")
-    suspend fun getGoodShortEpisodes(
-        @Query("seriesId") seriesId: String,
-        @Query("lang") lang: String = "id"
-    ): GoodShortEpisodesResponse
-
-    @GET("api/goodshort/episode")
-    suspend fun getGoodShortEpisode(
-        @Query("seriesId") seriesId: String,
-        @Query("episode") episode: Int,
-        @Query("lang") lang: String = "id"
-    ): GoodShortEpisodeResponse
-
-    @GET("api/goodshort/search")
-    suspend fun searchGoodShort(
-        @Query("keyword") keyword: String,
-        @Query("lang") lang: String = "id"
-    ): GoodShortSearchResponse
 }

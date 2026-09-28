@@ -6,7 +6,7 @@ import com.bagah.streaming.data.model.AnimeDetailItem
 import com.bagah.streaming.data.model.AnimeEpisodeData
 import com.bagah.streaming.data.model.AnimeItem
 import com.bagah.streaming.data.model.AnimeScheduleDay
-import com.bagah.streaming.data.model.DramaChapter
+import com.bagah.streaming.data.model.DramaEpisode
 import com.bagah.streaming.data.model.DramaItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -77,45 +77,23 @@ class StreamingRepository(
 
     // --- DRAMA METHODS ---
 
-    suspend fun getDramaPopular(): Result<List<DramaItem>> = withContext(Dispatchers.IO) {
-        runCatching {
-            val response = api.getDramaPopular()
-            response.data ?: emptyList()
-        }
+    suspend fun getDramaHome(): Result<List<DramaItem>> = withContext(Dispatchers.IO) {
+        runCatching { api.getDramaHome().items }
     }
 
-    suspend fun getDramaLatest(): Result<List<DramaItem>> = withContext(Dispatchers.IO) {
-        runCatching {
-            val response = api.getDramaLatest()
-            response.data ?: emptyList()
-        }
+    suspend fun getDramaForYou(): Result<List<DramaItem>> = withContext(Dispatchers.IO) {
+        runCatching { api.getDramaForYou().items }
     }
 
-    suspend fun getDramaDubbed(): Result<List<DramaItem>> = withContext(Dispatchers.IO) {
-        runCatching {
-            val response = api.getDramaDubbed()
-            response.data ?: emptyList()
-        }
-    }
-
-    suspend fun getDramaVip(): Result<List<DramaItem>> = withContext(Dispatchers.IO) {
-        runCatching {
-            val response = api.getDramaVip()
-            response.data ?: emptyList()
-        }
+    suspend fun getDramaCategories(): Result<List<DramaItem>> = withContext(Dispatchers.IO) {
+        runCatching { api.getDramaCategories().items }
     }
 
     suspend fun searchDrama(keyword: String): Result<List<DramaItem>> = withContext(Dispatchers.IO) {
-        runCatching {
-            val response = api.searchDrama(keyword)
-            response.data ?: emptyList()
-        }
+        runCatching { api.searchDrama(keyword).items }
     }
 
-    suspend fun getDramaChapters(bookId: String): Result<List<DramaChapter>> = withContext(Dispatchers.IO) {
-        runCatching {
-            val response = api.getDramaChapters(bookId, getAll = true)
-            response.data ?: emptyList()
-        }
+    suspend fun getDramaEpisodes(bookId: String): Result<List<DramaEpisode>> = withContext(Dispatchers.IO) {
+        runCatching { api.getDramaEpisodes(bookId).items }
     }
 }

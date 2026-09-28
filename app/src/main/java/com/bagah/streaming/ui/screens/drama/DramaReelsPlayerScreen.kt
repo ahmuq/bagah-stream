@@ -62,11 +62,16 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.MediaItem
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.PlayerView
 import androidx.compose.foundation.border
+import com.bagah.streaming.data.api.NetworkClient
+import com.bagah.streaming.data.player.DramaBoxDecryptDataSource
+import com.bagah.streaming.data.player.DramaBoxKeyHolder
 import com.bagah.streaming.ui.theme.AccentBlack
 import com.bagah.streaming.ui.theme.AccentWhite
 import com.bagah.streaming.ui.theme.BgBlack
@@ -82,6 +87,9 @@ import com.bagah.streaming.ui.theme.TextSecondary
 import kotlinx.coroutines.launch
 
 @OptIn(UnstableApi::class, ExperimentalMaterial3Api::class)
+/** Kualitas default DramaBox yang diminta; fallback ke best_url bila tidak ada. */
+private const val DEFAULT_DRAMA_QUALITY = "720"
+
 @Composable
 fun DramaReelsPlayerScreen(
     bookId: String,
@@ -119,8 +127,8 @@ fun DramaReelsPlayerScreen(
         return
     }
 
-    val chapters = uiState.chapters
-    if (chapters.isEmpty()) {
+    val episodes = uiState.episodes
+    if (episodes.isEmpty()) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -139,27 +147,36 @@ fun DramaReelsPlayerScreen(
     }
 
     val pagerState = rememberPagerState(
-        initialPage = initialIndex.coerceIn(0, chapters.size - 1),
-        pageCount = { chapters.size }
+        initialPage = initialIndex.coerceIn(0, episodes.size - 1),
+        pageCount = { episodes.size }
     )
 
-    // Shared ExoPlayer for current visible reel
+    // ExoPlayer with DramaBox decrypting data source. The AES key arrives per
+    // episode, so the data source reads it from a holder that the effect updates.
+    val keyHolder = remember { DramaBoxKeyHolder() }
     val exoPlayer = remember {
-        ExoPlayer.Builder(context).build().apply {
-            repeatMode = Player.REPEAT_MODE_OFF
-            playWhenReady = true
-        }
+        val decryptFactory = DramaBoxDecryptDataSource.Factory(NetworkClient.okHttpClient, keyHolder)
+        ExoPlayer.Builder(context)
+            .setMediaSourceFactory(
+                DefaultMediaSourceFactory(context).setDataSourceFactory(decryptFactory)
+            )
+            .build()
+            .apply {
+                repeatMode = Player.REPEAT_MODE_OFF
+                playWhenReady = true
+            }
     }
 
     var isPlaying by remember { mutableStateOf(true) }
     var isLiked by remember { mutableStateOf(false) }
+    var playbackError by remember { mutableStateOf<String?>(null) }
 
     // Auto-advance when video ends
     DisposableEffect(exoPlayer) {
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {
                 if (state == Player.STATE_ENDED) {
-                    if (pagerState.currentPage < chapters.size - 1) {
+                    if (pagerState.currentPage < episodes.size - 1) {
                         scope.launch {
                             pagerState.animateScrollToPage(pagerState.currentPage + 1)
                         }
@@ -170,6 +187,10 @@ fun DramaReelsPlayerScreen(
             override fun onIsPlayingChanged(playing: Boolean) {
                 isPlaying = playing
             }
+
+            override fun onPlayerError(error: PlaybackException) {
+                playbackError = error.localizedMessage ?: "Gagal memutar video"
+            }
         }
         exoPlayer.addListener(listener)
         onDispose {
@@ -178,15 +199,23 @@ fun DramaReelsPlayerScreen(
         }
     }
 
-    // Play video of the current active page
-    LaunchedEffect(pagerState.currentPage, chapters) {
-        val currentChapter = chapters.getOrNull(pagerState.currentPage)
-        val videoUrl = currentChapter?.getPreferredVideoUrl()
-        if (!videoUrl.isNullOrBlank()) {
-            val mediaItem = MediaItem.fromUri(Uri.parse(videoUrl))
-            exoPlayer.setMediaItem(mediaItem)
-            exoPlayer.prepare()
-            exoPlayer.play()
+    // Fetch the stream URL + key for the active episode, then hand it to the player.
+    LaunchedEffect(pagerState.currentPage, episodes) {
+        val episode = episodes.getOrNull(pagerState.currentPage) ?: return@LaunchedEffect
+        playbackError = null
+        val result = viewModel.getStream(episode.episodeNum)
+        result.onSuccess { stream ->
+            keyHolder.keyHex = stream.keyHex
+            val url = stream.preferredUrl(DEFAULT_DRAMA_QUALITY)
+            if (url.isNotBlank()) {
+                exoPlayer.setMediaItem(MediaItem.fromUri(Uri.parse(url)))
+                exoPlayer.prepare()
+                exoPlayer.play()
+            } else {
+                playbackError = "URL video tidak tersedia"
+            }
+        }.onFailure { err ->
+            playbackError = err.localizedMessage ?: "Gagal memuat video"
         }
     }
 
@@ -269,9 +298,9 @@ fun DramaReelsPlayerScreen(
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))
-            val currentChapter = chapters.getOrNull(pagerState.currentPage)
+            val currentEpisode = episodes.getOrNull(pagerState.currentPage)
             Text(
-                text = "${currentChapter?.chapterName ?: "Episode"} • ${pagerState.currentPage + 1}/${chapters.size}",
+                text = "${currentEpisode?.title ?: "Episode"} • ${pagerState.currentPage + 1}/${episodes.size}",
                 color = TextPrimary,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Bold
@@ -327,7 +356,7 @@ fun DramaReelsPlayerScreen(
         }
 
         // Bottom Info Bar
-        val activeChapter = chapters.getOrNull(pagerState.currentPage)
+        val activeEpisode = episodes.getOrNull(pagerState.currentPage)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -351,7 +380,7 @@ fun DramaReelsPlayerScreen(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = activeChapter?.chapterName ?: "Episode",
+                        text = activeEpisode?.title ?: "Episode",
                         color = TextPrimary,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold
@@ -374,7 +403,7 @@ fun DramaReelsPlayerScreen(
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     Text(
-                        text = "${pagerState.currentPage + 1} / ${chapters.size} EP",
+                        text = "${pagerState.currentPage + 1} / ${episodes.size} EP",
                         color = TextPrimary,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
@@ -404,7 +433,7 @@ fun DramaReelsPlayerScreen(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = "Total ${chapters.size} Episode Tersedia",
+                        text = "Total ${episodes.size} Episode Tersedia",
                         color = TextMuted,
                         fontSize = 12.sp
                     )
@@ -418,7 +447,7 @@ fun DramaReelsPlayerScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.height(350.dp)
                     ) {
-                        itemsIndexed(chapters) { index, _ ->
+                        itemsIndexed(episodes) { index, _ ->
                             val isSelected = pagerState.currentPage == index
                             Box(
                                 modifier = Modifier

@@ -224,7 +224,7 @@ fun ReelShortDetailScreen(
 
                             // Play Episode 1 Button
                             Button(
-                                onClick = { onPlayEpisode(detail.bookId.ifBlank { bookId }, 1) },
+                                onClick = { onPlayEpisode(detail.id.ifBlank { bookId }, 1) },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(48.dp),
@@ -282,7 +282,7 @@ fun ReelShortDetailScreen(
                                 .clip(RoundedCornerShape(10.dp))
                                 .background(SurfaceDark)
                                 .border(1.dp, BorderSubtle, RoundedCornerShape(10.dp))
-                                .clickable { onPlayEpisode(detail.bookId.ifBlank { bookId }, chapter.index) }
+                                .clickable { onPlayEpisode(detail.id.ifBlank { bookId }, chapter.episodeNum) }
                                 .padding(horizontal = 14.dp, vertical = 12.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
@@ -298,7 +298,7 @@ fun ReelShortDetailScreen(
                                         .border(0.5.dp, CardBorderDark, CircleShape),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    if (chapter.isLocked) {
+                                    if (chapter.locked) {
                                         Icon(
                                             imageVector = Icons.Rounded.Lock,
                                             contentDescription = "Terkunci",
@@ -317,14 +317,14 @@ fun ReelShortDetailScreen(
 
                                 Column {
                                     Text(
-                                        text = chapter.title.ifBlank { "Episode ${chapter.index}" },
+                                        text = chapter.title.ifBlank { "Episode ${chapter.episodeNum}" },
                                         color = TextPrimary,
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.SemiBold
                                     )
                                     Text(
-                                        text = if (chapter.isLocked) "Episode VIP" else "Gratis Tersedia",
-                                        color = if (chapter.isLocked) TextMuted else Color(0xFF4CAF50),
+                                        text = if (chapter.locked) "Episode VIP" else "Gratis Tersedia",
+                                        color = if (chapter.locked) TextMuted else Color(0xFF4CAF50),
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Medium
                                     )

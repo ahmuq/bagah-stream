@@ -46,7 +46,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bagah.streaming.ui.components.AnimeCard
 import com.bagah.streaming.ui.components.DramaCard
-import com.bagah.streaming.ui.components.GoodShortCard
 import com.bagah.streaming.ui.components.ReelShortCard
 import com.bagah.streaming.ui.theme.AccentWhite
 import com.bagah.streaming.ui.theme.BgBlack
@@ -64,7 +63,6 @@ fun SearchScreen(
     onAnimeClick: (url: String) -> Unit,
     onDramaClick: (bookId: String) -> Unit,
     onReelShortClick: (bookId: String) -> Unit = {},
-    onGoodShortClick: (seriesId: String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
@@ -91,7 +89,7 @@ fun SearchScreen(
                                 0 -> "Cari anime..."
                                 1 -> "Cari short drama..."
                                 2 -> "Cari ReelShort..."
-                                else -> "Cari GoodShort..."
+                                else -> "Cari ReelShort..."
                             },
                             color = TextMuted,
                             fontSize = 14.sp
@@ -191,17 +189,6 @@ fun SearchScreen(
                         )
                     }
                 )
-                Tab(
-                    selected = uiState.selectedTab == 3,
-                    onClick = { viewModel.onTabSelect(3) },
-                    text = {
-                        Text(
-                            text = "GoodShort",
-                            color = if (uiState.selectedTab == 3) TextPrimary else TextMuted,
-                            fontWeight = if (uiState.selectedTab == 3) FontWeight.Bold else FontWeight.Medium
-                        )
-                    }
-                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -266,25 +253,7 @@ fun SearchScreen(
                                 verticalArrangement = Arrangement.spacedBy(14.dp)
                             ) {
                                 items(uiState.reelShortResults) { book ->
-                                    ReelShortCard(book = book, onClick = { onReelShortClick(book.book_id) })
-                                }
-                            }
-                        }
-                    }
-                    else -> {
-                        if (uiState.goodShortResults.isEmpty()) {
-                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                Text(text = "Tidak ada GoodShort yang cocok dengan \"${uiState.query}\"", color = TextMuted, fontSize = 13.sp)
-                            }
-                        } else {
-                            LazyVerticalGrid(
-                                columns = GridCells.Fixed(3),
-                                contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 90.dp),
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalArrangement = Arrangement.spacedBy(14.dp)
-                            ) {
-                                items(uiState.goodShortResults) { item ->
-                                    GoodShortCard(item = item, onClick = { onGoodShortClick(item.seriesId) })
+                                    ReelShortCard(book = book, onClick = { onReelShortClick(book.id) })
                                 }
                             }
                         }

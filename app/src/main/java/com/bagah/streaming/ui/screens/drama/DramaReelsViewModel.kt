@@ -3,7 +3,7 @@ package com.bagah.streaming.ui.screens.drama
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.bagah.streaming.data.model.DramaChapter
+import com.bagah.streaming.data.model.DramaEpisode
 import com.bagah.streaming.data.repository.drama.DramaRepository
 import com.bagah.streaming.data.repository.drama.DramaRepositoryImpl
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 
 data class DramaReelsUiState(
     val isLoading: Boolean = true,
-    val chapters: List<DramaChapter> = emptyList(),
+    val episodes: List<DramaEpisode> = emptyList(),
     val errorMessage: String? = null
 )
 
@@ -27,20 +27,27 @@ class DramaReelsViewModel(
     val uiState: StateFlow<DramaReelsUiState> = _uiState.asStateFlow()
 
     init {
-        loadChapters()
+        loadEpisodes()
     }
 
-    fun loadChapters() {
+    fun loadEpisodes() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            val result = repository.getChapters(bookId)
+            val result = repository.getEpisodes(bookId)
             result.onSuccess { list ->
-                _uiState.update { it.copy(isLoading = false, chapters = list, errorMessage = null) }
+                _uiState.update { it.copy(isLoading = false, episodes = list, errorMessage = null) }
             }.onFailure { err ->
-                _uiState.update { it.copy(isLoading = false, errorMessage = err.localizedMessage ?: "Gagal memuat chapter drama") }
+                _uiState.update { it.copy(isLoading = false, errorMessage = err.localizedMessage ?: "Gagal memuat episode drama") }
             }
         }
     }
+
+    /**
+     * Mengambil URL stream dan kunci AES per-episode saat dibutuhkan, bukan sekaligus,
+     * supaya membuka satu episode tidak memicu puluhan request.
+     */
+    suspend fun getStream(episode: Int): Result<com.bagah.streaming.data.model.DramaEpisodeResponse> =
+        repository.getEpisodeStream(bookId, episode)
 
     class Factory(private val bookId: String) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")

@@ -383,7 +383,7 @@ fun ReelShortPlayerScreen(
                         items((1..episodesCount).toList()) { epNum ->
                             val isCurrent = epNum == uiState.currentEpisode
                             val chapter = uiState.chapters.getOrNull(epNum - 1)
-                            val isLocked = chapter?.isLocked == true
+                            val isLocked = chapter?.locked == true
 
                             Box(
                                 modifier = Modifier

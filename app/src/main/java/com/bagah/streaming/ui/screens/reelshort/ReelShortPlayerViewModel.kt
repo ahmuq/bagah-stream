@@ -3,8 +3,6 @@ package com.bagah.streaming.ui.screens.reelshort
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bagah.streaming.data.model.ReelShortChapter
-import com.bagah.streaming.data.model.ReelShortDetailResponse
-import com.bagah.streaming.data.model.ReelShortVideoStream
 import com.bagah.streaming.data.repository.reelshort.ReelShortRepository
 import com.bagah.streaming.data.repository.reelshort.ReelShortRepositoryImpl
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,7 +42,6 @@ class ReelShortPlayerViewModel(
         }
 
         viewModelScope.launch {
-            // Load detail to get chapters & bookTitle
             repository.getDetail(bookId).onSuccess { detail ->
                 _uiState.update {
                     it.copy(
@@ -54,8 +51,6 @@ class ReelShortPlayerViewModel(
                     )
                 }
             }
-
-            // Load episode stream
             loadEpisodeStream(bookId, initialEpisode.coerceAtLeast(1))
         }
     }
@@ -73,49 +68,39 @@ class ReelShortPlayerViewModel(
 
     fun playNext() {
         val next = _uiState.value.currentEpisode + 1
-        if (next <= _uiState.value.totalEpisodes) {
-            playEpisode(next)
-        }
+        if (next <= _uiState.value.totalEpisodes) playEpisode(next)
     }
 
     fun playPrevious() {
         val prev = _uiState.value.currentEpisode - 1
-        if (prev >= 1) {
-            playEpisode(prev)
-        }
+        if (prev >= 1) playEpisode(prev)
     }
 
     private suspend fun loadEpisodeStream(bookId: String, episode: Int) {
         repository.getEpisode(bookId, episode)
-            .onSuccess { streams ->
-                if (streams.isEmpty()) {
+            .onSuccess { response ->
+                // H264 dipilih lebih dulu demi kompatibilitas decoder hardware;
+                // HLS m3u8 dari ReelShort tidak terenkripsi, jadi tidak perlu dekripsi.
+                val preferred = response.videoList.firstOrNull {
+                    it.encode?.equals("H264", ignoreCase = true) == true && it.url.isNotBlank()
+                } ?: response.videoList.firstOrNull { it.url.isNotBlank() }
+
+                val url = preferred?.url ?: response.bestUrl
+                if (url.isBlank()) {
                     _uiState.update {
                         it.copy(
                             isLoading = false,
+                            isLocked = response.locked,
                             errorMessage = "Video episode tidak tersedia atau terkunci."
-                        )
-                    }
-                    return@onSuccess
-                }
-
-                // Prefer H264 stream for universal hardware decoding compatibility
-                val preferredStream = streams.firstOrNull { it.encode?.equals("H264", ignoreCase = true) == true }
-                    ?: streams.firstOrNull { !it.url.isNullOrBlank() }
-
-                val selectedUrl = preferredStream?.url
-                if (selectedUrl.isNullOrBlank()) {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            errorMessage = "URL streaming tidak ditemukan."
                         )
                     }
                 } else {
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            currentStreamUrl = selectedUrl,
-                            currentQuality = preferredStream.quality ?: "Auto",
+                            isLocked = response.locked,
+                            currentStreamUrl = url,
+                            currentQuality = preferred?.quality ?: "Auto",
                             errorMessage = null
                         )
                     }
