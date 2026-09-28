@@ -23,6 +23,7 @@ import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.SlowMotionVideo
+import androidx.compose.material.icons.rounded.Theaters
 import androidx.compose.material.icons.rounded.VideoLibrary
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -64,6 +65,7 @@ fun BagahBottomNavBar(
         NavItem("DramaBox", Screen.DramaHome.route, Icons.Rounded.VideoLibrary),
         NavItem("ReelShort", Screen.ReelShortHome.route, Icons.Rounded.PlayCircle),
         NavItem("FreeReels", Screen.FreeReelsHome.route, Icons.Rounded.SlowMotionVideo),
+        NavItem("FlickReels", Screen.FlickReelsHome.route, Icons.Rounded.Theaters),
         NavItem("Cari", Screen.Search.route, Icons.Rounded.Search)
     )
 
@@ -135,21 +137,22 @@ fun BagahBottomNavBar(
                                 color = if (isSelected) CardBorderDark else Color.Transparent,
                                 shape = RoundedCornerShape(16.dp)
                             )
-                            .padding(horizontal = 8.dp, vertical = 5.dp)
+                            .padding(horizontal = 6.dp, vertical = 5.dp)
                     ) {
                         Icon(
                             imageVector = item.icon,
                             contentDescription = item.title,
                             tint = iconColor,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(19.dp)
                         )
 
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(3.dp))
 
                         Text(
                             text = item.title,
                             color = textColor,
-                            fontSize = 11.sp,
+                            fontSize = 10.sp,
+                            maxLines = 1,
                             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
                         )
                     }

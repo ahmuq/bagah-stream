@@ -4,12 +4,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bagah.streaming.data.model.AnimeItem
 import com.bagah.streaming.data.model.DramaItem
+import com.bagah.streaming.data.model.FlickReelsItem
 import com.bagah.streaming.data.model.FreeReelsItem
 import com.bagah.streaming.data.model.ReelShortBook
 import com.bagah.streaming.data.repository.anime.AnimeRepository
 import com.bagah.streaming.data.repository.anime.AnimeRepositoryImpl
 import com.bagah.streaming.data.repository.drama.DramaRepository
 import com.bagah.streaming.data.repository.drama.DramaRepositoryImpl
+import com.bagah.streaming.data.repository.flickreels.FlickReelsRepository
+import com.bagah.streaming.data.repository.flickreels.FlickReelsRepositoryImpl
 import com.bagah.streaming.data.repository.freereels.FreeReelsRepository
 import com.bagah.streaming.data.repository.freereels.FreeReelsRepositoryImpl
 import com.bagah.streaming.data.repository.reelshort.ReelShortRepository
@@ -22,11 +25,12 @@ import kotlinx.coroutines.launch
 
 data class SearchUiState(
     val query: String = "",
-    val selectedTab: Int = 0, // 0 = Anime, 1 = DramaBox, 2 = ReelShort, 3 = FreeReels
+    val selectedTab: Int = 0, // 0 = Anime, 1 = DramaBox, 2 = ReelShort, 3 = FreeReels, 4 = FlickReels
     val animeResults: List<AnimeItem> = emptyList(),
     val dramaResults: List<DramaItem> = emptyList(),
     val reelShortResults: List<ReelShortBook> = emptyList(),
     val freeReelsResults: List<FreeReelsItem> = emptyList(),
+    val flickReelsResults: List<FlickReelsItem> = emptyList(),
     val isSearching: Boolean = false,
     val isLoadingMore: Boolean = false,
     val hasSearched: Boolean = false,
@@ -34,7 +38,7 @@ data class SearchUiState(
     val endReached: Boolean = false,
     val errorMessage: String? = null
 ) {
-    /** Anime dan FreeReels search tidak punya param page di API. */
+    /** Hanya DramaBox & ReelShort search yang punya param page yang berfungsi. */
     val canLoadMore: Boolean
         get() = (selectedTab == 1 || selectedTab == 2) && !endReached
 }
@@ -43,7 +47,8 @@ class SearchViewModel(
     private val animeRepo: AnimeRepository = AnimeRepositoryImpl(),
     private val dramaRepo: DramaRepository = DramaRepositoryImpl(),
     private val reelShortRepo: ReelShortRepository = ReelShortRepositoryImpl(),
-    private val freeReelsRepo: FreeReelsRepository = FreeReelsRepositoryImpl()
+    private val freeReelsRepo: FreeReelsRepository = FreeReelsRepositoryImpl(),
+    private val flickReelsRepo: FlickReelsRepository = FlickReelsRepositoryImpl()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SearchUiState())
@@ -116,6 +121,17 @@ class SearchViewModel(
                         .onSuccess { list ->
                             _uiState.update {
                                 it.copy(isSearching = false, freeReelsResults = list, endReached = true)
+                            }
+                        }
+                        .onFailure { err ->
+                            _uiState.update { it.copy(isSearching = false, errorMessage = err.localizedMessage) }
+                        }
+                }
+                4 -> {
+                    flickReelsRepo.search(q)
+                        .onSuccess { list ->
+                            _uiState.update {
+                                it.copy(isSearching = false, flickReelsResults = list, endReached = true)
                             }
                         }
                         .onFailure { err ->

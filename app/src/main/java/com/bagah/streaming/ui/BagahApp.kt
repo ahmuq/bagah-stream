@@ -27,6 +27,9 @@ import com.bagah.streaming.ui.screens.anime.AnimeHomeScreen
 import com.bagah.streaming.ui.screens.anime.AnimePlayerScreen
 import com.bagah.streaming.ui.screens.drama.DramaHomeScreen
 import com.bagah.streaming.ui.screens.drama.DramaReelsPlayerScreen
+import com.bagah.streaming.ui.screens.flickreels.FlickReelsDetailScreen
+import com.bagah.streaming.ui.screens.flickreels.FlickReelsHomeScreen
+import com.bagah.streaming.ui.screens.flickreels.FlickReelsPlayerScreen
 import com.bagah.streaming.ui.screens.freereels.FreeReelsDetailScreen
 import com.bagah.streaming.ui.screens.freereels.FreeReelsHomeScreen
 import com.bagah.streaming.ui.screens.freereels.FreeReelsPlayerScreen
@@ -47,6 +50,7 @@ fun BagahApp() {
     // Show BottomBar only on top-level tabs
     val showBottomBar = currentRoute in listOf(
         Screen.FreeReelsHome.route,
+        Screen.FlickReelsHome.route,
         Screen.AnimeHome.route,
         Screen.DramaHome.route,
         Screen.ReelShortHome.route,
@@ -243,7 +247,51 @@ fun BagahApp() {
                     )
                 }
 
-                // 12. Search
+                // 12. FlickReels Home
+                composable(Screen.FlickReelsHome.route) {
+                    FlickReelsHomeScreen(
+                        onSeriesClick = { seriesId ->
+                            navController.navigate(Screen.FlickReelsDetail.createRoute(seriesId))
+                        },
+                        onSearchClick = {
+                            navController.navigate(Screen.Search.route)
+                        }
+                    )
+                }
+
+                // 13. FlickReels Detail
+                composable(
+                    route = Screen.FlickReelsDetail.route,
+                    arguments = listOf(navArgument("seriesId") { type = NavType.StringType })
+                ) { backStack ->
+                    val seriesId = backStack.arguments?.getString("seriesId") ?: ""
+                    FlickReelsDetailScreen(
+                        seriesId = seriesId,
+                        onBackClick = { navController.popBackStack() },
+                        onPlayEpisode = { sId, epNum ->
+                            navController.navigate(Screen.FlickReelsPlayer.createRoute(sId, epNum))
+                        }
+                    )
+                }
+
+                // 14. FlickReels Player
+                composable(
+                    route = Screen.FlickReelsPlayer.route,
+                    arguments = listOf(
+                        navArgument("seriesId") { type = NavType.StringType },
+                        navArgument("episodeNum") { type = NavType.IntType; defaultValue = 1 }
+                    )
+                ) { backStack ->
+                    val seriesId = backStack.arguments?.getString("seriesId") ?: ""
+                    val episodeNum = backStack.arguments?.getInt("episodeNum") ?: 1
+                    FlickReelsPlayerScreen(
+                        seriesId = seriesId,
+                        initialEpisode = episodeNum,
+                        onBackClick = { navController.popBackStack() }
+                    )
+                }
+
+                // 15. Search
                 composable(Screen.Search.route) {
                     SearchScreen(
                         onAnimeClick = { url ->
@@ -257,6 +305,9 @@ fun BagahApp() {
                         },
                         onFreeReelsClick = { seriesId ->
                             navController.navigate(Screen.FreeReelsDetail.createRoute(seriesId))
+                        },
+                        onFlickReelsClick = { seriesId ->
+                            navController.navigate(Screen.FlickReelsDetail.createRoute(seriesId))
                         }
                     )
                 }

@@ -10,6 +10,11 @@ import com.bagah.streaming.data.model.DramaEpisodeResponse
 import com.bagah.streaming.data.model.DramaEpisodesResponse
 import com.bagah.streaming.data.model.DramaHomeResponse
 import com.bagah.streaming.data.model.DramaSearchResponse
+import com.bagah.streaming.data.model.FlickReelsDetailResponse
+import com.bagah.streaming.data.model.FlickReelsEpisodeResponse
+import com.bagah.streaming.data.model.FlickReelsEpisodesResponse
+import com.bagah.streaming.data.model.FlickReelsListResponse
+import com.bagah.streaming.data.model.FlickReelsSearchResponse
 import com.bagah.streaming.data.model.FreeReelsDetailResponse
 import com.bagah.streaming.data.model.FreeReelsEpisodeResponse
 import com.bagah.streaming.data.model.FreeReelsEpisodesResponse
@@ -221,4 +226,43 @@ interface StreamingApiService {
         @Query("keyword") keyword: String,
         @Query("lang") lang: String = "id"
     ): FreeReelsSearchResponse
+
+    // --- FLICKREELS ENDPOINTS ---
+    // `foryou`, `trending`, `search` tidak menerapkan pagination (param page diabaikan
+    // oleh server), jadi hanya satu halaman yang diambil.
+
+    @GET("api/flickreels/foryou")
+    suspend fun getFlickReelsForYou(
+        @Query("lang") lang: String = "id"
+    ): FlickReelsListResponse
+
+    @GET("api/flickreels/trending")
+    suspend fun getFlickReelsTrending(
+        @Query("lang") lang: String = "id"
+    ): FlickReelsListResponse
+
+    @GET("api/flickreels/detail")
+    suspend fun getFlickReelsDetail(
+        @Query("seriesId") seriesId: String,
+        @Query("lang") lang: String = "id"
+    ): FlickReelsDetailResponse
+
+    @GET("api/flickreels/episodes")
+    suspend fun getFlickReelsEpisodes(
+        @Query("seriesId") seriesId: String,
+        @Query("lang") lang: String = "id"
+    ): FlickReelsEpisodesResponse
+
+    @GET("api/flickreels/episode")
+    suspend fun getFlickReelsEpisode(
+        @Query("seriesId") seriesId: String,
+        @Query("episode") episode: Int,
+        @Query("lang") lang: String = "id"
+    ): FlickReelsEpisodeResponse
+
+    @GET("api/flickreels/search")
+    suspend fun searchFlickReels(
+        @Query("keyword") keyword: String,
+        @Query("lang") lang: String = "id"
+    ): FlickReelsSearchResponse
 }
