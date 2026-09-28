@@ -8,6 +8,13 @@ import com.bagah.streaming.data.model.AnimeScheduleDataWrapper
 import com.bagah.streaming.data.model.DramaApiResponse
 import com.bagah.streaming.data.model.DramaChapter
 import com.bagah.streaming.data.model.DramaItem
+import com.bagah.streaming.data.model.GoodShortDetailResponse
+import com.bagah.streaming.data.model.GoodShortEpisodeResponse
+import com.bagah.streaming.data.model.GoodShortEpisodesResponse
+import com.bagah.streaming.data.model.GoodShortForYouResponse
+import com.bagah.streaming.data.model.GoodShortHomeResponse
+import com.bagah.streaming.data.model.GoodShortSearchResponse
+import com.bagah.streaming.data.model.GoodShortTrendingResponse
 import com.bagah.streaming.data.model.ReelShortDetailResponse
 import com.bagah.streaming.data.model.ReelShortEpisodeResponse
 import com.bagah.streaming.data.model.ReelShortForYouResponse
@@ -115,4 +122,47 @@ interface StreamingApiService {
         @Query("page") page: Int = 1,
         @Query("lang") lang: String = "id"
     ): ReelShortSearchResponse
+
+    // --- GOODSHORT ENDPOINTS ---
+
+    @GET("api/goodshort/home")
+    suspend fun getGoodShortHome(
+        @Query("lang") lang: String = "id"
+    ): GoodShortHomeResponse
+
+    @GET("api/goodshort/foryou")
+    suspend fun getGoodShortForYou(
+        @Query("lang") lang: String = "id"
+    ): GoodShortForYouResponse
+
+    @GET("api/goodshort/trending")
+    suspend fun getGoodShortTrending(
+        @Query("page") page: Int = 1,
+        @Query("lang") lang: String = "id"
+    ): GoodShortTrendingResponse
+
+    @GET("api/goodshort/detail")
+    suspend fun getGoodShortDetail(
+        @Query("seriesId") seriesId: String,
+        @Query("lang") lang: String = "id"
+    ): GoodShortDetailResponse
+
+    @GET("api/goodshort/episodes")
+    suspend fun getGoodShortEpisodes(
+        @Query("seriesId") seriesId: String,
+        @Query("lang") lang: String = "id"
+    ): GoodShortEpisodesResponse
+
+    @GET("api/goodshort/episode")
+    suspend fun getGoodShortEpisode(
+        @Query("seriesId") seriesId: String,
+        @Query("episode") episode: Int,
+        @Query("lang") lang: String = "id"
+    ): GoodShortEpisodeResponse
+
+    @GET("api/goodshort/search")
+    suspend fun searchGoodShort(
+        @Query("keyword") keyword: String,
+        @Query("lang") lang: String = "id"
+    ): GoodShortSearchResponse
 }

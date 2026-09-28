@@ -4,11 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bagah.streaming.data.model.AnimeItem
 import com.bagah.streaming.data.model.DramaItem
+import com.bagah.streaming.data.model.GoodShortItem
 import com.bagah.streaming.data.model.ReelShortBook
 import com.bagah.streaming.data.repository.anime.AnimeRepository
 import com.bagah.streaming.data.repository.anime.AnimeRepositoryImpl
 import com.bagah.streaming.data.repository.drama.DramaRepository
 import com.bagah.streaming.data.repository.drama.DramaRepositoryImpl
+import com.bagah.streaming.data.repository.goodshort.GoodShortRepository
+import com.bagah.streaming.data.repository.goodshort.GoodShortRepositoryImpl
 import com.bagah.streaming.data.repository.reelshort.ReelShortRepository
 import com.bagah.streaming.data.repository.reelshort.ReelShortRepositoryImpl
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,10 +22,11 @@ import kotlinx.coroutines.launch
 
 data class SearchUiState(
     val query: String = "",
-    val selectedTab: Int = 0, // 0 = Anime, 1 = Drama, 2 = ReelShort
+    val selectedTab: Int = 0, // 0 = Anime, 1 = DramaBox, 2 = ReelShort, 3 = GoodShort
     val animeResults: List<AnimeItem> = emptyList(),
     val dramaResults: List<DramaItem> = emptyList(),
     val reelShortResults: List<ReelShortBook> = emptyList(),
+    val goodShortResults: List<GoodShortItem> = emptyList(),
     val isSearching: Boolean = false,
     val hasSearched: Boolean = false,
     val errorMessage: String? = null
@@ -31,7 +35,8 @@ data class SearchUiState(
 class SearchViewModel(
     private val animeRepo: AnimeRepository = AnimeRepositoryImpl(),
     private val dramaRepo: DramaRepository = DramaRepositoryImpl(),
-    private val reelShortRepo: ReelShortRepository = ReelShortRepositoryImpl()
+    private val reelShortRepo: ReelShortRepository = ReelShortRepositoryImpl(),
+    private val goodShortRepo: GoodShortRepository = GoodShortRepositoryImpl()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SearchUiState())
@@ -75,6 +80,14 @@ class SearchViewModel(
                     val res = reelShortRepo.search(q)
                     res.onSuccess { list ->
                         _uiState.update { it.copy(isSearching = false, reelShortResults = list) }
+                    }.onFailure { err ->
+                        _uiState.update { it.copy(isSearching = false, errorMessage = err.localizedMessage) }
+                    }
+                }
+                3 -> {
+                    val res = goodShortRepo.search(q)
+                    res.onSuccess { list ->
+                        _uiState.update { it.copy(isSearching = false, goodShortResults = list) }
                     }.onFailure { err ->
                         _uiState.update { it.copy(isSearching = false, errorMessage = err.localizedMessage) }
                     }

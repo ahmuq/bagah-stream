@@ -22,6 +22,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.SlowMotionVideo
 import androidx.compose.material.icons.rounded.VideoLibrary
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -62,6 +63,7 @@ fun BagahBottomNavBar(
         NavItem("Anime", Screen.AnimeHome.route, Icons.Rounded.Movie),
         NavItem("DramaBox", Screen.DramaHome.route, Icons.Rounded.VideoLibrary),
         NavItem("ReelShort", Screen.ReelShortHome.route, Icons.Rounded.PlayCircle),
+        NavItem("GoodShort", Screen.GoodShortHome.route, Icons.Rounded.SlowMotionVideo),
         NavItem("Cari", Screen.Search.route, Icons.Rounded.Search)
     )
 
@@ -82,7 +84,7 @@ fun BagahBottomNavBar(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(horizontal = 12.dp, vertical = 8.dp)
                 .background(
                     color = SurfaceDark.copy(alpha = 0.95f),
                     shape = RoundedCornerShape(24.dp)
@@ -92,7 +94,7 @@ fun BagahBottomNavBar(
                     color = BorderSubtle,
                     shape = RoundedCornerShape(24.dp)
                 )
-                .padding(horizontal = 8.dp, vertical = 6.dp)
+                .padding(horizontal = 4.dp, vertical = 5.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -133,7 +135,7 @@ fun BagahBottomNavBar(
                                 color = if (isSelected) CardBorderDark else Color.Transparent,
                                 shape = RoundedCornerShape(16.dp)
                             )
-                            .padding(horizontal = 14.dp, vertical = 7.dp)
+                            .padding(horizontal = 8.dp, vertical = 5.dp)
                     ) {
                         Icon(
                             imageVector = item.icon,

@@ -25,8 +25,8 @@ import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bagah.streaming.ui.components.AnimeCard
 import com.bagah.streaming.ui.components.DramaCard
+import com.bagah.streaming.ui.components.GoodShortCard
 import com.bagah.streaming.ui.components.ReelShortCard
 import com.bagah.streaming.ui.theme.AccentWhite
 import com.bagah.streaming.ui.theme.BgBlack
@@ -62,7 +63,8 @@ fun SearchScreen(
     viewModel: SearchViewModel = viewModel(),
     onAnimeClick: (url: String) -> Unit,
     onDramaClick: (bookId: String) -> Unit,
-    onReelShortClick: (bookId: String) -> Unit = {}
+    onReelShortClick: (bookId: String) -> Unit = {},
+    onGoodShortClick: (seriesId: String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
@@ -88,7 +90,8 @@ fun SearchScreen(
                             text = when (uiState.selectedTab) {
                                 0 -> "Cari anime..."
                                 1 -> "Cari short drama..."
-                                else -> "Cari ReelShort..."
+                                2 -> "Cari ReelShort..."
+                                else -> "Cari GoodShort..."
                             },
                             color = TextMuted,
                             fontSize = 14.sp
@@ -135,10 +138,11 @@ fun SearchScreen(
             }
 
             // Platform Filter Tabs
-            TabRow(
+            ScrollableTabRow(
                 selectedTabIndex = uiState.selectedTab,
                 containerColor = BgBlack,
                 contentColor = AccentWhite,
+                edgePadding = 16.dp,
                 indicator = { tabPositions ->
                     TabRowDefaults.SecondaryIndicator(
                         Modifier.tabIndicatorOffset(tabPositions[uiState.selectedTab]),
@@ -184,6 +188,17 @@ fun SearchScreen(
                             text = "ReelShort",
                             color = if (uiState.selectedTab == 2) TextPrimary else TextMuted,
                             fontWeight = if (uiState.selectedTab == 2) FontWeight.Bold else FontWeight.Medium
+                        )
+                    }
+                )
+                Tab(
+                    selected = uiState.selectedTab == 3,
+                    onClick = { viewModel.onTabSelect(3) },
+                    text = {
+                        Text(
+                            text = "GoodShort",
+                            color = if (uiState.selectedTab == 3) TextPrimary else TextMuted,
+                            fontWeight = if (uiState.selectedTab == 3) FontWeight.Bold else FontWeight.Medium
                         )
                     }
                 )
@@ -238,7 +253,7 @@ fun SearchScreen(
                             }
                         }
                     }
-                    else -> {
+                    2 -> {
                         if (uiState.reelShortResults.isEmpty()) {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 Text(text = "Tidak ada ReelShort yang cocok dengan \"${uiState.query}\"", color = TextMuted, fontSize = 13.sp)
@@ -252,6 +267,24 @@ fun SearchScreen(
                             ) {
                                 items(uiState.reelShortResults) { book ->
                                     ReelShortCard(book = book, onClick = { onReelShortClick(book.book_id) })
+                                }
+                            }
+                        }
+                    }
+                    else -> {
+                        if (uiState.goodShortResults.isEmpty()) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text(text = "Tidak ada GoodShort yang cocok dengan \"${uiState.query}\"", color = TextMuted, fontSize = 13.sp)
+                            }
+                        } else {
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(3),
+                                contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 90.dp),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(14.dp)
+                            ) {
+                                items(uiState.goodShortResults) { item ->
+                                    GoodShortCard(item = item, onClick = { onGoodShortClick(item.seriesId) })
                                 }
                             }
                         }

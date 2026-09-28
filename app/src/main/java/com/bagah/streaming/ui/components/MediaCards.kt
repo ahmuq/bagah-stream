@@ -38,6 +38,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.bagah.streaming.data.model.AnimeItem
 import com.bagah.streaming.data.model.DramaItem
+import com.bagah.streaming.data.model.GoodShortItem
+import com.bagah.streaming.data.model.ReelShortBook
 import com.bagah.streaming.ui.theme.AccentWhite
 import com.bagah.streaming.ui.theme.BorderSubtle
 import com.bagah.streaming.ui.theme.CardBorderDark
@@ -433,4 +435,157 @@ fun ReelShortCard(
         }
     }
 }
+
+@Composable
+fun GoodShortCard(
+    item: GoodShortItem,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+    ) {
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .aspectRatio(0.7f)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(SurfaceCard)
+                    .border(1.dp, BorderSubtle, RoundedCornerShape(12.dp))
+            ) {
+                if (item.cover.isNotBlank()) {
+                    AsyncImage(
+                        model = item.cover,
+                        contentDescription = item.title,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        SurfaceElevated,
+                                        SurfaceDark
+                                    )
+                                )
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.PlayCircle,
+                                contentDescription = null,
+                                tint = AccentWhite.copy(alpha = 0.4f),
+                                modifier = Modifier.size(36.dp)
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = "GOODSHORT",
+                                color = TextMuted,
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 1.sp
+                            )
+                        }
+                    }
+                }
+
+                if (item.totalEpisodes > 0) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(6.dp)
+                            .background(
+                                color = Color.Black.copy(alpha = 0.85f),
+                                shape = RoundedCornerShape(6.dp)
+                            )
+                            .border(0.5.dp, CardBorderDark, RoundedCornerShape(6.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = "${item.totalEpisodes} EP",
+                            color = AccentWhite,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                val viewStr = item.formattedViews
+                if (viewStr.isNotBlank() && viewStr != "0") {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(6.dp)
+                            .background(
+                                color = Color.Black.copy(alpha = 0.85f),
+                                shape = RoundedCornerShape(6.dp)
+                            )
+                            .border(0.5.dp, CardBorderDark, RoundedCornerShape(6.dp))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = "$viewStr views",
+                            color = AccentWhite,
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .size(34.dp)
+                        .background(Color.Black.copy(alpha = 0.6f), shape = RoundedCornerShape(17.dp))
+                        .border(0.5.dp, CardBorderDark, RoundedCornerShape(17.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.PlayArrow,
+                        contentDescription = "Tonton",
+                        tint = AccentWhite,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Text(
+                text = item.title,
+                color = TextPrimary,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                lineHeight = 16.sp,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            )
+
+            if (item.category.isNotEmpty()) {
+                Text(
+                    text = item.category.take(2).joinToString(" • "),
+                    color = TextMuted,
+                    fontSize = 10.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                )
+            }
+        }
+    }
+}
+
 
