@@ -4,6 +4,7 @@ import com.bagah.streaming.data.model.AnimeApiResponse
 import com.bagah.streaming.data.model.AnimeDetailWrapper
 import com.bagah.streaming.data.model.AnimeEpisodeData
 import com.bagah.streaming.data.model.AnimeItem
+import com.bagah.streaming.data.model.AnimeScheduleDataWrapper
 import com.bagah.streaming.data.model.DramaApiResponse
 import com.bagah.streaming.data.model.DramaChapter
 import com.bagah.streaming.data.model.DramaItem
@@ -24,6 +25,9 @@ interface StreamingApiService {
         @Query("page") page: Int = 1,
         @Query("type") type: String = "all"
     ): AnimeApiResponse<List<AnimeItem>>
+
+    @GET("api/animeplay/schedule")
+    suspend fun getAnimeSchedule(): AnimeApiResponse<AnimeScheduleDataWrapper>
 
     @GET("api/animeplay/movies")
     suspend fun getAnimeMovies(): AnimeApiResponse<List<AnimeItem>>

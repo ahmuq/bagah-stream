@@ -102,3 +102,36 @@ data class AnimeStreamLink(
     val reso: String? = null,
     val size_kb: Long? = null
 )
+
+@Serializable
+data class AnimeScheduleDataWrapper(
+    val generatedAt: Long? = null,
+    val data: List<AnimeScheduleDay> = emptyList()
+)
+
+@Serializable
+data class AnimeScheduleDay(
+    val day: String = "",
+    val date: String? = null,
+    val date_ts: Long? = null,
+    val animeList: List<AnimeScheduleItem> = emptyList()
+)
+
+@Serializable
+data class AnimeScheduleItem(
+    val anime_name: String = "",
+    @Serializable(with = FlexibleStringSerializer::class)
+    val id: String = "",
+    val link: String = "",
+    val cover: String = "",
+    val updated: Long? = null
+) {
+    fun toAnimeItem(): AnimeItem = AnimeItem(
+        id = id,
+        url = link,
+        judul = anime_name,
+        cover = cover,
+        lastch = "Jadwal Tayang",
+        lastup = null
+    )
+}

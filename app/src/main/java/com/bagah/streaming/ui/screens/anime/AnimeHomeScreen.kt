@@ -20,9 +20,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.DateRange
 import androidx.compose.material.icons.rounded.LiveTv
 import androidx.compose.material.icons.rounded.Movie
 import androidx.compose.material.icons.rounded.PlayArrow
@@ -116,7 +119,7 @@ fun AnimeHomeScreen(
                 }
             }
         } else {
-            val heroItem = uiState.latest.firstOrNull()
+            val spotlightItems = uiState.spotlightItems
 
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
@@ -173,145 +176,236 @@ fun AnimeHomeScreen(
                     }
                 }
 
-                // Spotlight Hero Banner
-                if (heroItem != null) {
+                // Spotlight Hero Carousel (HorizontalPager)
+                if (spotlightItems.isNotEmpty()) {
                     item {
-                        Box(
+                        val pagerState = rememberPagerState(pageCount = { spotlightItems.size })
+
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 6.dp)
-                                .height(240.dp)
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(SurfaceDark)
-                                .border(1.dp, BorderSubtle, RoundedCornerShape(16.dp))
-                                .clickable { onAnimeClick(heroItem.url) }
+                                .padding(vertical = 4.dp)
                         ) {
-                            AsyncImage(
-                                model = heroItem.cover,
-                                contentDescription = heroItem.judul,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
-                            )
-
-                            // Scrim
-                            Box(
+                            HorizontalPager(
+                                state = pagerState,
+                                pageSpacing = 12.dp,
+                                contentPadding = PaddingValues(horizontal = 16.dp),
                                 modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(
-                                        Brush.verticalGradient(
-                                            colors = listOf(
-                                                Color.Transparent,
-                                                Color.Black.copy(alpha = 0.45f),
-                                                Color.Black.copy(alpha = 0.95f)
-                                            )
-                                        )
-                                    )
-                            )
-
-                            // Spotlight Content
-                            Column(
-                                modifier = Modifier
-                                    .align(Alignment.BottomStart)
-                                    .padding(16.dp)
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    .fillMaxWidth()
+                                    .height(240.dp)
+                            ) { page ->
+                                val heroItem = spotlightItems[page]
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(SurfaceDark)
+                                        .border(1.dp, BorderSubtle, RoundedCornerShape(16.dp))
+                                        .clickable { onAnimeClick(heroItem.url) }
                                 ) {
+                                    AsyncImage(
+                                        model = heroItem.cover,
+                                        contentDescription = heroItem.judul,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier.fillMaxSize()
+                                    )
+
+                                    // Scrim
                                     Box(
                                         modifier = Modifier
+                                            .fillMaxSize()
                                             .background(
-                                                color = Color.Black.copy(alpha = 0.8f),
-                                                shape = RoundedCornerShape(4.dp)
+                                                Brush.verticalGradient(
+                                                    colors = listOf(
+                                                        Color.Transparent,
+                                                        Color.Black.copy(alpha = 0.45f),
+                                                        Color.Black.copy(alpha = 0.95f)
+                                                    )
+                                                )
                                             )
-                                            .border(0.5.dp, CardBorderDark, RoundedCornerShape(4.dp))
-                                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+
+                                    // Spotlight Content
+                                    Column(
+                                        modifier = Modifier
+                                            .align(Alignment.BottomStart)
+                                            .padding(16.dp)
                                     ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .background(
+                                                        color = Color.Black.copy(alpha = 0.8f),
+                                                        shape = RoundedCornerShape(4.dp)
+                                                    )
+                                                    .border(0.5.dp, CardBorderDark, RoundedCornerShape(4.dp))
+                                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                                            ) {
+                                                Text(
+                                                    text = "SOROTAN ${page + 1}/${spotlightItems.size}",
+                                                    color = AccentWhite,
+                                                    fontSize = 9.sp,
+                                                    fontWeight = FontWeight.Bold
+                                                )
+                                            }
+                                            if (!heroItem.score.isNullOrBlank()) {
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    Icon(
+                                                        imageVector = Icons.Rounded.Star,
+                                                        contentDescription = null,
+                                                        tint = AccentWhite,
+                                                        modifier = Modifier.size(12.dp)
+                                                    )
+                                                    Spacer(modifier = Modifier.width(3.dp))
+                                                    Text(
+                                                        text = heroItem.score,
+                                                        color = TextPrimary,
+                                                        fontSize = 11.sp,
+                                                        fontWeight = FontWeight.Bold
+                                                    )
+                                                }
+                                            }
+                                        }
+
+                                        Spacer(modifier = Modifier.height(4.dp))
+
                                         Text(
-                                            text = "SOROTAN",
-                                            color = AccentWhite,
-                                            fontSize = 9.sp,
-                                            fontWeight = FontWeight.Bold
+                                            text = heroItem.judul,
+                                            color = TextPrimary,
+                                            fontSize = 16.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
                                         )
-                                    }
-                                    if (!heroItem.score.isNullOrBlank()) {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Icon(
-                                                imageVector = Icons.Rounded.Star,
-                                                contentDescription = null,
-                                                tint = AccentWhite,
-                                                modifier = Modifier.size(12.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(3.dp))
+
+                                        if (!heroItem.sinopsis.isNullOrBlank()) {
                                             Text(
-                                                text = heroItem.score,
-                                                color = TextPrimary,
+                                                text = heroItem.sinopsis,
+                                                color = TextSecondary,
                                                 fontSize = 11.sp,
+                                                maxLines = 2,
+                                                overflow = TextOverflow.Ellipsis,
+                                                modifier = Modifier.padding(top = 2.dp, bottom = 8.dp)
+                                            )
+                                        } else {
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                        }
+
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier
+                                                .background(AccentWhite, RoundedCornerShape(8.dp))
+                                                .padding(horizontal = 14.dp, vertical = 7.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.PlayArrow,
+                                                contentDescription = "Putar",
+                                                tint = AccentBlack,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Text(
+                                                text = "Tonton Sekarang",
+                                                color = AccentBlack,
+                                                fontSize = 12.sp,
                                                 fontWeight = FontWeight.Bold
                                             )
                                         }
                                     }
                                 }
+                            }
 
-                                Spacer(modifier = Modifier.height(4.dp))
-
-                                Text(
-                                    text = heroItem.judul,
-                                    color = TextPrimary,
-                                    fontSize = 17.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-
-                                if (!heroItem.sinopsis.isNullOrBlank()) {
-                                    Text(
-                                        text = heroItem.sinopsis,
-                                        color = TextSecondary,
-                                        fontSize = 11.sp,
-                                        maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier.padding(top = 2.dp, bottom = 8.dp)
-                                    )
-                                }
-
+                            // Carousel Indicators
+                            if (spotlightItems.size > 1) {
                                 Row(
-                                    verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier
-                                        .background(AccentWhite, RoundedCornerShape(8.dp))
-                                        .padding(horizontal = 14.dp, vertical = 7.dp)
+                                        .fillMaxWidth()
+                                        .padding(top = 10.dp),
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.PlayArrow,
-                                        contentDescription = "Putar",
-                                        tint = AccentBlack,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "Tonton Sekarang",
-                                        color = AccentBlack,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                                    repeat(spotlightItems.size) { index ->
+                                        val isCurrent = pagerState.currentPage == index
+                                        Box(
+                                            modifier = Modifier
+                                                .padding(horizontal = 3.dp)
+                                                .height(4.dp)
+                                                .width(if (isCurrent) 18.dp else 5.dp)
+                                                .clip(RoundedCornerShape(2.dp))
+                                                .background(
+                                                    if (isCurrent) AccentWhite else TextMuted.copy(alpha = 0.35f)
+                                                )
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
 
-                // Section: Ongoing
-                if (uiState.ongoing.isNotEmpty()) {
-                    item {
-                        AnimeSectionHeader(
-                            title = "Sedang Tayang (Ongoing)",
-                            icon = Icons.Rounded.LiveTv
-                        )
+                // Section: Jadwal Rilis Harian (Ongoing)
+                item {
+                    AnimeSectionHeader(
+                        title = "Jadwal Rilis Harian (Ongoing)",
+                        icon = Icons.Rounded.DateRange
+                    )
+
+                    // Day Selector Chips
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    ) {
+                        items(uiState.availableDays) { day ->
+                            val isSelected = uiState.selectedDay.equals(day, ignoreCase = true)
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .background(if (isSelected) AccentWhite else SurfaceDark)
+                                    .border(
+                                        1.dp,
+                                        if (isSelected) AccentWhite else BorderSubtle,
+                                        RoundedCornerShape(20.dp)
+                                    )
+                                    .clickable { viewModel.selectDay(day) }
+                                    .padding(horizontal = 14.dp, vertical = 7.dp)
+                            ) {
+                                Text(
+                                    text = day,
+                                    color = if (isSelected) AccentBlack else TextSecondary,
+                                    fontSize = 12.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                                )
+                            }
+                        }
+                    }
+
+                    val ongoingList = uiState.currentOngoingList
+                    if (ongoingList.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                                .background(SurfaceDark, RoundedCornerShape(12.dp))
+                                .border(1.dp, BorderSubtle, RoundedCornerShape(12.dp))
+                                .padding(20.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Tidak ada jadwal anime tayang pada hari ${uiState.selectedDay}.",
+                                color = TextMuted,
+                                fontSize = 12.sp
+                            )
+                        }
+                    } else {
                         LazyRow(
                             contentPadding = PaddingValues(horizontal = 16.dp),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            items(uiState.ongoing) { anime ->
+                            items(ongoingList) { anime ->
                                 AnimeCard(anime = anime, onClick = { onAnimeClick(anime.url) })
                             }
                         }
@@ -329,7 +423,7 @@ fun AnimeHomeScreen(
                             contentPadding = PaddingValues(horizontal = 16.dp),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            items(uiState.latest.drop(1)) { anime ->
+                            items(uiState.latest) { anime ->
                                 AnimeCard(anime = anime, onClick = { onAnimeClick(anime.url) })
                             }
                         }

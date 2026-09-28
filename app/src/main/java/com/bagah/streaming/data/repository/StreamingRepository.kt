@@ -5,6 +5,7 @@ import com.bagah.streaming.data.api.StreamingApiService
 import com.bagah.streaming.data.model.AnimeDetailItem
 import com.bagah.streaming.data.model.AnimeEpisodeData
 import com.bagah.streaming.data.model.AnimeItem
+import com.bagah.streaming.data.model.AnimeScheduleDay
 import com.bagah.streaming.data.model.DramaChapter
 import com.bagah.streaming.data.model.DramaItem
 import kotlinx.coroutines.Dispatchers
@@ -26,6 +27,13 @@ class StreamingRepository(
         runCatching {
             val response = api.getAnimeOngoing(page)
             response.data ?: emptyList()
+        }
+    }
+
+    suspend fun getAnimeSchedule(): Result<List<AnimeScheduleDay>> = withContext(Dispatchers.IO) {
+        runCatching {
+            val response = api.getAnimeSchedule()
+            response.data?.data ?: emptyList()
         }
     }
 
