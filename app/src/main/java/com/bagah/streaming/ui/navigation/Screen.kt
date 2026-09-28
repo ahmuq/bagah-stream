@@ -58,4 +58,14 @@ sealed class Screen(val route: String) {
     object FlickReelsPlayer : Screen("flickreels_player/{seriesId}/{episodeNum}") {
         fun createRoute(seriesId: String, episodeNum: Int = 1): String = "flickreels_player/$seriesId/$episodeNum"
     }
+
+    object ShortMaxHome : Screen("shortmax_home")
+
+    object ShortMaxDetail : Screen("shortmax_detail/{seriesId}") {
+        fun createRoute(seriesId: String): String = "shortmax_detail/$seriesId"
+    }
+
+    object ShortMaxPlayer : Screen("shortmax_player/{seriesId}/{episodeNum}") {
+        fun createRoute(seriesId: String, episodeNum: Int = 1): String = "shortmax_player/$seriesId/$episodeNum"
+    }
 }

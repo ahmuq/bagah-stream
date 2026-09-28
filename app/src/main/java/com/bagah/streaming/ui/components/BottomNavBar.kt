@@ -66,6 +66,7 @@ fun BagahBottomNavBar(
         NavItem("ReelShort", Screen.ReelShortHome.route, Icons.Rounded.PlayCircle),
         NavItem("FreeReels", Screen.FreeReelsHome.route, Icons.Rounded.SlowMotionVideo),
         NavItem("FlickReels", Screen.FlickReelsHome.route, Icons.Rounded.Theaters),
+        NavItem("ShortMax", Screen.ShortMaxHome.route, Icons.Rounded.VideoLibrary),
         NavItem("Cari", Screen.Search.route, Icons.Rounded.Search)
     )
 

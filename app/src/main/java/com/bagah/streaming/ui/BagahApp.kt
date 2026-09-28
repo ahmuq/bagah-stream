@@ -37,6 +37,9 @@ import com.bagah.streaming.ui.screens.reelshort.ReelShortDetailScreen
 import com.bagah.streaming.ui.screens.reelshort.ReelShortHomeScreen
 import com.bagah.streaming.ui.screens.reelshort.ReelShortPlayerScreen
 import com.bagah.streaming.ui.screens.search.SearchScreen
+import com.bagah.streaming.ui.screens.shortmax.ShortMaxDetailScreen
+import com.bagah.streaming.ui.screens.shortmax.ShortMaxHomeScreen
+import com.bagah.streaming.ui.screens.shortmax.ShortMaxPlayerScreen
 import com.bagah.streaming.ui.screens.splash.SplashPopUpIntro
 import com.bagah.streaming.ui.theme.BgBlack
 
@@ -51,6 +54,7 @@ fun BagahApp() {
     val showBottomBar = currentRoute in listOf(
         Screen.FreeReelsHome.route,
         Screen.FlickReelsHome.route,
+        Screen.ShortMaxHome.route,
         Screen.AnimeHome.route,
         Screen.DramaHome.route,
         Screen.ReelShortHome.route,
@@ -291,7 +295,51 @@ fun BagahApp() {
                     )
                 }
 
-                // 15. Search
+                // 15. ShortMax Home
+                composable(Screen.ShortMaxHome.route) {
+                    ShortMaxHomeScreen(
+                        onSeriesClick = { seriesId ->
+                            navController.navigate(Screen.ShortMaxDetail.createRoute(seriesId))
+                        },
+                        onSearchClick = {
+                            navController.navigate(Screen.Search.route)
+                        }
+                    )
+                }
+
+                // 16. ShortMax Detail
+                composable(
+                    route = Screen.ShortMaxDetail.route,
+                    arguments = listOf(navArgument("seriesId") { type = NavType.StringType })
+                ) { backStack ->
+                    val seriesId = backStack.arguments?.getString("seriesId") ?: ""
+                    ShortMaxDetailScreen(
+                        seriesId = seriesId,
+                        onBackClick = { navController.popBackStack() },
+                        onPlayEpisode = { sId, epNum ->
+                            navController.navigate(Screen.ShortMaxPlayer.createRoute(sId, epNum))
+                        }
+                    )
+                }
+
+                // 17. ShortMax Player
+                composable(
+                    route = Screen.ShortMaxPlayer.route,
+                    arguments = listOf(
+                        navArgument("seriesId") { type = NavType.StringType },
+                        navArgument("episodeNum") { type = NavType.IntType; defaultValue = 1 }
+                    )
+                ) { backStack ->
+                    val seriesId = backStack.arguments?.getString("seriesId") ?: ""
+                    val episodeNum = backStack.arguments?.getInt("episodeNum") ?: 1
+                    ShortMaxPlayerScreen(
+                        seriesId = seriesId,
+                        initialEpisode = episodeNum,
+                        onBackClick = { navController.popBackStack() }
+                    )
+                }
+
+                // 18. Search
                 composable(Screen.Search.route) {
                     SearchScreen(
                         onAnimeClick = { url ->
@@ -308,6 +356,9 @@ fun BagahApp() {
                         },
                         onFlickReelsClick = { seriesId ->
                             navController.navigate(Screen.FlickReelsDetail.createRoute(seriesId))
+                        },
+                        onShortMaxClick = { seriesId ->
+                            navController.navigate(Screen.ShortMaxDetail.createRoute(seriesId))
                         }
                     )
                 }

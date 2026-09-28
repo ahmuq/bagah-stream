@@ -27,6 +27,11 @@ import com.bagah.streaming.data.model.ReelShortEpisodesResponse
 import com.bagah.streaming.data.model.ReelShortHomepageResponse
 import com.bagah.streaming.data.model.ReelShortSearchResponse
 import com.bagah.streaming.data.model.ReelShortTrendingResponse
+import com.bagah.streaming.data.model.ShortMaxDetailResponse
+import com.bagah.streaming.data.model.ShortMaxEpisodeResponse
+import com.bagah.streaming.data.model.ShortMaxEpisodesResponse
+import com.bagah.streaming.data.model.ShortMaxListResponse
+import com.bagah.streaming.data.model.ShortMaxSearchResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -265,4 +270,60 @@ interface StreamingApiService {
         @Query("keyword") keyword: String,
         @Query("lang") lang: String = "id"
     ): FlickReelsSearchResponse
+
+    // --- SHORTMAX ENDPOINTS ---
+    // Stream video berformat HLS dengan segmen .ts terenkripsi custom (lihat
+    // ShortMaxDecryptDataSource). `foryou` mengabaikan param page, `search` menerapkannya.
+
+    @GET("api/shortmax/foryou")
+    suspend fun getShortMaxForYou(
+        @Query("page") page: Int = 1,
+        @Query("size") size: Int = 20,
+        @Query("lang") lang: String = "id"
+    ): ShortMaxListResponse
+
+    @GET("api/shortmax/trending")
+    suspend fun getShortMaxTrending(
+        @Query("page") page: Int = 1,
+        @Query("lang") lang: String = "id"
+    ): ShortMaxListResponse
+
+    @GET("api/shortmax/latest")
+    suspend fun getShortMaxLatest(
+        @Query("page") page: Int = 1,
+        @Query("lang") lang: String = "id"
+    ): ShortMaxListResponse
+
+    @GET("api/shortmax/rankings")
+    suspend fun getShortMaxRankings(
+        @Query("page") page: Int = 1,
+        @Query("lang") lang: String = "id"
+    ): ShortMaxListResponse
+
+    @GET("api/shortmax/detail")
+    suspend fun getShortMaxDetail(
+        @Query("seriesId") seriesId: String,
+        @Query("lang") lang: String = "id"
+    ): ShortMaxDetailResponse
+
+    @GET("api/shortmax/episodes")
+    suspend fun getShortMaxEpisodes(
+        @Query("seriesId") seriesId: String,
+        @Query("lang") lang: String = "id"
+    ): ShortMaxEpisodesResponse
+
+    @GET("api/shortmax/episode")
+    suspend fun getShortMaxEpisode(
+        @Query("seriesId") seriesId: String,
+        @Query("episode") episode: Int,
+        @Query("lang") lang: String = "id"
+    ): ShortMaxEpisodeResponse
+
+    @GET("api/shortmax/search")
+    suspend fun searchShortMax(
+        @Query("keyword") keyword: String,
+        @Query("page") page: Int = 1,
+        @Query("size") size: Int = 20,
+        @Query("lang") lang: String = "id"
+    ): ShortMaxSearchResponse
 }
