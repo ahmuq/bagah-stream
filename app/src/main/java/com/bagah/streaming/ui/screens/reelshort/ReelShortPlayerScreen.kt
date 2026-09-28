@@ -30,7 +30,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.FormatListNumbered
-import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
@@ -382,8 +381,6 @@ fun ReelShortPlayerScreen(
                     ) {
                         items((1..episodesCount).toList()) { epNum ->
                             val isCurrent = epNum == uiState.currentEpisode
-                            val chapter = uiState.chapters.getOrNull(epNum - 1)
-                            val isLocked = chapter?.locked == true
 
                             Box(
                                 modifier = Modifier
@@ -401,21 +398,12 @@ fun ReelShortPlayerScreen(
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
-                                if (isLocked) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Lock,
-                                        contentDescription = "Terkunci",
-                                        tint = TextMuted,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                } else {
-                                    Text(
-                                        text = "$epNum",
-                                        color = if (isCurrent) AccentBlack else TextPrimary,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
+                                Text(
+                                    text = "$epNum",
+                                    color = if (isCurrent) AccentBlack else TextPrimary,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
                         }
                     }

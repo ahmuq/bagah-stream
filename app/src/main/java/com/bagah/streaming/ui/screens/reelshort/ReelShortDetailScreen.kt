@@ -26,7 +26,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -298,21 +297,12 @@ fun ReelShortDetailScreen(
                                         .border(0.5.dp, CardBorderDark, CircleShape),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    if (chapter.locked) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Lock,
-                                            contentDescription = "Terkunci",
-                                            tint = TextMuted,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    } else {
-                                        Icon(
-                                            imageVector = Icons.Rounded.PlayArrow,
-                                            contentDescription = "Putar",
-                                            tint = AccentWhite,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                    }
+                                    Icon(
+                                        imageVector = Icons.Rounded.PlayArrow,
+                                        contentDescription = "Putar",
+                                        tint = AccentWhite,
+                                        modifier = Modifier.size(18.dp)
+                                    )
                                 }
 
                                 Column {
@@ -321,12 +311,6 @@ fun ReelShortDetailScreen(
                                         color = TextPrimary,
                                         fontSize = 13.sp,
                                         fontWeight = FontWeight.SemiBold
-                                    )
-                                    Text(
-                                        text = if (chapter.locked) "Episode VIP" else "Gratis Tersedia",
-                                        color = if (chapter.locked) TextMuted else Color(0xFF4CAF50),
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Medium
                                     )
                                 }
                             }
