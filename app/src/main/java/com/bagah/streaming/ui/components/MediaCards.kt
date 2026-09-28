@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -42,6 +43,7 @@ import com.bagah.streaming.ui.theme.BorderSubtle
 import com.bagah.streaming.ui.theme.CardBorderDark
 import com.bagah.streaming.ui.theme.SurfaceCard
 import com.bagah.streaming.ui.theme.SurfaceDark
+import com.bagah.streaming.ui.theme.SurfaceElevated
 import com.bagah.streaming.ui.theme.TextMuted
 import com.bagah.streaming.ui.theme.TextPrimary
 import com.bagah.streaming.ui.theme.TextSecondary
@@ -304,12 +306,48 @@ fun ReelShortCard(
                     .background(SurfaceCard)
                     .border(1.dp, BorderSubtle, RoundedCornerShape(12.dp))
             ) {
-                AsyncImage(
-                    model = book.book_pic,
-                    contentDescription = book.book_title,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxSize()
-                )
+                if (book.book_pic.isNotBlank()) {
+                    AsyncImage(
+                        model = book.book_pic,
+                        contentDescription = book.book_title,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    colors = listOf(
+                                        SurfaceElevated,
+                                        SurfaceDark
+                                    )
+                                )
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.PlayCircle,
+                                contentDescription = null,
+                                tint = AccentWhite.copy(alpha = 0.4f),
+                                modifier = Modifier.size(36.dp)
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = "REELSHORT",
+                                color = TextMuted,
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 1.sp
+                            )
+                        }
+                    }
+                }
 
                 if (book.chapter_count != null && book.chapter_count > 0) {
                     Box(
