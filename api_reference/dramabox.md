@@ -29,6 +29,28 @@ Prefix **wajib** `api/` (bukan `api/v1/`).
 
 Client memakai infinite scroll dan berhenti otomatis bila halaman kosong / isinya tidak ada yang baru.
 
+## Catatan cacat data
+
+`dramabox/home` menyertakan **satu item rusak di setiap halaman** — `series_id`, `title`, dan
+`cover` kosong, hanya `views` yang terisi:
+
+```json
+{
+  "series_id": "",
+  "title": "",
+  "description": "",
+  "cover": "",
+  "total_episodes": 0,
+  "views": "7.1K",
+  "category": null,
+  "is_complete": false
+}
+```
+
+Item ini harus dibuang sebelum dirender. Kalau tidak, ia muncul sebagai kartu kosong dan saat
+ditap mengirim `dramabox/episodes?bookId=` (kosong) yang dibalas **HTTP 400**.
+App memfilternya di `DramaRepositoryImpl` (`bookId.isNotBlank()`).
+
 ## Contoh Response
 
 ### `dramabox/home` / `foryou` / `categories`

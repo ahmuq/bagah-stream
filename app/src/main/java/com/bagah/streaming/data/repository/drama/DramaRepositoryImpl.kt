@@ -14,16 +14,20 @@ class DramaRepositoryImpl(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : DramaRepository {
 
+    // API dramabox/home menyertakan satu item rusak per halaman (series_id kosong).
+    // Dibuang di sini supaya tidak dirender jadi kartu kosong yang memicu 400 saat ditap.
+    private fun List<DramaItem>.validItems(): List<DramaItem> = filter { it.bookId.isNotBlank() }
+
     override suspend fun getHome(page: Int): Result<List<DramaItem>> = withContext(ioDispatcher) {
-        runCatching { api.getDramaHome(page).items }
+        runCatching { api.getDramaHome(page).items.validItems() }
     }
 
     override suspend fun getForYou(page: Int): Result<List<DramaItem>> = withContext(ioDispatcher) {
-        runCatching { api.getDramaForYou(page).items }
+        runCatching { api.getDramaForYou(page).items.validItems() }
     }
 
     override suspend fun getCategories(): Result<List<DramaItem>> = withContext(ioDispatcher) {
-        runCatching { api.getDramaCategories().items }
+        runCatching { api.getDramaCategories().items.validItems() }
     }
 
     override suspend fun getEpisodes(bookId: String): Result<List<DramaEpisode>> = withContext(ioDispatcher) {

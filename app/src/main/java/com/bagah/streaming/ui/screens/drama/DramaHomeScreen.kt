@@ -223,7 +223,7 @@ fun DramaHomeScreen(
                     items(uiState.dramaList, key = { it.bookId }) { drama ->
                         DramaCard(
                             drama = drama,
-                            onClick = { onDramaClick(drama.bookId) },
+                            onClick = { if (drama.bookId.isNotBlank()) onDramaClick(drama.bookId) },
                             modifier = Modifier.fillMaxWidth()
                         )
                     }

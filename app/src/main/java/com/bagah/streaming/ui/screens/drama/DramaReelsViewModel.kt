@@ -31,6 +31,12 @@ class DramaReelsViewModel(
     }
 
     fun loadEpisodes() {
+        if (bookId.isBlank()) {
+            _uiState.update {
+                it.copy(isLoading = false, errorMessage = "Drama tidak valid")
+            }
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             val result = repository.getEpisodes(bookId)
@@ -46,8 +52,12 @@ class DramaReelsViewModel(
      * Mengambil URL stream dan kunci AES per-episode saat dibutuhkan, bukan sekaligus,
      * supaya membuka satu episode tidak memicu puluhan request.
      */
-    suspend fun getStream(episode: Int): Result<com.bagah.streaming.data.model.DramaEpisodeResponse> =
-        repository.getEpisodeStream(bookId, episode)
+    suspend fun getStream(episode: Int): Result<com.bagah.streaming.data.model.DramaEpisodeResponse> {
+        if (bookId.isBlank()) {
+            return Result.failure(IllegalStateException("Drama tidak valid"))
+        }
+        return repository.getEpisodeStream(bookId, episode)
+    }
 
     class Factory(private val bookId: String) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
