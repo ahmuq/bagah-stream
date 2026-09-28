@@ -1,0 +1,353 @@
+package com.bagah.streaming.ui.screens.reelshort
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import com.bagah.streaming.ui.theme.AccentBlack
+import com.bagah.streaming.ui.theme.AccentWhite
+import com.bagah.streaming.ui.theme.BgBlack
+import com.bagah.streaming.ui.theme.BorderSubtle
+import com.bagah.streaming.ui.theme.CardBorderDark
+import com.bagah.streaming.ui.theme.SurfaceCard
+import com.bagah.streaming.ui.theme.SurfaceDark
+import com.bagah.streaming.ui.theme.TextMuted
+import com.bagah.streaming.ui.theme.TextPrimary
+import com.bagah.streaming.ui.theme.TextSecondary
+
+@Composable
+fun ReelShortDetailScreen(
+    bookId: String,
+    viewModel: ReelShortDetailViewModel = viewModel(),
+    onBackClick: () -> Unit,
+    onPlayEpisode: (bookId: String, episodeIndex: Int) -> Unit
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(bookId) {
+        viewModel.loadDetail(bookId)
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BgBlack)
+    ) {
+        if (uiState.isLoading) {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                CircularProgressIndicator(
+                    color = AccentWhite,
+                    strokeWidth = 2.dp,
+                    modifier = Modifier.size(36.dp)
+                )
+                Spacer(modifier = Modifier.height(14.dp))
+                Text(text = "Memuat detail serial...", color = TextSecondary, fontSize = 13.sp)
+            }
+        } else if (uiState.errorMessage != null && uiState.detail == null) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(text = uiState.errorMessage ?: "", color = TextSecondary, fontSize = 14.sp)
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { viewModel.loadDetail(bookId) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = AccentWhite,
+                        contentColor = AccentBlack
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(text = "Coba Lagi", fontWeight = FontWeight.SemiBold)
+                }
+            }
+        } else {
+            val detail = uiState.detail
+            if (detail != null) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 90.dp)
+                ) {
+                    // Header Bar
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .statusBarsPadding()
+                                .padding(horizontal = 16.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconButton(
+                                onClick = onBackClick,
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .background(SurfaceDark, CircleShape)
+                                    .border(1.dp, BorderSubtle, CircleShape)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                                    contentDescription = "Kembali",
+                                    tint = AccentWhite,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(
+                                text = "Detail Serial ReelShort",
+                                color = TextPrimary,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    // Drama Info Banner
+                    item {
+                        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(SurfaceDark, RoundedCornerShape(16.dp))
+                                    .border(1.dp, BorderSubtle, RoundedCornerShape(16.dp))
+                                    .padding(14.dp),
+                                horizontalArrangement = Arrangement.spacedBy(14.dp)
+                            ) {
+                                if (!detail.cover.isNullOrBlank()) {
+                                    AsyncImage(
+                                        model = detail.cover,
+                                        contentDescription = detail.title,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .width(90.dp)
+                                            .height(125.dp)
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(SurfaceCard)
+                                    )
+                                }
+
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = detail.title,
+                                        color = TextPrimary,
+                                        fontSize = 17.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Spacer(modifier = Modifier.height(6.dp))
+
+                                    Box(
+                                        modifier = Modifier
+                                            .background(
+                                                color = Color.Black.copy(alpha = 0.7f),
+                                                shape = RoundedCornerShape(4.dp)
+                                            )
+                                            .border(0.5.dp, CardBorderDark, RoundedCornerShape(4.dp))
+                                            .padding(horizontal = 7.dp, vertical = 3.dp)
+                                    ) {
+                                        Text(
+                                            text = "${detail.totalEpisodes} Episode Lengkap",
+                                            color = AccentWhite,
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+
+                                    if (!detail.description.isNullOrBlank()) {
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text(
+                                            text = detail.description,
+                                            color = TextSecondary,
+                                            fontSize = 11.sp,
+                                            maxLines = 3,
+                                            overflow = TextOverflow.Ellipsis,
+                                            lineHeight = 15.sp
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            // Play Episode 1 Button
+                            Button(
+                                onClick = { onPlayEpisode(detail.bookId.ifBlank { bookId }, 1) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = AccentWhite,
+                                    contentColor = AccentBlack
+                                ),
+                                shape = RoundedCornerShape(10.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.PlayArrow,
+                                    contentDescription = null,
+                                    tint = AccentBlack,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Mulai Nonton Episode 1",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+
+                    // Episodes Section Header
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Daftar Episode (${detail.chapters.size})",
+                                color = TextPrimary,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "Pilih untuk Memutar",
+                                color = TextMuted,
+                                fontSize = 11.sp
+                            )
+                        }
+                    }
+
+                    // Episodes List
+                    items(detail.chapters) { chapter ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 4.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(SurfaceDark)
+                                .border(1.dp, BorderSubtle, RoundedCornerShape(10.dp))
+                                .clickable { onPlayEpisode(detail.bookId.ifBlank { bookId }, chapter.index) }
+                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(34.dp)
+                                        .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                                        .border(0.5.dp, CardBorderDark, CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    if (chapter.isLocked) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Lock,
+                                            contentDescription = "Terkunci",
+                                            tint = TextMuted,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    } else {
+                                        Icon(
+                                            imageVector = Icons.Rounded.PlayArrow,
+                                            contentDescription = "Putar",
+                                            tint = AccentWhite,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                }
+
+                                Column {
+                                    Text(
+                                        text = chapter.title.ifBlank { "Episode ${chapter.index}" },
+                                        color = TextPrimary,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                    Text(
+                                        text = if (chapter.isLocked) "Episode VIP" else "Gratis Tersedia",
+                                        color = if (chapter.isLocked) TextMuted else Color(0xFF4CAF50),
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .background(SurfaceCard, RoundedCornerShape(6.dp))
+                                    .border(0.5.dp, CardBorderDark, RoundedCornerShape(6.dp))
+                                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = "Putar",
+                                    color = AccentWhite,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

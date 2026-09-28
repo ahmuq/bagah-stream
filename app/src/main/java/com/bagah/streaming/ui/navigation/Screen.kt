@@ -28,4 +28,14 @@ sealed class Screen(val route: String) {
             return "drama_reels/$bookId/$initialIndex"
         }
     }
+
+    object ReelShortHome : Screen("reelshort_home")
+
+    object ReelShortDetail : Screen("reelshort_detail/{bookId}") {
+        fun createRoute(bookId: String): String = "reelshort_detail/$bookId"
+    }
+
+    object ReelShortPlayer : Screen("reelshort_player/{bookId}/{episodeIndex}") {
+        fun createRoute(bookId: String, episodeIndex: Int = 1): String = "reelshort_player/$bookId/$episodeIndex"
+    }
 }

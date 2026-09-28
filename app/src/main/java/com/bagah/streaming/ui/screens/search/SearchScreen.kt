@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bagah.streaming.ui.components.AnimeCard
 import com.bagah.streaming.ui.components.DramaCard
+import com.bagah.streaming.ui.components.ReelShortCard
 import com.bagah.streaming.ui.theme.AccentWhite
 import com.bagah.streaming.ui.theme.BgBlack
 import com.bagah.streaming.ui.theme.BorderSubtle
@@ -60,7 +61,8 @@ import com.bagah.streaming.ui.theme.TextSecondary
 fun SearchScreen(
     viewModel: SearchViewModel = viewModel(),
     onAnimeClick: (url: String) -> Unit,
-    onDramaClick: (bookId: String) -> Unit
+    onDramaClick: (bookId: String) -> Unit,
+    onReelShortClick: (bookId: String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
@@ -83,7 +85,11 @@ fun SearchScreen(
                     onValueChange = { viewModel.onQueryChange(it) },
                     placeholder = {
                         Text(
-                            text = if (uiState.selectedTab == 0) "Cari anime..." else "Cari judul short drama...",
+                            text = when (uiState.selectedTab) {
+                                0 -> "Cari anime..."
+                                1 -> "Cari short drama..."
+                                else -> "Cari ReelShort..."
+                            },
                             color = TextMuted,
                             fontSize = 14.sp
                         )
@@ -170,6 +176,17 @@ fun SearchScreen(
                         )
                     }
                 )
+                Tab(
+                    selected = uiState.selectedTab == 2,
+                    onClick = { viewModel.onTabSelect(2) },
+                    text = {
+                        Text(
+                            text = "ReelShort",
+                            color = if (uiState.selectedTab == 2) TextPrimary else TextMuted,
+                            fontWeight = if (uiState.selectedTab == 2) FontWeight.Bold else FontWeight.Medium
+                        )
+                    }
+                )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -184,37 +201,58 @@ fun SearchScreen(
                     )
                 }
             } else if (uiState.hasSearched) {
-                if (uiState.selectedTab == 0) {
-                    if (uiState.animeResults.isEmpty()) {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text(text = "Tidak ada anime yang cocok dengan \"${uiState.query}\"", color = TextMuted, fontSize = 13.sp)
-                        }
-                    } else {
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(3),
-                            contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 90.dp),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            verticalArrangement = Arrangement.spacedBy(14.dp)
-                        ) {
-                            items(uiState.animeResults) { anime ->
-                                AnimeCard(anime = anime, onClick = { onAnimeClick(anime.url) })
+                when (uiState.selectedTab) {
+                    0 -> {
+                        if (uiState.animeResults.isEmpty()) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text(text = "Tidak ada anime yang cocok dengan \"${uiState.query}\"", color = TextMuted, fontSize = 13.sp)
+                            }
+                        } else {
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(3),
+                                contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 90.dp),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(14.dp)
+                            ) {
+                                items(uiState.animeResults) { anime ->
+                                    AnimeCard(anime = anime, onClick = { onAnimeClick(anime.url) })
+                                }
                             }
                         }
                     }
-                } else {
-                    if (uiState.dramaResults.isEmpty()) {
-                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text(text = "Tidak ada drama yang cocok dengan \"${uiState.query}\"", color = TextMuted, fontSize = 13.sp)
+                    1 -> {
+                        if (uiState.dramaResults.isEmpty()) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text(text = "Tidak ada drama yang cocok dengan \"${uiState.query}\"", color = TextMuted, fontSize = 13.sp)
+                            }
+                        } else {
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(2),
+                                contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 90.dp),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(14.dp)
+                            ) {
+                                items(uiState.dramaResults) { drama ->
+                                    DramaCard(drama = drama, onClick = { onDramaClick(drama.bookId) })
+                                }
+                            }
                         }
-                    } else {
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(2),
-                            contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 90.dp),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(14.dp)
-                        ) {
-                            items(uiState.dramaResults) { drama ->
-                                DramaCard(drama = drama, onClick = { onDramaClick(drama.bookId) })
+                    }
+                    else -> {
+                        if (uiState.reelShortResults.isEmpty()) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text(text = "Tidak ada ReelShort yang cocok dengan \"${uiState.query}\"", color = TextMuted, fontSize = 13.sp)
+                            }
+                        } else {
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(3),
+                                contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 90.dp),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(14.dp)
+                            ) {
+                                items(uiState.reelShortResults) { book ->
+                                    ReelShortCard(book = book, onClick = { onReelShortClick(book.book_id) })
+                                }
                             }
                         }
                     }

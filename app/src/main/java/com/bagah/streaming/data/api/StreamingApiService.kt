@@ -8,6 +8,11 @@ import com.bagah.streaming.data.model.AnimeScheduleDataWrapper
 import com.bagah.streaming.data.model.DramaApiResponse
 import com.bagah.streaming.data.model.DramaChapter
 import com.bagah.streaming.data.model.DramaItem
+import com.bagah.streaming.data.model.ReelShortDetailResponse
+import com.bagah.streaming.data.model.ReelShortEpisodeResponse
+import com.bagah.streaming.data.model.ReelShortForYouResponse
+import com.bagah.streaming.data.model.ReelShortHomepageResponse
+import com.bagah.streaming.data.model.ReelShortSearchResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -76,4 +81,38 @@ interface StreamingApiService {
         @Query("bookId") bookId: String,
         @Query("getAll") getAll: Boolean = true
     ): DramaApiResponse<List<DramaChapter>>
+
+    // --- REELSHORT ENDPOINTS ---
+
+    @GET("api/reelshort/homepage")
+    suspend fun getReelShortHomepage(
+        @Query("page") page: Int = 1,
+        @Query("lang") lang: String = "id"
+    ): ReelShortHomepageResponse
+
+    @GET("api/reelshort/foryou")
+    suspend fun getReelShortForYou(
+        @Query("page") page: Int = 1,
+        @Query("lang") lang: String = "id"
+    ): ReelShortForYouResponse
+
+    @GET("api/reelshort/detail")
+    suspend fun getReelShortDetail(
+        @Query("bookId") bookId: String,
+        @Query("lang") lang: String = "id"
+    ): ReelShortDetailResponse
+
+    @GET("api/reelshort/episode")
+    suspend fun getReelShortEpisode(
+        @Query("bookId") bookId: String,
+        @Query("episode") episode: Int,
+        @Query("lang") lang: String = "id"
+    ): ReelShortEpisodeResponse
+
+    @GET("api/reelshort/search")
+    suspend fun searchReelShort(
+        @Query("keyword") keyword: String,
+        @Query("page") page: Int = 1,
+        @Query("lang") lang: String = "id"
+    ): ReelShortSearchResponse
 }

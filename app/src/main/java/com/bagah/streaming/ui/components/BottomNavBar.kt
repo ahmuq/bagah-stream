@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Movie
+import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.VideoLibrary
 import androidx.compose.material3.Icon
@@ -58,9 +59,10 @@ fun BagahBottomNavBar(
     onNavigate: (String) -> Unit
 ) {
     val items = listOf(
-        NavItem("Anime Play", Screen.AnimeHome.route, Icons.Rounded.Movie),
-        NavItem("Drama Box", Screen.DramaHome.route, Icons.Rounded.VideoLibrary),
-        NavItem("Pencarian", Screen.Search.route, Icons.Rounded.Search)
+        NavItem("Anime", Screen.AnimeHome.route, Icons.Rounded.Movie),
+        NavItem("DramaBox", Screen.DramaHome.route, Icons.Rounded.VideoLibrary),
+        NavItem("ReelShort", Screen.ReelShortHome.route, Icons.Rounded.PlayCircle),
+        NavItem("Cari", Screen.Search.route, Icons.Rounded.Search)
     )
 
     Box(
@@ -131,7 +133,7 @@ fun BagahBottomNavBar(
                                 color = if (isSelected) CardBorderDark else Color.Transparent,
                                 shape = RoundedCornerShape(16.dp)
                             )
-                            .padding(horizontal = 18.dp, vertical = 8.dp)
+                            .padding(horizontal = 14.dp, vertical = 7.dp)
                     ) {
                         Icon(
                             imageVector = item.icon,
