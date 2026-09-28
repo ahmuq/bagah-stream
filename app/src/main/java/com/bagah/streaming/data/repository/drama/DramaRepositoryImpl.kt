@@ -14,12 +14,12 @@ class DramaRepositoryImpl(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : DramaRepository {
 
-    override suspend fun getHome(): Result<List<DramaItem>> = withContext(ioDispatcher) {
-        runCatching { api.getDramaHome().items }
+    override suspend fun getHome(page: Int): Result<List<DramaItem>> = withContext(ioDispatcher) {
+        runCatching { api.getDramaHome(page).items }
     }
 
-    override suspend fun getForYou(): Result<List<DramaItem>> = withContext(ioDispatcher) {
-        runCatching { api.getDramaForYou().items }
+    override suspend fun getForYou(page: Int): Result<List<DramaItem>> = withContext(ioDispatcher) {
+        runCatching { api.getDramaForYou(page).items }
     }
 
     override suspend fun getCategories(): Result<List<DramaItem>> = withContext(ioDispatcher) {
@@ -37,7 +37,7 @@ class DramaRepositoryImpl(
         runCatching { api.getDramaEpisodeStream(bookId, episode) }
     }
 
-    override suspend fun search(keyword: String): Result<List<DramaItem>> = withContext(ioDispatcher) {
-        runCatching { api.searchDrama(keyword).items }
+    override suspend fun search(keyword: String, page: Int): Result<List<DramaItem>> = withContext(ioDispatcher) {
+        runCatching { api.searchDrama(keyword, page).items }
     }
 }

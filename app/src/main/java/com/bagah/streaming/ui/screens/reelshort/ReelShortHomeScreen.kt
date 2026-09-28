@@ -25,6 +25,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -44,8 +45,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -121,8 +124,23 @@ fun ReelShortHomeScreen(
                 }
             }
         } else {
+            val gridState = rememberLazyGridState()
+
+            // Muat halaman berikutnya saat user mendekati ujung bawah daftar.
+            LaunchedEffect(gridState, uiState.selectedTab) {
+                snapshotFlow {
+                    gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+                }.collect { lastVisible ->
+                    val total = gridState.layoutInfo.totalItemsCount
+                    if (total > 0 && lastVisible >= total - 4) {
+                        viewModel.loadMore()
+                    }
+                }
+            }
+
             LazyVerticalGrid(
                 columns = GridCells.Fixed(3),
+                state = gridState,
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 90.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp),
@@ -410,12 +428,29 @@ fun ReelShortHomeScreen(
 
                 // 5. Grid of Books
                 val books = uiState.currentDisplayList
-                items(books) { book ->
+                items(books, key = { it.id }) { book ->
                     ReelShortCard(
                         book = book,
                         onClick = { onBookClick(book.id) },
                         modifier = Modifier.fillMaxWidth()
                     )
+                }
+
+                if (uiState.isLoadingMore) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                color = AccentWhite,
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(26.dp)
+                            )
+                        }
+                    }
                 }
             }
         }

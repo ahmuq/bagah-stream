@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 
 data class ReelShortHomeUiState(
     val isLoading: Boolean = true,
+    val isLoadingMore: Boolean = false,
     val selectedTab: String = "POPULER",
     val tabs: List<String> = listOf("POPULER", "UNTUK ANDA", "TERBARU", "RANKING"),
     val spotlightBooks: List<ReelShortBook> = emptyList(),
@@ -22,6 +23,8 @@ data class ReelShortHomeUiState(
     val rankingBooks: List<ReelShortBook> = emptyList(),
     val forYouBooks: List<ReelShortBook> = emptyList(),
     val allBooks: List<ReelShortBook> = emptyList(),
+    val forYouPage: Int = 1,
+    val endReached: Boolean = false,
     val errorMessage: String? = null
 ) {
     val currentDisplayList: List<ReelShortBook>
@@ -32,6 +35,10 @@ data class ReelShortHomeUiState(
             "TERBARU" -> latestBooks
             else -> popularBooks
         }
+
+    /** Hanya tab yang endpoint-nya mendukung param page yang bisa dimuat lagi. */
+    val canLoadMore: Boolean
+        get() = selectedTab == "UNTUK ANDA" && !endReached
 }
 
 class ReelShortHomeViewModel(
@@ -47,6 +54,40 @@ class ReelShortHomeViewModel(
 
     fun selectTab(tab: String) {
         _uiState.update { it.copy(selectedTab = tab) }
+    }
+
+    /**
+     * Dipanggil saat daftar tab aktif di-scroll mendekati bawah.
+     * Hanya tab "UNTUK ANDA" yang endpoint-nya menerapkan param page.
+     */
+    fun loadMore() {
+        val state = _uiState.value
+        if (state.isLoading || state.isLoadingMore) return
+        if (!state.canLoadMore) return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingMore = true) }
+            val nextPage = state.forYouPage + 1
+            repository.getForYou(nextPage)
+                .onSuccess { list ->
+                    val existing = _uiState.value.forYouBooks.map { it.id }.toSet()
+                    val fresh = list.filterNot { it.id in existing }
+                    _uiState.update {
+                        it.copy(
+                            isLoadingMore = false,
+                            forYouBooks = it.forYouBooks + fresh,
+                            allBooks = it.allBooks + fresh.filterNot { b -> b.id in it.allBooks.map { x -> x.id }.toSet() },
+                            forYouPage = nextPage,
+                            // Berhenti jika halaman kosong atau tidak ada item baru
+                            // (endpoint ini bisa mengulang halaman yang sama).
+                            endReached = list.isEmpty() || fresh.isEmpty()
+                        )
+                    }
+                }
+                .onFailure {
+                    _uiState.update { it.copy(isLoadingMore = false, endReached = true) }
+                }
+        }
     }
 
     fun loadData() {

@@ -18,6 +18,17 @@ Prefix **wajib** `api/` (bukan `api/v1/`).
 
 `lang` = `in` (Indonesia) / `en`.
 
+## Pagination
+
+| Endpoint              | `page` didukung?                                          |
+| --------------------- | --------------------------------------------------------- |
+| `dramabox/home`       | ✅ (halaman bergeser; page terlalu tinggi bisa mengulang) |
+| `dramabox/foryou`     | ✅                                                        |
+| `dramabox/search`     | ✅                                                        |
+| `dramabox/categories` | ❌ (tanpa param page)                                     |
+
+Client memakai infinite scroll dan berhenti otomatis bila halaman kosong / isinya tidak ada yang baru.
+
 ## Contoh Response
 
 ### `dramabox/home` / `foryou` / `categories`

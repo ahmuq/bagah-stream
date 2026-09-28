@@ -24,9 +24,16 @@ data class SearchUiState(
     val dramaResults: List<DramaItem> = emptyList(),
     val reelShortResults: List<ReelShortBook> = emptyList(),
     val isSearching: Boolean = false,
+    val isLoadingMore: Boolean = false,
     val hasSearched: Boolean = false,
+    val page: Int = 1,
+    val endReached: Boolean = false,
     val errorMessage: String? = null
-)
+) {
+    /** Anime search tidak punya param page di API. */
+    val canLoadMore: Boolean
+        get() = selectedTab != 0 && !endReached
+}
 
 class SearchViewModel(
     private val animeRepo: AnimeRepository = AnimeRepositoryImpl(),
@@ -53,32 +60,94 @@ class SearchViewModel(
         if (q.isBlank()) return
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isSearching = true, hasSearched = true, errorMessage = null) }
-            when (_uiState.value.selectedTab) {
+            _uiState.update {
+                it.copy(
+                    isSearching = true,
+                    isLoadingMore = false,
+                    hasSearched = true,
+                    errorMessage = null,
+                    page = 1,
+                    endReached = false
+                )
+            }
+            val tab = _uiState.value.selectedTab
+            when (tab) {
                 0 -> {
-                    val res = animeRepo.search(q)
-                    res.onSuccess { list ->
-                        _uiState.update { it.copy(isSearching = false, animeResults = list) }
-                    }.onFailure { err ->
-                        _uiState.update { it.copy(isSearching = false, errorMessage = err.localizedMessage) }
-                    }
+                    // Anime: satu request, tanpa pagination.
+                    animeRepo.search(q)
+                        .onSuccess { list ->
+                            _uiState.update {
+                                it.copy(isSearching = false, animeResults = list, endReached = true)
+                            }
+                        }
+                        .onFailure { err ->
+                            _uiState.update { it.copy(isSearching = false, errorMessage = err.localizedMessage) }
+                        }
                 }
                 1 -> {
-                    val res = dramaRepo.search(q)
-                    res.onSuccess { list ->
-                        _uiState.update { it.copy(isSearching = false, dramaResults = list) }
-                    }.onFailure { err ->
-                        _uiState.update { it.copy(isSearching = false, errorMessage = err.localizedMessage) }
-                    }
+                    dramaRepo.search(q, 1)
+                        .onSuccess { list ->
+                            _uiState.update {
+                                it.copy(isSearching = false, dramaResults = list, page = 1, endReached = list.isEmpty())
+                            }
+                        }
+                        .onFailure { err ->
+                            _uiState.update { it.copy(isSearching = false, errorMessage = err.localizedMessage) }
+                        }
                 }
                 2 -> {
-                    val res = reelShortRepo.search(q)
-                    res.onSuccess { list ->
-                        _uiState.update { it.copy(isSearching = false, reelShortResults = list) }
-                    }.onFailure { err ->
-                        _uiState.update { it.copy(isSearching = false, errorMessage = err.localizedMessage) }
-                    }
+                    reelShortRepo.search(q, 1)
+                        .onSuccess { list ->
+                            _uiState.update {
+                                it.copy(isSearching = false, reelShortResults = list, page = 1, endReached = list.isEmpty())
+                            }
+                        }
+                        .onFailure { err ->
+                            _uiState.update { it.copy(isSearching = false, errorMessage = err.localizedMessage) }
+                        }
                 }
+            }
+        }
+    }
+
+    /** Dipanggil saat hasil pencarian di-scroll mendekati bawah. */
+    fun loadMore() {
+        val state = _uiState.value
+        if (state.isSearching || state.isLoadingMore || !state.canLoadMore) return
+        val q = state.query.trim()
+        if (q.isBlank()) return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingMore = true) }
+            val nextPage = state.page + 1
+            when (state.selectedTab) {
+                1 -> dramaRepo.search(q, nextPage).onSuccess { list ->
+                    val existing = _uiState.value.dramaResults.map { it.bookId }.toSet()
+                    val fresh = list.filterNot { it.bookId in existing }
+                    _uiState.update {
+                        it.copy(
+                            isLoadingMore = false,
+                            dramaResults = it.dramaResults + fresh,
+                            page = nextPage,
+                            endReached = list.isEmpty() || fresh.isEmpty()
+                        )
+                    }
+                }.onFailure { _uiState.update { it.copy(isLoadingMore = false, endReached = true) } }
+
+                2 -> reelShortRepo.search(q, nextPage).onSuccess { list ->
+                    val existing = _uiState.value.reelShortResults.map { it.id }.toSet()
+                    val fresh = list.filterNot { it.id in existing }
+                    _uiState.update {
+                        it.copy(
+                            isLoadingMore = false,
+                            reelShortResults = it.reelShortResults + fresh,
+                            page = nextPage,
+                            endReached = list.isEmpty() || fresh.isEmpty()
+                        )
+                    }
+                }.onFailure { _uiState.update { it.copy(isLoadingMore = false, endReached = true) } }
+
+                else -> _uiState.update { it.copy(isLoadingMore = false, endReached = true) }
             }
         }
     }

@@ -5,10 +5,10 @@ import com.bagah.streaming.data.model.DramaEpisodeResponse
 import com.bagah.streaming.data.model.DramaItem
 
 interface DramaRepository {
-    suspend fun getHome(): Result<List<DramaItem>>
-    suspend fun getForYou(): Result<List<DramaItem>>
+    suspend fun getHome(page: Int = 1): Result<List<DramaItem>>
+    suspend fun getForYou(page: Int = 1): Result<List<DramaItem>>
     suspend fun getCategories(): Result<List<DramaItem>>
     suspend fun getEpisodes(bookId: String): Result<List<DramaEpisode>>
     suspend fun getEpisodeStream(bookId: String, episode: Int): Result<DramaEpisodeResponse>
-    suspend fun search(keyword: String): Result<List<DramaItem>>
+    suspend fun search(keyword: String, page: Int = 1): Result<List<DramaItem>>
 }

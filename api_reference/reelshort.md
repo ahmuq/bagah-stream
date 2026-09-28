@@ -20,6 +20,16 @@ Prefix **wajib** `api/` (bukan `api/v1/`).
 
 `lang` = `id` (Indonesia) / `en`.
 
+## Pagination
+
+| Endpoint                                               | `page` didukung?                                                        |
+| ------------------------------------------------------ | ----------------------------------------------------------------------- |
+| `reelshort/search`                                     | ✅                                                                      |
+| `reelshort/foryou`                                     | ⚠️ param diterima tapi mengulang isi halaman — client berhenti otomatis |
+| `reelshort/homepage`, `trending`, `latest`, `rankings` | ❌ (tanpa param page)                                                   |
+
+Client memakai infinite scroll dan berhenti otomatis bila halaman kosong / isinya tidak ada yang baru.
+
 ## Contoh Response
 
 ### `reelshort/trending` / `latest` / `foryou`

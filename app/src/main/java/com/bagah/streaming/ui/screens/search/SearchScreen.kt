@@ -14,8 +14,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -33,8 +35,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -203,6 +207,34 @@ fun SearchScreen(
                     )
                 }
             } else if (uiState.hasSearched) {
+                val gridState = rememberLazyGridState()
+                LaunchedEffect(gridState, uiState.selectedTab, uiState.page) {
+                    snapshotFlow {
+                        gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+                    }.collect { lastVisible ->
+                        val total = gridState.layoutInfo.totalItemsCount
+                        if (total > 0 && lastVisible >= total - 4) {
+                            viewModel.loadMore()
+                        }
+                    }
+                }
+                val loadMoreFooter: @Composable () -> Unit = {
+                    if (uiState.isLoadingMore) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                color = AccentWhite,
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(26.dp)
+                            )
+                        }
+                    }
+                }
+
                 when (uiState.selectedTab) {
                     0 -> {
                         if (uiState.animeResults.isEmpty()) {
@@ -212,11 +244,12 @@ fun SearchScreen(
                         } else {
                             LazyVerticalGrid(
                                 columns = GridCells.Fixed(3),
+                                state = gridState,
                                 contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 90.dp),
                                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                                 verticalArrangement = Arrangement.spacedBy(14.dp)
                             ) {
-                                items(uiState.animeResults) { anime ->
+                                items(uiState.animeResults, key = { it.url }) { anime ->
                                     AnimeCard(anime = anime, onClick = { onAnimeClick(anime.url) })
                                 }
                             }
@@ -230,13 +263,15 @@ fun SearchScreen(
                         } else {
                             LazyVerticalGrid(
                                 columns = GridCells.Fixed(2),
+                                state = gridState,
                                 contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 90.dp),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                                 verticalArrangement = Arrangement.spacedBy(14.dp)
                             ) {
-                                items(uiState.dramaResults) { drama ->
+                                items(uiState.dramaResults, key = { it.bookId }) { drama ->
                                     DramaCard(drama = drama, onClick = { onDramaClick(drama.bookId) })
                                 }
+                                item(span = { GridItemSpan(maxLineSpan) }) { loadMoreFooter() }
                             }
                         }
                     }
@@ -248,13 +283,15 @@ fun SearchScreen(
                         } else {
                             LazyVerticalGrid(
                                 columns = GridCells.Fixed(3),
+                                state = gridState,
                                 contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 90.dp),
                                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                                 verticalArrangement = Arrangement.spacedBy(14.dp)
                             ) {
-                                items(uiState.reelShortResults) { book ->
+                                items(uiState.reelShortResults, key = { it.id }) { book ->
                                     ReelShortCard(book = book, onClick = { onReelShortClick(book.id) })
                                 }
+                                item(span = { GridItemSpan(maxLineSpan) }) { loadMoreFooter() }
                             }
                         }
                     }
