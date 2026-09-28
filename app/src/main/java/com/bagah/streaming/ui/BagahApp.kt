@@ -1,11 +1,18 @@
 package com.bagah.streaming.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -21,6 +28,7 @@ import com.bagah.streaming.ui.screens.anime.AnimePlayerScreen
 import com.bagah.streaming.ui.screens.drama.DramaHomeScreen
 import com.bagah.streaming.ui.screens.drama.DramaReelsPlayerScreen
 import com.bagah.streaming.ui.screens.search.SearchScreen
+import com.bagah.streaming.ui.screens.splash.SplashPopUpIntro
 import com.bagah.streaming.ui.theme.BgBlack
 
 @Composable
@@ -28,6 +36,7 @@ fun BagahApp() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    var showSplash by rememberSaveable { mutableStateOf(true) }
 
     // Show BottomBar only on top-level tabs
     val showBottomBar = currentRoute in listOf(
@@ -36,10 +45,10 @@ fun BagahApp() {
         Screen.Search.route
     )
 
-    Scaffold(
-        containerColor = BgBlack,
-
-        bottomBar = {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            containerColor = BgBlack,
+            bottomBar = {
             if (showBottomBar) {
                 BagahBottomNavBar(
                     currentRoute = currentRoute,
@@ -152,4 +161,15 @@ fun BagahApp() {
             }
         }
     }
+
+    AnimatedVisibility(
+        visible = showSplash,
+        enter = fadeIn(animationSpec = tween(150)),
+        exit = fadeOut(animationSpec = tween(400))
+    ) {
+        SplashPopUpIntro(
+            onAnimationFinished = { showSplash = false }
+        )
+    }
+}
 }
