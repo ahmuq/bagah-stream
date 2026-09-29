@@ -5,16 +5,15 @@ import com.bagah.streaming.data.model.AnimeDetailWrapper
 import com.bagah.streaming.data.model.AnimeEpisodeData
 import com.bagah.streaming.data.model.AnimeItem
 import com.bagah.streaming.data.model.AnimeScheduleDataWrapper
+import com.bagah.streaming.data.model.DramaBrowseResponse
 import com.bagah.streaming.data.model.DramaDetailResponse
 import com.bagah.streaming.data.model.DramaEpisodeResponse
-import com.bagah.streaming.data.model.DramaEpisodesResponse
-import com.bagah.streaming.data.model.DramaHomeResponse
+import com.bagah.streaming.data.model.DramaSearchResponse
 import com.bagah.streaming.data.model.DramaNovaDetailResponse
 import com.bagah.streaming.data.model.DramaNovaEpisodeResponse
 import com.bagah.streaming.data.model.DramaNovaEpisodesResponse
 import com.bagah.streaming.data.model.DramaNovaHomeResponse
 import com.bagah.streaming.data.model.DramaNovaListResponse
-import com.bagah.streaming.data.model.DramaSearchResponse
 import com.bagah.streaming.data.model.MeloloDetailResponse
 import com.bagah.streaming.data.model.MeloloEpisodeResponse
 import com.bagah.streaming.data.model.MeloloEpisodesResponse
@@ -22,26 +21,20 @@ import com.bagah.streaming.data.model.MeloloListResponse
 import com.bagah.streaming.data.model.MeloloSearchResponse
 import com.bagah.streaming.data.model.PineDramaCollectionsResponse
 import com.bagah.streaming.data.model.PineDramaDetailResponse
+import com.bagah.streaming.data.model.FlickReelsBrowseResponse
 import com.bagah.streaming.data.model.FlickReelsDetailResponse
 import com.bagah.streaming.data.model.FlickReelsEpisodeResponse
-import com.bagah.streaming.data.model.FlickReelsEpisodesResponse
-import com.bagah.streaming.data.model.FlickReelsListResponse
 import com.bagah.streaming.data.model.FlickReelsSearchResponse
+import com.bagah.streaming.data.model.FreeReelsBrowseResponse
 import com.bagah.streaming.data.model.FreeReelsDetailResponse
 import com.bagah.streaming.data.model.FreeReelsEpisodeResponse
-import com.bagah.streaming.data.model.FreeReelsEpisodesResponse
-import com.bagah.streaming.data.model.FreeReelsForYouResponse
 import com.bagah.streaming.data.model.FreeReelsSearchResponse
-import com.bagah.streaming.data.model.FreeReelsSectionResponse
+import com.bagah.streaming.data.model.ReelShortBrowseResponse
 import com.bagah.streaming.data.model.ReelShortDetailResponse
 import com.bagah.streaming.data.model.ReelShortEpisodeResponse
-import com.bagah.streaming.data.model.ReelShortEpisodesResponse
-import com.bagah.streaming.data.model.ReelShortHomepageResponse
 import com.bagah.streaming.data.model.ReelShortSearchResponse
-import com.bagah.streaming.data.model.ReelShortTrendingResponse
 import com.bagah.streaming.data.model.ShortMaxDetailResponse
 import com.bagah.streaming.data.model.ShortMaxEpisodeResponse
-import com.bagah.streaming.data.model.ShortMaxEpisodesResponse
 import com.bagah.streaming.data.model.ShortMaxListResponse
 import com.bagah.streaming.data.model.ShortMaxSearchResponse
 import retrofit2.http.GET
@@ -89,42 +82,29 @@ interface StreamingApiService {
 
 
     // --- DRAMABOX ENDPOINTS ---
+    // Satu endpoint `browse` menggantikan home/foryou/categories/ranking.
+    // `type` = foryou | classify | theater | ranking | reserve | filters.
 
-    @GET("api/dramabox/home")
-    suspend fun getDramaHome(
-        @Query("page") page: Int = 1,
+    @GET("api/dramabox/browse")
+    suspend fun browseDrama(
+        @Query("type") type: String = "foryou",
+        @Query("page") page: Int? = null,
+        @Query("pageSize") pageSize: Int? = null,
+        @Query("channelId") channelId: String? = null,
+        @Query("genre") genre: String? = null,
+        @Query("status") status: String? = null,
+        @Query("dub") dub: String? = null,
+        @Query("rankType") rankType: String? = null,
         @Query("lang") lang: String = "in"
-    ): DramaHomeResponse
-
-    @GET("api/dramabox/foryou")
-    suspend fun getDramaForYou(
-        @Query("page") page: Int = 1,
-        @Query("lang") lang: String = "in"
-    ): DramaHomeResponse
-
-    @GET("api/dramabox/categories")
-    suspend fun getDramaCategories(
-        @Query("lang") lang: String = "in"
-    ): DramaHomeResponse
-
-    @GET("api/dramabox/search")
-    suspend fun searchDrama(
-        @Query("keyword") keyword: String,
-        @Query("page") page: Int = 1,
-        @Query("lang") lang: String = "in"
-    ): DramaSearchResponse
+    ): DramaBrowseResponse
 
     @GET("api/dramabox/detail")
     suspend fun getDramaDetail(
         @Query("bookId") bookId: String,
+        @Query("full") full: String = "true",
+        @Query("withRecommend") withRecommend: String = "false",
         @Query("lang") lang: String = "in"
     ): DramaDetailResponse
-
-    @GET("api/dramabox/episodes")
-    suspend fun getDramaEpisodes(
-        @Query("bookId") bookId: String,
-        @Query("lang") lang: String = "in"
-    ): DramaEpisodesResponse
 
     @GET("api/dramabox/episode")
     suspend fun getDramaEpisodeStream(
@@ -133,41 +113,35 @@ interface StreamingApiService {
         @Query("lang") lang: String = "in"
     ): DramaEpisodeResponse
 
+    @GET("api/dramabox/search")
+    suspend fun searchDrama(
+        @Query("keyword") keyword: String,
+        @Query("page") page: Int = 1,
+        @Query("lang") lang: String = "in"
+    ): DramaSearchResponse
+
     // --- REELSHORT ENDPOINTS ---
+    // `type` = foryou | trending | latest | ranking | categories | waterfall | bookshelf | classify.
 
-    @GET("api/reelshort/homepage")
-    suspend fun getReelShortHomepage(
-        @Query("page") page: Int = 1,
+    @GET("api/reelshort/browse")
+    suspend fun browseReelShort(
+        @Query("type") type: String = "trending",
+        @Query("page") page: Int? = null,
+        @Query("limit") limit: Int? = null,
+        @Query("period") period: Int? = null,
+        @Query("tag") tag: String? = null,
+        @Query("genre") genre: String? = null,
+        @Query("region") region: String? = null,
+        @Query("dub") dub: String? = null,
+        @Query("lastBookId") lastBookId: String? = null,
         @Query("lang") lang: String = "id"
-    ): ReelShortHomepageResponse
-
-    @GET("api/reelshort/trending")
-    suspend fun getReelShortTrending(
-        @Query("lang") lang: String = "id"
-    ): ReelShortTrendingResponse
-
-    @GET("api/reelshort/latest")
-    suspend fun getReelShortLatest(
-        @Query("lang") lang: String = "id"
-    ): ReelShortTrendingResponse
-
-    @GET("api/reelshort/foryou")
-    suspend fun getReelShortForYou(
-        @Query("page") page: Int = 1,
-        @Query("lang") lang: String = "id"
-    ): ReelShortTrendingResponse
+    ): ReelShortBrowseResponse
 
     @GET("api/reelshort/detail")
     suspend fun getReelShortDetail(
         @Query("bookId") bookId: String,
         @Query("lang") lang: String = "id"
     ): ReelShortDetailResponse
-
-    @GET("api/reelshort/episodes")
-    suspend fun getReelShortEpisodes(
-        @Query("bookId") bookId: String,
-        @Query("lang") lang: String = "id"
-    ): ReelShortEpisodesResponse
 
     @GET("api/reelshort/episode")
     suspend fun getReelShortEpisode(
@@ -184,91 +158,60 @@ interface StreamingApiService {
     ): ReelShortSearchResponse
 
     // --- FREEREELS ENDPOINTS ---
-    // Feed memakai cursor: field `next` dari response (mis. "offset=10") dioper ke request
-    // berikutnya, bukan parameter offset manual.
+    // `browse` menggantikan foryou/trending/latest/anime/tab.
+    // `tab` = foryou | 503 (Populer) | 505 (New) | 547 (Anime) | 622 | 516 | 504 | 506.
+    // Pagination memakai cursor: kirim `cursor` dari response sebelumnya.
 
-    @GET("api/freereels/foryou")
-    suspend fun getFreeReelsForYou(
-        @Query("lang") lang: String = "id"
-    ): FreeReelsForYouResponse
-
-    @GET("api/freereels/foryou")
-    suspend fun getFreeReelsForYouNext(
-        @Query("next") next: String,
-        @Query("lang") lang: String = "id"
-    ): FreeReelsForYouResponse
-
-    @GET("api/freereels/trending")
-    suspend fun getFreeReelsTrending(
-        @Query("lang") lang: String = "id"
-    ): FreeReelsSectionResponse
-
-    @GET("api/freereels/latest")
-    suspend fun getFreeReelsLatest(
-        @Query("lang") lang: String = "id"
-    ): FreeReelsSectionResponse
-
-    @GET("api/freereels/anime")
-    suspend fun getFreeReelsAnime(
-        @Query("lang") lang: String = "id"
-    ): FreeReelsSectionResponse
-
-    @GET("api/freereels/tab")
-    suspend fun getFreeReelsTab(
-        @Query("tabKey") tabKey: String,
-        @Query("lang") lang: String = "id"
-    ): FreeReelsSectionResponse
+    @GET("api/freereels/browse")
+    suspend fun browseFreeReels(
+        @Query("tab") tab: String = "foryou",
+        @Query("cursor") cursor: String? = null,
+        @Query("lang") lang: String = "id-ID"
+    ): FreeReelsBrowseResponse
 
     @GET("api/freereels/detail")
     suspend fun getFreeReelsDetail(
         @Query("seriesId") seriesId: String,
-        @Query("lang") lang: String = "id"
+        @Query("lang") lang: String = "id-ID"
     ): FreeReelsDetailResponse
-
-    @GET("api/freereels/episodes")
-    suspend fun getFreeReelsEpisodes(
-        @Query("seriesId") seriesId: String,
-        @Query("lang") lang: String = "id"
-    ): FreeReelsEpisodesResponse
 
     @GET("api/freereels/episode")
     suspend fun getFreeReelsEpisode(
         @Query("seriesId") seriesId: String,
         @Query("episode") episode: Int,
-        @Query("lang") lang: String = "id"
+        @Query("lang") lang: String = "id-ID"
     ): FreeReelsEpisodeResponse
 
     @GET("api/freereels/search")
     suspend fun searchFreeReels(
         @Query("keyword") keyword: String,
-        @Query("lang") lang: String = "id"
+        @Query("tab") tab: String = "mix",
+        @Query("cursor") cursor: String? = null,
+        @Query("lang") lang: String = "id-ID"
     ): FreeReelsSearchResponse
 
     // --- FLICKREELS ENDPOINTS ---
-    // `foryou`, `trending`, `search` tidak menerapkan pagination (param page diabaikan
-    // oleh server), jadi hanya satu halaman yang diambil.
+    // `type` = foryou | trending | latest | ranking | categories | navigation | classify.
+    // `foryou`/`classify` memakai `nextCursor`; `trending` statis.
 
-    @GET("api/flickreels/foryou")
-    suspend fun getFlickReelsForYou(
+    @GET("api/flickreels/browse")
+    suspend fun browseFlickReels(
+        @Query("type") type: String = "trending",
+        @Query("page") page: Int? = null,
+        @Query("limit") limit: Int? = null,
+        @Query("tag") tag: String? = null,
+        @Query("channel") channel: String? = null,
+        @Query("region") region: String? = null,
+        @Query("sort") sort: String? = null,
+        @Query("cursor") cursor: String? = null,
         @Query("lang") lang: String = "id"
-    ): FlickReelsListResponse
-
-    @GET("api/flickreels/trending")
-    suspend fun getFlickReelsTrending(
-        @Query("lang") lang: String = "id"
-    ): FlickReelsListResponse
+    ): FlickReelsBrowseResponse
 
     @GET("api/flickreels/detail")
     suspend fun getFlickReelsDetail(
         @Query("seriesId") seriesId: String,
         @Query("lang") lang: String = "id"
     ): FlickReelsDetailResponse
-
-    @GET("api/flickreels/episodes")
-    suspend fun getFlickReelsEpisodes(
-        @Query("seriesId") seriesId: String,
-        @Query("lang") lang: String = "id"
-    ): FlickReelsEpisodesResponse
 
     @GET("api/flickreels/episode")
     suspend fun getFlickReelsEpisode(
@@ -280,35 +223,19 @@ interface StreamingApiService {
     @GET("api/flickreels/search")
     suspend fun searchFlickReels(
         @Query("keyword") keyword: String,
+        @Query("page") page: Int = 1,
         @Query("lang") lang: String = "id"
     ): FlickReelsSearchResponse
 
     // --- SHORTMAX ENDPOINTS ---
-    // Stream video berformat HLS dengan segmen .ts terenkripsi custom (lihat
-    // ShortMaxDecryptDataSource). `foryou` mengabaikan param page, `search` menerapkannya.
+    // `type` = trending | latest | rankings | foryou | classes | <classId> (200001..200014).
+    // Stream HLS dengan segmen .ts terenkripsi custom (lihat ShortMaxDecryptDataSource).
 
-    @GET("api/shortmax/foryou")
-    suspend fun getShortMaxForYou(
-        @Query("page") page: Int = 1,
-        @Query("size") size: Int = 20,
-        @Query("lang") lang: String = "id"
-    ): ShortMaxListResponse
-
-    @GET("api/shortmax/trending")
-    suspend fun getShortMaxTrending(
-        @Query("page") page: Int = 1,
-        @Query("lang") lang: String = "id"
-    ): ShortMaxListResponse
-
-    @GET("api/shortmax/latest")
-    suspend fun getShortMaxLatest(
-        @Query("page") page: Int = 1,
-        @Query("lang") lang: String = "id"
-    ): ShortMaxListResponse
-
-    @GET("api/shortmax/rankings")
-    suspend fun getShortMaxRankings(
-        @Query("page") page: Int = 1,
+    @GET("api/shortmax/browse")
+    suspend fun browseShortMax(
+        @Query("type") type: String = "trending",
+        @Query("page") page: Int? = null,
+        @Query("size") size: Int? = null,
         @Query("lang") lang: String = "id"
     ): ShortMaxListResponse
 
@@ -317,12 +244,6 @@ interface StreamingApiService {
         @Query("seriesId") seriesId: String,
         @Query("lang") lang: String = "id"
     ): ShortMaxDetailResponse
-
-    @GET("api/shortmax/episodes")
-    suspend fun getShortMaxEpisodes(
-        @Query("seriesId") seriesId: String,
-        @Query("lang") lang: String = "id"
-    ): ShortMaxEpisodesResponse
 
     @GET("api/shortmax/episode")
     suspend fun getShortMaxEpisode(
@@ -386,7 +307,6 @@ interface StreamingApiService {
     ): MeloloSearchResponse
 
     // --- PINEDRAMA ENDPOINTS ---
-    // Katalog saja; endpoint episode tidak menyediakan video (browse-only).
 
     @GET("api/pinedrama/foryou")
     suspend fun getPineDramaForYou(): PineDramaCollectionsResponse

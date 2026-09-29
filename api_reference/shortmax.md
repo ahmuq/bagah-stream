@@ -1,84 +1,167 @@
 # ShortMax API (bagahproject)
 
 Base: `https://api.bagahproject.com/api/shortmax/...`
-Auth: header `x-api-key: <key>` + query `apikey=<key>`
-Prefix wajib `api/` (bukan `api/v1/`).
+Auth: header `x-api-key: <key>` (query `apikey=<key>` juga diterima).
+Prefix **wajib** `api/` (bukan `api/v1/`).
+Spec: `https://api.bagahproject.com/api/v1/openapi.json`.
+
+> Diperbarui 2026-09-30: API memakai endpoint terpadu `browse`. Endpoint lama
+> `foryou`, `trending`, `latest`, `rankings`, dan `episodes` dihapus.
 
 ## Endpoints
 
-| Endpoint            | Query                             | Fungsi         |
-| ------------------- | --------------------------------- | -------------- |
-| `shortmax/foryou`   | `page`, `size`, `lang`            | Feed personal  |
-| `shortmax/trending` | `page`, `lang`                    | Populer        |
-| `shortmax/latest`   | `page`, `lang`                    | Rilisan baru   |
-| `shortmax/rankings` | `page`, `lang`                    | Peringkat      |
-| `shortmax/search`   | `keyword`, `page`, `size`, `lang` | Cari series    |
-| `shortmax/detail`   | `seriesId`, `lang`                | Detail series  |
-| `shortmax/episodes` | `seriesId`, `lang`                | Daftar episode |
-| `shortmax/episode`  | `seriesId`, `episode`, `lang`     | URL stream     |
+| Endpoint             | Query                              | Fungsi         |
+| -------------------- | ---------------------------------- | -------------- |
+| `shortmax/browse`    | `type`, `page`, `pages`, `size`, `lang` | Katalog   |
+| `shortmax/detail`    | `seriesId`, `lang`                 | Detail series  |
+| `shortmax/episode`   | `seriesId`, `episode`, `lang`      | URL stream     |
+| `shortmax/search`    | `keyword`, `page`, `size`, `lang`  | Cari series    |
 
-`lang` = `id` (Indonesia) / `en`.
+`type` = `trending` \| `latest` \| `rankings` \| `foryou` \| `classes` \| `<classId>`.
+`classId`: `200001` Modern, `200002` Kuno, `200003` Fantasi, `200004` Realitas,
+`200005` Misteri, `200006` Perkotaan, `200007` Sejarah, `200008` hot,
+`200009` Fiksi Ilmiah, `200010` Realistic, `200012` Fantasi, `200014`.
+`lang` = `id` \| `en` \| `es` \| `pt` \| `zh`.
 
 ## Bentuk Response
 
-### `trending` / `latest` / `rankings` / `foryou`
+### List (`trending` / `latest` / `rankings` / `foryou` / `<classId>`)
 
 ```json
 {
   "success": true,
   "title": "Populer",
   "page": 1,
+  "classId": 200001,
+  "has_more": true,
+  "isEnd": false,
   "items": [
     {
-      "id": "21972",
-      "seriesId": "21972",
-      "series_id": "21972",
-      "code": 851210,
-      "title": "Kebangkitan Setelah Reinkarnasi",
+      "id": "29119",
+      "seriesId": "29119",
+      "series_id": "29119",
+      "code": 858418,
+      "title": "[Dubbing] Cinta Tak Lekang Oleh Waktu",
       "description": "...",
       "cover": "https://volcengine-forward.shorttv.live/images/cover/....jpg?auth_key=...",
-      "totalEpisodes": 30,
-      "total_episodes": 30,
-      "views": 485491,
-      "tags": []
+      "totalEpisodes": 79,
+      "total_episodes": 79,
+      "views": 2554943,
+      "tags": [],
+      "currentEpisode": 1
     }
   ]
 }
 ```
 
-### `episode` (stream)
+`currentEpisode` hanya muncul pada `type=foryou`.
+
+### `type=classes`
+
+```json
+{
+  "success": true,
+  "contents": [ { "id": 1, "name": "female" }, { "id": 2, "name": "male" } ],
+  "classes": [ { "id": 200001, "name": "Modern", "sort": 1 } ]
+}
+```
+
+### `shortmax/detail`
+
+Item yang sama seperti list, ditambah `chapters` (URL stream di chapter bisa kosong):
+
+```json
+{
+  "success": true,
+  "id": "29119",
+  "seriesId": "29119",
+  "series_id": "29119",
+  "code": 858418,
+  "title": "...",
+  "description": "...",
+  "cover": "https://...",
+  "totalEpisodes": 79,
+  "total_episodes": 79,
+  "views": 37421,
+  "tags": [],
+  "chapters": [
+    {
+      "episodeNum": 1,
+      "episode_num": 1,
+      "episodeId": "1649952",
+      "episode_id": "1649952",
+      "seriesId": "29119",
+      "series_id": "29119",
+      "title": "Episode 1",
+      "locked": false,
+      "video480": "",
+      "video720": "",
+      "video1080": "",
+      "bestUrl": "",
+      "best_url": "",
+      "qualities": {}
+    }
+  ]
+}
+```
+
+### `shortmax/episode` (stream + info enkripsi)
 
 ```json
 {
   "success": true,
   "episodeNum": 1,
-  "episodeId": "581428",
-  "seriesId": "8151",
-  "title": "Tidur dengan Sahabat Suamiku",
+  "episode_num": 1,
+  "episodeId": "1649952",
+  "episode_id": "1649952",
+  "seriesId": "29119",
+  "series_id": "29119",
+  "title": "[Dubbing] Cinta Tak Lekang Oleh Waktu",
   "locked": false,
-  "video480": "https://volcengine-forward.shorttv.live/hls-encrypted/...._480/main.m3u8?auth_key=...",
-  "video720": "https://volcengine-forward.shorttv.live/hls-encrypted/...._720/main.m3u8?auth_key=...",
-  "video1080": "https://volcengine-forward.shorttv.live/hls-encrypted/...._1080/main.m3u8?auth_key=...",
-  "bestUrl": "https://.../main.m3u8?auth_key=..."
+  "video480": "https://.../main.m3u8?auth_key=...",
+  "video720": "https://.../main.m3u8?auth_key=...",
+  "video1080": "https://.../main.m3u8?auth_key=...",
+  "bestUrl": "https://.../main.m3u8?auth_key=...",
+  "best_url": "https://.../main.m3u8?auth_key=...",
+  "qualities": {
+    "video_480": "https://...",
+    "video_720": "https://...",
+    "video_1080": "https://..."
+  },
+  "duration": 98,
+  "encrypted": true,
+  "crypto_info": {
+    "type": "hls-segment-aes",
+    "algorithm": "aes-128-cbc",
+    "iv": "shortmax00000000",
+    "header_size": 1024,
+    "key_offset_pos": [16, 20],
+    "enc_len_pos": [20, 24]
+  }
 }
+```
+
+### `shortmax/search`
+
+```json
+{ "success": true, "query": "cinta", "keyword": "cinta", "page": 1, "total": 20, "items": [ { "id": "..." } ] }
 ```
 
 ## Pagination
 
-| Endpoint                       | Hasil                                       |
-| ------------------------------ | ------------------------------------------- |
-| `shortmax/search`              | ✅ `page` berfungsi (page 2 → item berbeda) |
-| `shortmax/foryou`              | ❌ `page` diabaikan (page 1/2/3 identik)    |
-| `trending`/`latest`/`rankings` | ❌ statis (page diabaikan)                  |
-
-Client memakai infinite scroll hanya untuk hasil `search`.
+| Endpoint                       | Hasil                                          |
+| ------------------------------ | ---------------------------------------------- |
+| `search`                       | ✅ `page` berfungsi (page 2 → item berbeda)     |
+| `browse` `type=foryou`         | ❌ `page` diabaikan (page 1/2/3 identik)        |
+| `trending`/`latest`/`rankings` | ❌ statis (page diabaikan)                      |
+| `browse` `<classId>`           | ✅ `page`/`size` + `has_more`/`isEnd`           |
 
 ## Dekripsi Video (WAJIB untuk play)
 
 ShortMax mengirim **HLS** dengan segmen `.ts` yang terenkripsi custom — bukan
 `#EXT-X-KEY` standar. Setiap segmen:
 
-1. Berukuran ≥ 1024 byte dan diawali magic `shortmax` (contoh header: `shortmax00000001`).
+1. Berukuran ≥ 1024 byte dan diawali magic `shortmax` (mis. `shortmax00000001`).
 2. 1024 byte pertama adalah header teks:
    - byte **[16:20]** = offset kunci di dalam header
    - byte **[20:24]** = panjang data terenkripsi
@@ -88,25 +171,12 @@ ShortMax mengirim **HLS** dengan segmen `.ts` yang terenkripsi custom — bukan
 5. Sisa byte setelah blok terenkripsi (`data[1024+enc_len:]`) adalah MPEG-TS biasa
    dan digabung kembali.
 
-Contoh m3u8:
-
-```
-#EXTM3U
-#EXT-X-VERSION:3
-#EXT-X-PLAYLIST-TYPE:VOD
-#EXTINF:10.000000,
-main/segment-0.ts
-```
-
-Implementasi Kotlin ada di `data/player/ShortMaxDecryptDataSource.kt` — sebuah custom
-Media3 `DataSource` yang mendekripsi tiap segmen saat dibaca, dipasang ke ExoPlayer
-lewat `DefaultMediaSourceFactory(decryptFactory).setDataSourceFactory(...)`.
-
-Terverifikasi: 8 segmen terdekripsi, hasilnya MPEG-TS valid (byte pertama `0x47`),
-dan `c2.android.avc.decoder` aktif memutar.
+Info resmi tersedia di `crypto_info` pada `shortmax/episode`. Implementasi Kotlin:
+`data/player/ShortMaxDecryptDataSource.kt`. Terverifikasi di device: segmen terdekripsi,
+`OMX.qcom.video.decoder.avc` + `c2.android.aac.decoder` aktif.
 
 ## Catatan cacat data
 
-- Detail `chapters` **tidak** memuat URL stream; daftar episode harus diambil dari
-  `shortmax/episodes`.
+- Detail `chapters` **tidak** memuat URL stream yang valid; URL harus diambil dari
+  `shortmax/episode` (endpoint `episodes` lama sudah dihapus).
 - Item tanpa id dibuang; item tanpa title dirender "Tanpa Judul".

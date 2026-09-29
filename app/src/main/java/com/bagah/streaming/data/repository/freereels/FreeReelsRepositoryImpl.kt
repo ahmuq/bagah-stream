@@ -15,36 +15,37 @@ class FreeReelsRepositoryImpl(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : FreeReelsRepository {
 
-    // Item dengan seriesId kosong tidak bisa dibuka; dibuang seperti di DramaBox.
+    // Kunci tab FreeReels pada endpoint browse.
+    private val tabPopular = "503"
+    private val tabNew = "505"
+    private val tabAnime = "547"
+
+    // Item tanpa id tidak bisa dibuka; dibuang seperti di platform lain.
     private fun List<FreeReelsItem>.validItems(): List<FreeReelsItem> =
-        filter { it.seriesId.isNotBlank() }
+        filter { it.stableId().isNotBlank() }
 
     override suspend fun getForYou(next: String?): Result<Pair<List<FreeReelsItem>, String?>> =
         withContext(ioDispatcher) {
             runCatching {
-                val response = if (next.isNullOrBlank()) {
-                    api.getFreeReelsForYou()
-                } else {
-                    api.getFreeReelsForYouNext(next)
-                }
-                response.items.validItems() to response.next
+                val response = api.browseFreeReels(tab = "foryou", cursor = next)
+                response.allItems.validItems() to response.cursor
             }
         }
 
     override suspend fun getTrending(): Result<List<FreeReelsItem>> = withContext(ioDispatcher) {
-        runCatching { api.getFreeReelsTrending().allItems.validItems() }
+        runCatching { api.browseFreeReels(tab = tabPopular).allItems.validItems() }
     }
 
     override suspend fun getLatest(): Result<List<FreeReelsItem>> = withContext(ioDispatcher) {
-        runCatching { api.getFreeReelsLatest().allItems.validItems() }
+        runCatching { api.browseFreeReels(tab = tabNew).allItems.validItems() }
     }
 
     override suspend fun getAnime(): Result<List<FreeReelsItem>> = withContext(ioDispatcher) {
-        runCatching { api.getFreeReelsAnime().allItems.validItems() }
+        runCatching { api.browseFreeReels(tab = tabAnime).allItems.validItems() }
     }
 
     override suspend fun getTab(tabKey: String): Result<List<FreeReelsItem>> = withContext(ioDispatcher) {
-        runCatching { api.getFreeReelsTab(tabKey).allItems.validItems() }
+        runCatching { api.browseFreeReels(tab = tabKey).allItems.validItems() }
     }
 
     override suspend fun getDetail(seriesId: String): Result<FreeReelsDetailResponse> =
@@ -54,7 +55,8 @@ class FreeReelsRepositoryImpl(
 
     override suspend fun getEpisodes(seriesId: String): Result<List<FreeReelsEpisode>> =
         withContext(ioDispatcher) {
-            runCatching { api.getFreeReelsEpisodes(seriesId).items }
+            // Endpoint episodes dihapus; daftar episode ikut di `detail.items`.
+            runCatching { api.getFreeReelsDetail(seriesId).items }
         }
 
     override suspend fun getEpisode(

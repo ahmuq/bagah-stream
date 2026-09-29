@@ -14,38 +14,48 @@ data class ReelShortBook(
     val tags: List<String> = emptyList()
 )
 
+/** Dipakai repository sebagai wadah beranda; diisi dari `reelshort/browse`. */
 @Serializable
 data class ReelShortHomepageData(
-    @SerialName("hall_id")
-    val hallId: Long? = null,
-    @SerialName("search_keyword_list")
     val searchKeywords: List<String> = emptyList(),
     val items: List<ReelShortBook> = emptyList()
 )
 
 @Serializable
-data class ReelShortHomepageResponse(
-    val success: Boolean = false,
-    val data: ReelShortHomepageData? = null
-)
-
-@Serializable
-data class ReelShortTrendingResponse(
+data class ReelShortBrowseResponse(
     val success: Boolean = false,
     val title: String? = null,
     val page: Int? = null,
+    @SerialName("totalPages")
+    val totalPages: Int? = null,
+    @SerialName("last_book_id")
+    val lastBookId: String? = null,
+    val groups: List<ReelShortCategoryGroup> = emptyList(),
     val items: List<ReelShortBook> = emptyList()
 )
 
 @Serializable
+data class ReelShortCategoryGroup(
+    @SerialName("category_name")
+    val categoryName: String = "",
+    val options: List<ReelShortCategoryOption> = emptyList()
+)
+
+@Serializable
+data class ReelShortCategoryOption(
+    val id: String = "",
+    val text: String = ""
+)
+
+@Serializable
 data class ReelShortChapter(
-    @SerialName("episodeNum")
+    @SerialName("episode_num")
     val episodeNum: Int = 1,
-    @SerialName("chapterId")
+    @SerialName("chapter_id")
     val chapterId: String = "",
     val title: String = "",
     val locked: Boolean = false,
-    @SerialName("serialNumber")
+    @SerialName("serial_number")
     val serialNumber: String = ""
 )
 
@@ -63,19 +73,8 @@ data class ReelShortDetailResponse(
 )
 
 @Serializable
-data class ReelShortEpisodesResponse(
-    val success: Boolean = false,
-    val bookId: String = "",
-    val title: String = "",
-    @SerialName("totalEpisodes")
-    val totalEpisodes: Int = 0,
-    val items: List<ReelShortChapter> = emptyList()
-)
-
-@Serializable
 data class ReelShortVideoStream(
     val url: String = "",
-    @SerialName("encode")
     val encode: String? = null,
     val quality: String? = null,
     val bitrate: Int? = null
@@ -84,16 +83,17 @@ data class ReelShortVideoStream(
 @Serializable
 data class ReelShortEpisodeResponse(
     val success: Boolean = false,
+    @SerialName("book_id")
     val bookId: String = "",
-    @SerialName("episodeNum")
+    @SerialName("episode_num")
     val episodeNum: Int = 1,
-    @SerialName("episodeId")
+    @SerialName("episode_id")
     val episodeId: String = "",
     val title: String = "",
     val locked: Boolean = false,
-    @SerialName("bestUrl")
+    @SerialName("best_url")
     val bestUrl: String = "",
-    @SerialName("videoList")
+    @SerialName("video_list")
     val videoList: List<ReelShortVideoStream> = emptyList()
 )
 

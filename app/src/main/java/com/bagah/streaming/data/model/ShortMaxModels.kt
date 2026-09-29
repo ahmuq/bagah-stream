@@ -31,6 +31,12 @@ data class ShortMaxListResponse(
     val success: Boolean = false,
     val title: String? = null,
     val page: Int? = null,
+    @SerialName("classId")
+    val classId: Int? = null,
+    @SerialName("has_more")
+    val hasMore: Boolean? = null,
+    @SerialName("isEnd")
+    val isEnd: Boolean? = null,
     val items: List<ShortMaxItem> = emptyList()
 )
 
@@ -89,14 +95,16 @@ data class ShortMaxDetailResponse(
 }
 
 @Serializable
-data class ShortMaxEpisodesResponse(
-    val success: Boolean = false,
-    val seriesId: String = "",
-    @SerialName("series_id")
-    val seriesIdSnake: String? = null,
-    val title: String = "",
-    val totalEpisodes: Int = 0,
-    val items: List<ShortMaxEpisode> = emptyList()
+data class ShortMaxCryptoInfo(
+    val type: String = "",
+    val algorithm: String = "",
+    val iv: String = "",
+    @SerialName("header_size")
+    val headerSize: Int = 1024,
+    @SerialName("key_offset_pos")
+    val keyOffsetPos: List<Int> = emptyList(),
+    @SerialName("enc_len_pos")
+    val encLenPos: List<Int> = emptyList()
 )
 
 @Serializable
@@ -104,8 +112,16 @@ data class ShortMaxEpisodeResponse(
     val success: Boolean = false,
     @SerialName("episodeNum")
     val episodeNum: Int = 1,
+    @SerialName("episode_num")
+    val episodeNumSnake: Int? = null,
     @SerialName("episodeId")
     val episodeId: String = "",
+    @SerialName("episode_id")
+    val episodeIdSnake: String? = null,
+    @SerialName("seriesId")
+    val seriesId: String = "",
+    @SerialName("series_id")
+    val seriesIdSnake: String? = null,
     val title: String = "",
     val locked: Boolean = false,
     val video480: String = "",
@@ -113,12 +129,21 @@ data class ShortMaxEpisodeResponse(
     val video1080: String = "",
     val bestUrl: String = "",
     @SerialName("best_url")
-    val bestUrlSnake: String? = null
+    val bestUrlSnake: String? = null,
+    val qualities: Map<String, String> = emptyMap(),
+    val duration: Int? = null,
+    val encrypted: Boolean = false,
+    @SerialName("crypto_info")
+    val cryptoInfo: ShortMaxCryptoInfo? = null
 ) {
-    fun streamUrl(preferred: String = "720"): String = when (preferred) {
-        "480" -> video480.ifBlank { bestUrl.ifBlank { bestUrlSnake.orEmpty() } }
-        "1080" -> video1080.ifBlank { bestUrl.ifBlank { bestUrlSnake.orEmpty() } }
-        else -> video720.ifBlank { bestUrl.ifBlank { bestUrlSnake.orEmpty() } }
+    fun streamUrl(preferred: String = "720"): String {
+        val fromMap = qualities["video_$preferred"] ?: when (preferred) {
+            "480" -> video480
+            "1080" -> video1080
+            else -> video720
+        }
+        return fromMap.ifBlank { video720.ifBlank { video480.ifBlank { video1080 } } }
+            .ifBlank { bestUrl.ifBlank { bestUrlSnake.orEmpty() } }
     }
 }
 

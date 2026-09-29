@@ -20,11 +20,11 @@ class FlickReelsRepositoryImpl(
         filter { it.id.isNotBlank() }
 
     override suspend fun getForYou(): Result<List<FlickReelsItem>> = withContext(ioDispatcher) {
-        runCatching { api.getFlickReelsForYou().items.validItems() }
+        runCatching { api.browseFlickReels(type = "foryou").items.validItems() }
     }
 
     override suspend fun getTrending(): Result<List<FlickReelsItem>> = withContext(ioDispatcher) {
-        runCatching { api.getFlickReelsTrending().items.validItems() }
+        runCatching { api.browseFlickReels(type = "trending").items.validItems() }
     }
 
     override suspend fun getDetail(seriesId: String): Result<FlickReelsDetailResponse> =
@@ -34,7 +34,8 @@ class FlickReelsRepositoryImpl(
 
     override suspend fun getEpisodes(seriesId: String): Result<List<FlickReelsEpisode>> =
         withContext(ioDispatcher) {
-            runCatching { api.getFlickReelsEpisodes(seriesId).items }
+            // Endpoint episodes dihapus; daftar chapter sudah ikut di detail.
+            runCatching { api.getFlickReelsDetail(seriesId).chapters }
         }
 
     override suspend fun getEpisode(

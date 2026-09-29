@@ -78,15 +78,15 @@ class StreamingRepository(
     // --- DRAMA METHODS ---
 
     suspend fun getDramaHome(): Result<List<DramaItem>> = withContext(Dispatchers.IO) {
-        runCatching { api.getDramaHome().items }
+        runCatching { api.browseDrama(type = "foryou").flatItems }
     }
 
     suspend fun getDramaForYou(): Result<List<DramaItem>> = withContext(Dispatchers.IO) {
-        runCatching { api.getDramaForYou().items }
+        runCatching { api.browseDrama(type = "classify").flatItems }
     }
 
     suspend fun getDramaCategories(): Result<List<DramaItem>> = withContext(Dispatchers.IO) {
-        runCatching { api.getDramaCategories().items }
+        runCatching { api.browseDrama(type = "theater").flatItems }
     }
 
     suspend fun searchDrama(keyword: String): Result<List<DramaItem>> = withContext(Dispatchers.IO) {
@@ -94,6 +94,6 @@ class StreamingRepository(
     }
 
     suspend fun getDramaEpisodes(bookId: String): Result<List<DramaEpisode>> = withContext(Dispatchers.IO) {
-        runCatching { api.getDramaEpisodes(bookId).items }
+        runCatching { api.getDramaDetail(bookId = bookId, full = "true").episodes }
     }
 }

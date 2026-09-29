@@ -20,19 +20,19 @@ class ShortMaxRepositoryImpl(
         filter { it.stableId().isNotBlank() }
 
     override suspend fun getForYou(page: Int): Result<List<ShortMaxItem>> = withContext(ioDispatcher) {
-        runCatching { api.getShortMaxForYou(page).items.validItems() }
+        runCatching { api.browseShortMax(type = "foryou", page = page).items.validItems() }
     }
 
     override suspend fun getTrending(page: Int): Result<List<ShortMaxItem>> = withContext(ioDispatcher) {
-        runCatching { api.getShortMaxTrending(page).items.validItems() }
+        runCatching { api.browseShortMax(type = "trending", page = page).items.validItems() }
     }
 
     override suspend fun getLatest(page: Int): Result<List<ShortMaxItem>> = withContext(ioDispatcher) {
-        runCatching { api.getShortMaxLatest(page).items.validItems() }
+        runCatching { api.browseShortMax(type = "latest", page = page).items.validItems() }
     }
 
     override suspend fun getRankings(page: Int): Result<List<ShortMaxItem>> = withContext(ioDispatcher) {
-        runCatching { api.getShortMaxRankings(page).items.validItems() }
+        runCatching { api.browseShortMax(type = "rankings", page = page).items.validItems() }
     }
 
     override suspend fun getDetail(seriesId: String): Result<ShortMaxDetailResponse> =
@@ -42,7 +42,8 @@ class ShortMaxRepositoryImpl(
 
     override suspend fun getEpisodes(seriesId: String): Result<List<ShortMaxEpisode>> =
         withContext(ioDispatcher) {
-            runCatching { api.getShortMaxEpisodes(seriesId).items }
+            // Endpoint episodes dihapus; daftar chapter sudah ikut di detail.
+            runCatching { api.getShortMaxDetail(seriesId).chapters }
         }
 
     override suspend fun getEpisode(

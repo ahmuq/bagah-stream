@@ -1,5 +1,6 @@
 package com.bagah.streaming.data.model
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -9,15 +10,18 @@ data class FlickReelsItem(
     val cover: String = "",
     val description: String? = null,
     val totalEpisodes: Int = 0,
-    val views: String? = null,
-    val tags: List<String> = emptyList()
+    @Serializable(with = FlexibleStringSerializer::class)
+    val views: String = "",
+    val tags: List<String> = emptyList(),
+    val lastChapterNum: Int? = null
 )
 
 @Serializable
-data class FlickReelsListResponse(
+data class FlickReelsBrowseResponse(
     val success: Boolean = false,
     val title: String? = null,
     val page: Int? = null,
+    val nextCursor: String? = null,
     val items: List<FlickReelsItem> = emptyList()
 )
 
@@ -39,18 +43,10 @@ data class FlickReelsDetailResponse(
     val cover: String = "",
     val description: String = "",
     val totalEpisodes: Int = 0,
-    val views: String? = null,
+    @Serializable(with = FlexibleStringSerializer::class)
+    val views: String = "",
     val tags: List<String> = emptyList(),
     val chapters: List<FlickReelsEpisode> = emptyList()
-)
-
-@Serializable
-data class FlickReelsEpisodesResponse(
-    val success: Boolean = false,
-    val seriesId: String = "",
-    val title: String = "",
-    val totalEpisodes: Int = 0,
-    val items: List<FlickReelsEpisode> = emptyList()
 )
 
 @Serializable

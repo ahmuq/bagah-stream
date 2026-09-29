@@ -18,21 +18,21 @@ class ReelShortRepositoryImpl(
 
     override suspend fun getHomepage(page: Int): Result<ReelShortHomepageData> = withContext(ioDispatcher) {
         runCatching {
-            val response = api.getReelShortHomepage(page)
-            response.data ?: ReelShortHomepageData()
+            val response = api.browseReelShort(type = "trending", page = page)
+            ReelShortHomepageData(items = response.items)
         }
     }
 
     override suspend fun getTrending(): Result<List<ReelShortBook>> = withContext(ioDispatcher) {
-        runCatching { api.getReelShortTrending().items }
+        runCatching { api.browseReelShort(type = "trending").items }
     }
 
     override suspend fun getLatest(): Result<List<ReelShortBook>> = withContext(ioDispatcher) {
-        runCatching { api.getReelShortLatest().items }
+        runCatching { api.browseReelShort(type = "latest").items }
     }
 
     override suspend fun getForYou(page: Int): Result<List<ReelShortBook>> = withContext(ioDispatcher) {
-        runCatching { api.getReelShortForYou(page).items }
+        runCatching { api.browseReelShort(type = "foryou", page = page).items }
     }
 
     override suspend fun getDetail(bookId: String): Result<ReelShortDetailResponse> = withContext(ioDispatcher) {
@@ -40,7 +40,8 @@ class ReelShortRepositoryImpl(
     }
 
     override suspend fun getEpisodes(bookId: String): Result<List<ReelShortChapter>> = withContext(ioDispatcher) {
-        runCatching { api.getReelShortEpisodes(bookId).items }
+        // Endpoint episodes dihapus; daftar chapter sudah ikut di detail.
+        runCatching { api.getReelShortDetail(bookId).chapters }
     }
 
     override suspend fun getEpisode(

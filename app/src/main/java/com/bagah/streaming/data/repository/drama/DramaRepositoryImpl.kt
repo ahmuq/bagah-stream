@@ -14,24 +14,25 @@ class DramaRepositoryImpl(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : DramaRepository {
 
-    // API dramabox/home menyertakan satu item rusak per halaman (series_id kosong).
-    // Dibuang di sini supaya tidak dirender jadi kartu kosong yang memicu 400 saat ditap.
+    // API tetap bisa menyertakan item tanpa id; dibuang agar tidak jadi kartu kosong.
     private fun List<DramaItem>.validItems(): List<DramaItem> = filter { it.bookId.isNotBlank() }
 
     override suspend fun getHome(page: Int): Result<List<DramaItem>> = withContext(ioDispatcher) {
-        runCatching { api.getDramaHome(page).items.validItems() }
+        // classify mengirim total_episodes lengkap dan mendukung pagination.
+        runCatching { api.browseDrama(type = "classify", page = page).flatItems.validItems() }
     }
 
     override suspend fun getForYou(page: Int): Result<List<DramaItem>> = withContext(ioDispatcher) {
-        runCatching { api.getDramaForYou(page).items.validItems() }
+        runCatching { api.browseDrama(type = "foryou", page = page).flatItems.validItems() }
     }
 
     override suspend fun getCategories(): Result<List<DramaItem>> = withContext(ioDispatcher) {
-        runCatching { api.getDramaCategories().items.validItems() }
+        // theater mengelompokkan item per kolom; tidak mendukung pagination.
+        runCatching { api.browseDrama(type = "theater").flatItems.validItems() }
     }
 
     override suspend fun getEpisodes(bookId: String): Result<List<DramaEpisode>> = withContext(ioDispatcher) {
-        runCatching { api.getDramaEpisodes(bookId).items }
+        runCatching { api.getDramaDetail(bookId = bookId, full = "true").episodes }
     }
 
     override suspend fun getEpisodeStream(
@@ -42,6 +43,6 @@ class DramaRepositoryImpl(
     }
 
     override suspend fun search(keyword: String, page: Int): Result<List<DramaItem>> = withContext(ioDispatcher) {
-        runCatching { api.searchDrama(keyword, page).items }
+        runCatching { api.searchDrama(keyword, page).items.validItems() }
     }
 }

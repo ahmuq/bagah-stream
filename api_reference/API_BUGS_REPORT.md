@@ -1,11 +1,39 @@
 # Laporan Bug API — api.bagahproject.com
 
-Tanggal: 2026-09-29
+Tanggal awal: 2026-09-29
 Pelapor: pengembang app Bagah Streaming (Android)
 Base URL: `https://api.bagahproject.com/api/...`
 Auth: header `x-api-key: ahmuqkey`
 
 Cara reproduksi di bawah memakai `curl` dan satu skrip Python. Semua sudah saya uji.
+
+---
+
+## Pembaruan 2026-09-30
+
+API dirombak besar: DramaBox, ReelShort, ShortMax, FreeReels, dan FlickReels kini memakai
+endpoint terpadu `browse` (plus `detail`, `episode`, `search`); endpoint lama seperti
+`dramabox/home`, `reelshort/homepage`, `*/episodes` sudah **dihapus**. Detail bentuk response
+baru ada di dokumen per platform (`dramabox.md`, `reelshort.md`, `shortmax.md`,
+`freereels.md`, `flickreels.md`).
+
+Status temuan lama (diverifikasi ulang 2026-09-30):
+
+| #  | Status saat ini                                                                                       |
+| -- | ----------------------------------------------------------------------------------------------------- |
+| #1 | Belum diuji ulang (melolo tidak berubah).                                                             |
+| #2 | **Masih terjadi**: `pinedrama/episode` mengembalikan HTTP 400.                                        |
+| #3 | **Masih terjadi**: `melolo/detail` tetap memotong presisi ID (`...8837` → `...9000`).                 |
+| #4 | **Tidak lagi berlaku**: endpoint `dramabox/home` dihapus; `dramabox/browse` tidak lagi memuat item kosong. |
+| A  | **Diperbaiki**: spec kini di `/api/v1/openapi.json` dengan server `/api`; endpoint nyata tetap berprefix `api/`. |
+| B  | Sebagian: pagination tetap tidak konsisten (lihat dokumen per platform).                              |
+| C  | **Masih**: `flickreels/browse type=latest` selalu 0 item.                                             |
+| D  | **Masih**: `flickreels/browse type=ranking` identik dengan `trending`.                                |
+| E  | **Masih**: `shortmax/search` dan `freereels/search` kadang mengirim `title` kosong.                   |
+
+Temuan baru pada `browse`: `dramabox/browse type=foryou` sering mengirim `total_episodes: 0`
+(pakai `type=classify` bila butuh jumlah episode), dan `flickreels/browse type=foryou`
+memakai cursor `nextCursor` (bukan `page`).
 
 ---
 
