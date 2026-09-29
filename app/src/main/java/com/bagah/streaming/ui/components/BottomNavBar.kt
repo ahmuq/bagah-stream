@@ -83,12 +83,12 @@ fun BagahBottomNavBar(
                 .padding(horizontal = 12.dp, vertical = 8.dp)
                 .background(
                     color = SurfaceDark.copy(alpha = 0.95f),
-                    shape = RoundedCornerShape(24.dp)
+                    shape = RoundedCornerShape(16.dp)
                 )
                 .border(
                     width = 1.dp,
                     color = BorderSubtle,
-                    shape = RoundedCornerShape(24.dp)
+                    shape = RoundedCornerShape(16.dp)
                 )
                 .padding(horizontal = 4.dp, vertical = 5.dp)
         ) {
@@ -113,7 +113,7 @@ fun BagahBottomNavBar(
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(RoundedCornerShape(12.dp))
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null
@@ -124,12 +124,12 @@ fun BagahBottomNavBar(
                             }
                             .background(
                                 color = if (isSelected) SurfaceElevated else Color.Transparent,
-                                shape = RoundedCornerShape(16.dp)
+                                shape = RoundedCornerShape(12.dp)
                             )
                             .border(
                                 width = if (isSelected) 1.dp else 0.dp,
                                 color = if (isSelected) CardBorderDark else Color.Transparent,
-                                shape = RoundedCornerShape(16.dp)
+                                shape = RoundedCornerShape(12.dp)
                             )
                             .padding(horizontal = 6.dp, vertical = 5.dp)
                     ) {
