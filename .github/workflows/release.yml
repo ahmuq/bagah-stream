@@ -1,0 +1,104 @@
+name: Release APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Jenis kenaikan versi'
+        type: choice
+        options: [ patch, minor, major ]
+        default: patch
+      version:
+        description: 'Set versi eksplisit (opsional, mis. 1.2.0). Kosongkan untuk pakai bump.'
+        type: string
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-manual
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Compute next version
+        id: ver
+        run: |
+          git fetch --tags --force
+          explicit="${{ github.event.inputs.version }}"
+          bump="${{ github.event.inputs.bump }}"
+          latest=$(git tag -l 'v*' | sort -V | tail -n1)
+
+          if [ -n "$explicit" ]; then
+            name="$explicit"
+          else
+            if [ -z "$latest" ]; then
+              MA=1; MI=0; PA=0
+            else
+              IFS=. read -r MA MI PA <<< "${latest#v}"
+            fi
+            case "$bump" in
+              major) MA=$((MA + 1)); MI=0; PA=0 ;;
+              minor) MI=$((MI + 1)); PA=0 ;;
+              *) PA=$((PA + 1)) ;;
+            esac
+            name="$MA.$MI.$PA"
+          fi
+
+          code=$(awk -F. '{print $1*10000 + $2*100 + $3}' <<< "$name")
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "Next version: $name (code $code)"
+
+      - name: Decode keystore (optional)
+        run: |
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > release.keystore
+            echo "Keystore decoded."
+          else
+            echo "No KEYSTORE_BASE64 secret, release will use debug signing."
+          fi
+
+      - name: Build release APK
+        env:
+          KEYSTORE_FILE: release.keystore
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :app:assembleRelease --no-daemon \
+            -PversionName=${{ steps.ver.outputs.name }} \
+            -PversionCode=${{ steps.ver.outputs.code }}
+
+      - name: Prepare APK
+        run: |
+          mkdir -p out
+          src=$(find app/build/outputs/apk/release -name "*.apk" | head -n1)
+          cp "$src" "out/bagah-streaming-v${{ steps.ver.outputs.name }}.apk"
+          ls -la out
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.ver.outputs.name }}
+          name: v${{ steps.ver.outputs.name }}
+          generate_release_notes: true
+          files: out/*.apk

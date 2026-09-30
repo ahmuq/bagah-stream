@@ -1,0 +1,124 @@
+package com.bagah.streaming.data.api
+
+import android.content.Context
+import com.bagah.streaming.data.cache.TtlCache
+import kotlinx.serialization.json.Json
+import okhttp3.Cache
+import okhttp3.Interceptor
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
+import java.io.File
+import java.util.concurrent.TimeUnit
+
+object NetworkClient {
+    private const val BASE_URL = "https://api.bagahproject.com/"
+
+    private var appContext: Context? = null
+
+    @Volatile
+    private var currentApiKey: String? = null
+
+    fun install(context: Context) {
+        appContext = context.applicationContext
+    }
+
+    fun setApiKey(key: String?) {
+        currentApiKey = key
+        clearApiCache()
+    }
+
+    fun getApiKey(): String? = currentApiKey
+
+    private val json = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+        coerceInputValues = true
+        encodeDefaults = true
+    }
+
+    private val authInterceptor = Interceptor { chain ->
+        val originalRequest = chain.request()
+        val key = currentApiKey
+
+        val newRequest = if (key.isNullOrBlank()) {
+            originalRequest.newBuilder()
+                .header("Accept", "application/json")
+                .build()
+        } else {
+            val urlWithKey = originalRequest.url.newBuilder()
+                .addQueryParameter("apikey", key)
+                .build()
+            originalRequest.newBuilder()
+                .url(urlWithKey)
+                .header("x-api-key", key)
+                .header("Accept", "application/json")
+                .build()
+        }
+
+        chain.proceed(newRequest)
+    }
+
+    private val loggingInterceptor = HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.BASIC
+    }
+
+    private val cacheControlInterceptor = Interceptor { chain ->
+        val request = chain.request()
+        val response = chain.proceed(request)
+        if (!request.method.equals("GET", ignoreCase = true)) return@Interceptor response
+
+        val ttl = cacheTtlSeconds(request.url.toString())
+        val control = if (ttl > 0) "public, max-age=$ttl" else "no-store"
+        response.newBuilder().header("Cache-Control", control).build()
+    }
+
+    private fun cacheTtlSeconds(url: String): Int = when {
+        url.contains("/episode") -> 0
+        url.contains("/search") -> 120
+        url.contains("/detail") -> 600
+        url.contains("type=filters") ||
+            url.contains("type=categories") ||
+            url.contains("type=classes") ||
+            url.contains("type=channels") -> 21_600
+        else -> 300
+    }
+
+    private val diskCache: Cache? by lazy {
+        appContext?.let { Cache(File(it.cacheDir, "api_cache"), 64L * 1024 * 1024) }
+    }
+
+    private fun baseBuilder(): OkHttpClient.Builder = OkHttpClient.Builder()
+        .addInterceptor(authInterceptor)
+        .addInterceptor(loggingInterceptor)
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .retryOnConnectionFailure(true)
+
+    val okHttpClient: OkHttpClient by lazy { baseBuilder().build() }
+
+    private val apiHttpClient: OkHttpClient by lazy {
+        baseBuilder()
+            .apply { diskCache?.let { cache(it) } }
+            .addNetworkInterceptor(cacheControlInterceptor)
+            .build()
+    }
+
+    val apiService: StreamingApiService by lazy {
+        val contentType = "application/json".toMediaType()
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(apiHttpClient)
+            .addConverterFactory(json.asConverterFactory(contentType))
+            .build()
+            .create(StreamingApiService::class.java)
+    }
+
+    fun clearApiCache() {
+        diskCache?.evictAll()
+        TtlCache.clear()
+    }
+}
