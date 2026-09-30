@@ -54,6 +54,9 @@ google-services.json
 # Temporary / testing screenshots
 screenshot*.png
 
+# Internal API reference (not for public repo)
+api_reference/
+
 # OS-specific files
 .DS_Store
 .DS_Store?

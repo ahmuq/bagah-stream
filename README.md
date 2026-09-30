@@ -98,14 +98,6 @@ app/src/main/java/com/bagah/streaming/
   MainActivity.kt
 ```
 
-## Dokumentasi API
-
-Detail endpoint dan bentuk response tiap platform ada di folder `api_reference/`:
-
-- `dramabox.md`, `reelshort.md`, `freereels.md`, `flickreels.md`, `shortmax.md`, `netshort.md`, `pinedrama.md`, `animeplay.md`
-- `auth.md` (endpoint `check-key`)
-- `API_BUGS_REPORT.md` (catatan bug API, sebagian masih berlaku di sisi server)
-
 ## Catatan
 
 - Aplikasi ini bergantung pada API pihak ketiga. Ketersediaan konten dan stabilitas bisa berubah tanpa pemberitahuan.
