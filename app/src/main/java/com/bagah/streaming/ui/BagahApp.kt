@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -20,11 +21,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.bagah.streaming.data.session.SessionStore
 import com.bagah.streaming.ui.components.BagahBottomNavBar
 import com.bagah.streaming.ui.navigation.Screen
 import com.bagah.streaming.ui.screens.anime.AnimeDetailScreen
 import com.bagah.streaming.ui.screens.anime.AnimeHomeScreen
 import com.bagah.streaming.ui.screens.anime.AnimePlayerScreen
+import com.bagah.streaming.ui.screens.auth.LoginScreen
 import com.bagah.streaming.ui.screens.drama.DramaDetailScreen
 import com.bagah.streaming.ui.screens.drama.DramaHomeScreen
 import com.bagah.streaming.ui.screens.drama.DramaReelsPlayerScreen
@@ -41,6 +44,7 @@ import com.bagah.streaming.ui.screens.netshort.NetShortPlayerScreen
 import com.bagah.streaming.ui.screens.pinedrama.PineDramaDetailScreen
 import com.bagah.streaming.ui.screens.pinedrama.PineDramaHomeScreen
 import com.bagah.streaming.ui.screens.pinedrama.PineDramaPlayerScreen
+import com.bagah.streaming.ui.screens.profile.ProfileScreen
 import com.bagah.streaming.ui.screens.reelshort.ReelShortDetailScreen
 import com.bagah.streaming.ui.screens.reelshort.ReelShortHomeScreen
 import com.bagah.streaming.ui.screens.reelshort.ReelShortPlayerScreen
@@ -53,6 +57,14 @@ import com.bagah.streaming.ui.theme.BgBlack
 
 @Composable
 fun BagahApp() {
+    val session by SessionStore.state.collectAsState()
+
+    // Belum login -> tampilkan halaman login.
+    if (!session.isLoggedIn) {
+        LoginScreen()
+        return
+    }
+
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -69,7 +81,8 @@ fun BagahApp() {
         Screen.ShortMaxHome.route,
         Screen.PineDramaHome.route,
         Screen.NetShortHome.route,
-        Screen.Search.route
+        Screen.Search.route,
+        Screen.Profile.route
     )
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -481,6 +494,11 @@ fun BagahApp() {
                             navController.navigate(Screen.PineDramaDetail.createRoute(seriesId))
                         }
                     )
+                }
+
+                // Profile
+                composable(Screen.Profile.route) {
+                    ProfileScreen()
                 }
             }
         }

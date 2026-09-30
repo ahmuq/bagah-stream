@@ -1,6 +1,7 @@
 package com.bagah.streaming.data.api
 
 import com.bagah.streaming.data.model.AnimeApiResponse
+import com.bagah.streaming.data.model.ApiKeyCheckResponse
 import com.bagah.streaming.data.model.AnimeDetailWrapper
 import com.bagah.streaming.data.model.AnimeEpisodeData
 import com.bagah.streaming.data.model.AnimeItem
@@ -37,6 +38,12 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface StreamingApiService {
+
+    /** Validasi API key untuk login. */
+    @GET("api/check-key")
+    suspend fun checkApiKey(
+        @Query("apikey") apikey: String
+    ): ApiKeyCheckResponse
 
     // --- ANIMEPLAY ENDPOINTS ---
 

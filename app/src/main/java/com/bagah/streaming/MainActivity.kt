@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.bagah.streaming.data.api.NetworkClient
+import com.bagah.streaming.data.session.SessionStore
 import com.bagah.streaming.ui.BagahApp
 import com.bagah.streaming.ui.theme.BagahStreamingTheme
 import com.bagah.streaming.ui.theme.BgBlack
@@ -17,6 +18,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         // Aktifkan cache disk API sebelum request pertama.
         NetworkClient.install(applicationContext)
+        // Muat sesi tersimpan + pasang API key aktif.
+        SessionStore.init(applicationContext)
+        NetworkClient.setApiKey(SessionStore.apiKey)
         enableEdgeToEdge()
         setContent {
             BagahStreamingTheme {

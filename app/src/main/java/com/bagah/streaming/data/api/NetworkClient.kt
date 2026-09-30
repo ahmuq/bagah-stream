@@ -15,9 +15,12 @@ import java.util.concurrent.TimeUnit
 
 object NetworkClient {
     private const val BASE_URL = "https://api.bagahproject.com/"
-    const val DEFAULT_API_KEY = "ahmuqkey"
 
     private var appContext: Context? = null
+
+    /** API key aktif (hasil login). Null = belum login. */
+    @Volatile
+    private var currentApiKey: String? = null
 
     /**
      * Panggil sekali dari Activity/Application sebelum request pertama agar cache disk
@@ -26,6 +29,14 @@ object NetworkClient {
     fun install(context: Context) {
         appContext = context.applicationContext
     }
+
+    /** Set API key aktif; cache dibersihkan supaya tidak bercampur antar user. */
+    fun setApiKey(key: String?) {
+        currentApiKey = key
+        clearApiCache()
+    }
+
+    fun getApiKey(): String? = currentApiKey
 
     private val json = Json {
         ignoreUnknownKeys = true
@@ -36,17 +47,22 @@ object NetworkClient {
 
     private val authInterceptor = Interceptor { chain ->
         val originalRequest = chain.request()
-        val originalUrl = originalRequest.url
+        val key = currentApiKey
 
-        val urlWithKey = originalUrl.newBuilder()
-            .addQueryParameter("apikey", DEFAULT_API_KEY)
-            .build()
-
-        val newRequest = originalRequest.newBuilder()
-            .url(urlWithKey)
-            .header("x-api-key", DEFAULT_API_KEY)
-            .header("Accept", "application/json")
-            .build()
+        val newRequest = if (key.isNullOrBlank()) {
+            originalRequest.newBuilder()
+                .header("Accept", "application/json")
+                .build()
+        } else {
+            val urlWithKey = originalRequest.url.newBuilder()
+                .addQueryParameter("apikey", key)
+                .build()
+            originalRequest.newBuilder()
+                .url(urlWithKey)
+                .header("x-api-key", key)
+                .header("Accept", "application/json")
+                .build()
+        }
 
         chain.proceed(newRequest)
     }

@@ -8,6 +8,7 @@ sealed class Screen(val route: String) {
     object DramaHome : Screen("drama_home")
     object PlatformHub : Screen("platform_hub")
     object Search : Screen("search")
+    object Profile : Screen("profile")
 
     object AnimeDetail : Screen("anime_detail/{url}") {
         fun createRoute(url: String): String {
