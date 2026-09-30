@@ -72,8 +72,8 @@ fun BagahBottomNavBar(
                 Brush.verticalGradient(
                     colors = listOf(
                         Color.Transparent,
-                        BgBlack.copy(alpha = 0.85f),
-                        BgBlack
+                        BgBlack.copy(alpha = 0.45f),
+                        BgBlack.copy(alpha = 0.65f)
                     )
                 )
             )
@@ -82,17 +82,27 @@ fun BagahBottomNavBar(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 8.dp)
+                .padding(horizontal = 16.dp, vertical = 6.dp)
+                .clip(RoundedCornerShape(24.dp))
                 .background(
-                    color = SurfaceDark.copy(alpha = 0.95f),
-                    shape = RoundedCornerShape(16.dp)
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.14f),
+                            Color.White.copy(alpha = 0.05f)
+                        )
+                    )
                 )
                 .border(
                     width = 1.dp,
-                    color = BorderSubtle,
-                    shape = RoundedCornerShape(16.dp)
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.White.copy(alpha = 0.34f),
+                            Color.White.copy(alpha = 0.06f)
+                        )
+                    ),
+                    shape = RoundedCornerShape(24.dp)
                 )
-                .padding(horizontal = 4.dp, vertical = 5.dp)
+                .padding(horizontal = 6.dp, vertical = 4.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -102,12 +112,12 @@ fun BagahBottomNavBar(
                 items.forEach { item ->
                     val isSelected = currentRoute == item.route
                     val iconColor by animateColorAsState(
-                        targetValue = if (isSelected) AccentWhite else TextMuted,
+                        targetValue = if (isSelected) AccentWhite else Color.White.copy(alpha = 0.55f),
                         animationSpec = tween(200),
                         label = "iconColor"
                     )
                     val textColor by animateColorAsState(
-                        targetValue = if (isSelected) TextPrimary else TextMuted,
+                        targetValue = if (isSelected) TextPrimary else Color.White.copy(alpha = 0.5f),
                         animationSpec = tween(200),
                         label = "textColor"
                     )
@@ -115,7 +125,7 @@ fun BagahBottomNavBar(
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(16.dp))
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null
@@ -125,15 +135,37 @@ fun BagahBottomNavBar(
                                 }
                             }
                             .background(
-                                color = if (isSelected) SurfaceElevated else Color.Transparent,
-                                shape = RoundedCornerShape(12.dp)
+                                brush = if (isSelected) {
+                                    Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color.White.copy(alpha = 0.20f),
+                                            Color.White.copy(alpha = 0.08f)
+                                        )
+                                    )
+                                } else {
+                                    Brush.verticalGradient(
+                                        colors = listOf(Color.Transparent, Color.Transparent)
+                                    )
+                                },
+                                shape = RoundedCornerShape(16.dp)
                             )
                             .border(
                                 width = if (isSelected) 1.dp else 0.dp,
-                                color = if (isSelected) CardBorderDark else Color.Transparent,
-                                shape = RoundedCornerShape(12.dp)
+                                brush = if (isSelected) {
+                                    Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color.White.copy(alpha = 0.30f),
+                                            Color.White.copy(alpha = 0.06f)
+                                        )
+                                    )
+                                } else {
+                                    Brush.verticalGradient(
+                                        colors = listOf(Color.Transparent, Color.Transparent)
+                                    )
+                                },
+                                shape = RoundedCornerShape(16.dp)
                             )
-                            .padding(horizontal = 6.dp, vertical = 5.dp)
+                            .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Icon(
                             imageVector = item.icon,
