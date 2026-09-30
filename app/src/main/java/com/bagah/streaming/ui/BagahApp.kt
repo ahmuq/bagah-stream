@@ -27,9 +27,6 @@ import com.bagah.streaming.ui.screens.anime.AnimeHomeScreen
 import com.bagah.streaming.ui.screens.anime.AnimePlayerScreen
 import com.bagah.streaming.ui.screens.drama.DramaHomeScreen
 import com.bagah.streaming.ui.screens.drama.DramaReelsPlayerScreen
-import com.bagah.streaming.ui.screens.dramanova.DramaNovaDetailScreen
-import com.bagah.streaming.ui.screens.dramanova.DramaNovaHomeScreen
-import com.bagah.streaming.ui.screens.dramanova.DramaNovaPlayerScreen
 import com.bagah.streaming.ui.screens.flickreels.FlickReelsDetailScreen
 import com.bagah.streaming.ui.screens.flickreels.FlickReelsHomeScreen
 import com.bagah.streaming.ui.screens.flickreels.FlickReelsPlayerScreen
@@ -37,9 +34,6 @@ import com.bagah.streaming.ui.screens.freereels.FreeReelsDetailScreen
 import com.bagah.streaming.ui.screens.freereels.FreeReelsHomeScreen
 import com.bagah.streaming.ui.screens.freereels.FreeReelsPlayerScreen
 import com.bagah.streaming.ui.screens.hub.PlatformHubScreen
-import com.bagah.streaming.ui.screens.melolo.MeloloDetailScreen
-import com.bagah.streaming.ui.screens.melolo.MeloloHomeScreen
-import com.bagah.streaming.ui.screens.melolo.MeloloPlayerScreen
 import com.bagah.streaming.ui.screens.pinedrama.PineDramaDetailScreen
 import com.bagah.streaming.ui.screens.pinedrama.PineDramaHomeScreen
 import com.bagah.streaming.ui.screens.reelshort.ReelShortDetailScreen
@@ -68,9 +62,7 @@ fun BagahApp() {
         Screen.FreeReelsHome.route,
         Screen.FlickReelsHome.route,
         Screen.ShortMaxHome.route,
-        Screen.MeloloHome.route,
         Screen.PineDramaHome.route,
-        Screen.DramaNovaHome.route,
         Screen.Search.route
     )
 
@@ -359,45 +351,7 @@ fun BagahApp() {
                     )
                 }
 
-                // 19. Melolo
-                composable(Screen.MeloloHome.route) {
-                    MeloloHomeScreen(
-                        onSeriesClick = { seriesId ->
-                            navController.navigate(Screen.MeloloDetail.createRoute(seriesId))
-                        },
-                        onSearchClick = { navController.navigate(Screen.Search.route) }
-                    )
-                }
-                composable(
-                    route = Screen.MeloloDetail.route,
-                    arguments = listOf(navArgument("seriesId") { type = NavType.StringType })
-                ) { backStack ->
-                    val seriesId = backStack.arguments?.getString("seriesId") ?: ""
-                    MeloloDetailScreen(
-                        seriesId = seriesId,
-                        onBackClick = { navController.popBackStack() },
-                        onPlayEpisode = { sId, epNum ->
-                            navController.navigate(Screen.MeloloPlayer.createRoute(sId, epNum))
-                        }
-                    )
-                }
-                composable(
-                    route = Screen.MeloloPlayer.route,
-                    arguments = listOf(
-                        navArgument("seriesId") { type = NavType.StringType },
-                        navArgument("episodeNum") { type = NavType.IntType; defaultValue = 1 }
-                    )
-                ) { backStack ->
-                    val seriesId = backStack.arguments?.getString("seriesId") ?: ""
-                    val episodeNum = backStack.arguments?.getInt("episodeNum") ?: 1
-                    MeloloPlayerScreen(
-                        seriesId = seriesId,
-                        initialEpisode = episodeNum,
-                        onBackClick = { navController.popBackStack() }
-                    )
-                }
-
-                // 20. PineDrama (katalog saja)
+                // 19. PineDrama (katalog saja)
                 composable(Screen.PineDramaHome.route) {
                     PineDramaHomeScreen(
                         onSeriesClick = { collectionId ->
@@ -417,45 +371,7 @@ fun BagahApp() {
                     )
                 }
 
-                // 21. DramaNova
-                composable(Screen.DramaNovaHome.route) {
-                    DramaNovaHomeScreen(
-                        onSeriesClick = { seriesId ->
-                            navController.navigate(Screen.DramaNovaDetail.createRoute(seriesId))
-                        },
-                        onSearchClick = { navController.navigate(Screen.Search.route) }
-                    )
-                }
-                composable(
-                    route = Screen.DramaNovaDetail.route,
-                    arguments = listOf(navArgument("seriesId") { type = NavType.StringType })
-                ) { backStack ->
-                    val seriesId = backStack.arguments?.getString("seriesId") ?: ""
-                    DramaNovaDetailScreen(
-                        seriesId = seriesId,
-                        onBackClick = { navController.popBackStack() },
-                        onPlayEpisode = { sId, epNum ->
-                            navController.navigate(Screen.DramaNovaPlayer.createRoute(sId, epNum))
-                        }
-                    )
-                }
-                composable(
-                    route = Screen.DramaNovaPlayer.route,
-                    arguments = listOf(
-                        navArgument("seriesId") { type = NavType.StringType },
-                        navArgument("episodeNum") { type = NavType.IntType; defaultValue = 1 }
-                    )
-                ) { backStack ->
-                    val seriesId = backStack.arguments?.getString("seriesId") ?: ""
-                    val episodeNum = backStack.arguments?.getInt("episodeNum") ?: 1
-                    DramaNovaPlayerScreen(
-                        seriesId = seriesId,
-                        initialEpisode = episodeNum,
-                        onBackClick = { navController.popBackStack() }
-                    )
-                }
-
-                // 22. Search
+                // 20. Search
                 composable(Screen.Search.route) {
                     SearchScreen(
                         onAnimeClick = { url ->
@@ -475,12 +391,6 @@ fun BagahApp() {
                         },
                         onShortMaxClick = { seriesId ->
                             navController.navigate(Screen.ShortMaxDetail.createRoute(seriesId))
-                        },
-                        onMeloloClick = { seriesId ->
-                            navController.navigate(Screen.MeloloDetail.createRoute(seriesId))
-                        },
-                        onDramaNovaClick = { seriesId ->
-                            navController.navigate(Screen.DramaNovaDetail.createRoute(seriesId))
                         }
                     )
                 }

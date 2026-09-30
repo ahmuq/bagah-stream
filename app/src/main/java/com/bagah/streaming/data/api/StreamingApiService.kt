@@ -9,16 +9,6 @@ import com.bagah.streaming.data.model.DramaBrowseResponse
 import com.bagah.streaming.data.model.DramaDetailResponse
 import com.bagah.streaming.data.model.DramaEpisodeResponse
 import com.bagah.streaming.data.model.DramaSearchResponse
-import com.bagah.streaming.data.model.DramaNovaDetailResponse
-import com.bagah.streaming.data.model.DramaNovaEpisodeResponse
-import com.bagah.streaming.data.model.DramaNovaEpisodesResponse
-import com.bagah.streaming.data.model.DramaNovaHomeResponse
-import com.bagah.streaming.data.model.DramaNovaListResponse
-import com.bagah.streaming.data.model.MeloloDetailResponse
-import com.bagah.streaming.data.model.MeloloEpisodeResponse
-import com.bagah.streaming.data.model.MeloloEpisodesResponse
-import com.bagah.streaming.data.model.MeloloListResponse
-import com.bagah.streaming.data.model.MeloloSearchResponse
 import com.bagah.streaming.data.model.PineDramaCollectionsResponse
 import com.bagah.streaming.data.model.PineDramaDetailResponse
 import com.bagah.streaming.data.model.FlickReelsBrowseResponse
@@ -260,52 +250,6 @@ interface StreamingApiService {
         @Query("lang") lang: String = "id"
     ): ShortMaxSearchResponse
 
-    // --- MELOLO ENDPOINTS ---
-    // Feed dibungkus `data.items`; stream berupa MP4 langsung di `data.urls.video_1`.
-
-    @GET("api/melolo/foryou")
-    suspend fun getMeloloForYou(
-        @Query("page") page: Int = 1
-    ): MeloloListResponse
-
-    @GET("api/melolo/trending")
-    suspend fun getMeloloTrending(
-        @Query("page") page: Int = 1
-    ): MeloloListResponse
-
-    @GET("api/melolo/latest")
-    suspend fun getMeloloLatest(
-        @Query("page") page: Int = 1
-    ): MeloloListResponse
-
-    @GET("api/melolo/rankings")
-    suspend fun getMeloloRankings(
-        @Query("page") page: Int = 1
-    ): MeloloListResponse
-
-    @GET("api/melolo/detail")
-    suspend fun getMeloloDetail(
-        @Query("seriesId") seriesId: String
-    ): MeloloDetailResponse
-
-    @GET("api/melolo/episodes")
-    suspend fun getMeloloEpisodes(
-        @Query("seriesId") seriesId: String
-    ): MeloloEpisodesResponse
-
-    @GET("api/melolo/episode")
-    suspend fun getMeloloEpisode(
-        @Query("seriesId") seriesId: String,
-        @Query("episode") episode: Int
-    ): MeloloEpisodeResponse
-
-    @GET("api/melolo/search")
-    suspend fun searchMelolo(
-        @Query("keyword") keyword: String,
-        @Query("page") page: Int = 1,
-        @Query("pageSize") pageSize: Int = 20
-    ): MeloloSearchResponse
-
     // --- PINEDRAMA ENDPOINTS ---
 
     @GET("api/pinedrama/foryou")
@@ -318,55 +262,4 @@ interface StreamingApiService {
     suspend fun getPineDramaDetail(
         @Query("collectionId") collectionId: String
     ): PineDramaDetailResponse
-
-    // --- DRAMANOVA ENDPOINTS ---
-
-    @GET("api/dramanova/home")
-    suspend fun getDramaNovaHome(
-        @Query("lang") lang: String = "id"
-    ): DramaNovaHomeResponse
-
-    @GET("api/dramanova/trending")
-    suspend fun getDramaNovaTrending(
-        @Query("page") page: Int = 1,
-        @Query("lang") lang: String = "id"
-    ): DramaNovaListResponse
-
-    @GET("api/dramanova/latest")
-    suspend fun getDramaNovaLatest(
-        @Query("page") page: Int = 1,
-        @Query("lang") lang: String = "id"
-    ): DramaNovaListResponse
-
-    @GET("api/dramanova/rankings")
-    suspend fun getDramaNovaRankings(
-        @Query("page") page: Int = 1,
-        @Query("lang") lang: String = "id"
-    ): DramaNovaListResponse
-
-    @GET("api/dramanova/search")
-    suspend fun searchDramaNova(
-        @Query("keyword") keyword: String,
-        @Query("page") page: Int = 1,
-        @Query("lang") lang: String = "id"
-    ): DramaNovaListResponse
-
-    @GET("api/dramanova/detail")
-    suspend fun getDramaNovaDetail(
-        @Query("seriesId") seriesId: String,
-        @Query("lang") lang: String = "id"
-    ): DramaNovaDetailResponse
-
-    @GET("api/dramanova/episodes")
-    suspend fun getDramaNovaEpisodes(
-        @Query("seriesId") seriesId: String,
-        @Query("lang") lang: String = "id"
-    ): DramaNovaEpisodesResponse
-
-    @GET("api/dramanova/episode")
-    suspend fun getDramaNovaEpisode(
-        @Query("seriesId") seriesId: String,
-        @Query("episode") episode: Int,
-        @Query("lang") lang: String = "id"
-    ): DramaNovaEpisodeResponse
 }

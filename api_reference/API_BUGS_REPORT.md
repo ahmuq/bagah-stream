@@ -17,6 +17,9 @@ endpoint terpadu `browse` (plus `detail`, `episode`, `search`); endpoint lama se
 baru ada di dokumen per platform (`dramabox.md`, `reelshort.md`, `shortmax.md`,
 `freereels.md`, `flickreels.md`).
 
+Catatan: platform **Melolo** dan **DramaNova** sudah tidak dipakai di app (dihapus
+2026-09-30), jadi temuan #1 dan #3 di bawah disimpan hanya sebagai arsip.
+
 Status temuan lama (diverifikasi ulang 2026-09-30):
 
 | #  | Status saat ini                                                                                       |

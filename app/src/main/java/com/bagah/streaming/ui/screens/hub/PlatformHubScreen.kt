@@ -62,9 +62,7 @@ fun PlatformHubScreen(
         PlatformEntry("FreeReels", "Serial pendek gratis", "freereels_home", Icons.Rounded.SlowMotionVideo),
         PlatformEntry("FlickReels", "Serial pendek internasional", "flickreels_home", Icons.Rounded.Theaters),
         PlatformEntry("ShortMax", "Serial pendek populer", "shortmax_home", Icons.Rounded.Movie),
-        PlatformEntry("Melolo", "Serial pendek pilihan", "melolo_home", Icons.Rounded.SlowMotionVideo),
-        PlatformEntry("PineDrama", "Katalog mini drama", "pinedrama_home", Icons.Rounded.Theaters),
-        PlatformEntry("DramaNova", "Serial pendek trending", "dramanova_home", Icons.Rounded.PlayCircle)
+        PlatformEntry("PineDrama", "Katalog mini drama", "pinedrama_home", Icons.Rounded.Theaters)
     )
 
     LazyColumn(

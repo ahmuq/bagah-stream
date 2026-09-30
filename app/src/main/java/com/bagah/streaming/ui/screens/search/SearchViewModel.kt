@@ -4,24 +4,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bagah.streaming.data.model.AnimeItem
 import com.bagah.streaming.data.model.DramaItem
-import com.bagah.streaming.data.model.DramaNovaItem
 import com.bagah.streaming.data.model.FlickReelsItem
 import com.bagah.streaming.data.model.FreeReelsItem
-import com.bagah.streaming.data.model.MeloloItem
 import com.bagah.streaming.data.model.ReelShortBook
 import com.bagah.streaming.data.model.ShortMaxItem
 import com.bagah.streaming.data.repository.anime.AnimeRepository
 import com.bagah.streaming.data.repository.anime.AnimeRepositoryImpl
 import com.bagah.streaming.data.repository.drama.DramaRepository
 import com.bagah.streaming.data.repository.drama.DramaRepositoryImpl
-import com.bagah.streaming.data.repository.dramanova.DramaNovaRepository
-import com.bagah.streaming.data.repository.dramanova.DramaNovaRepositoryImpl
 import com.bagah.streaming.data.repository.flickreels.FlickReelsRepository
 import com.bagah.streaming.data.repository.flickreels.FlickReelsRepositoryImpl
 import com.bagah.streaming.data.repository.freereels.FreeReelsRepository
 import com.bagah.streaming.data.repository.freereels.FreeReelsRepositoryImpl
-import com.bagah.streaming.data.repository.melolo.MeloloRepository
-import com.bagah.streaming.data.repository.melolo.MeloloRepositoryImpl
 import com.bagah.streaming.data.repository.reelshort.ReelShortRepository
 import com.bagah.streaming.data.repository.shortmax.ShortMaxRepository
 import com.bagah.streaming.data.repository.shortmax.ShortMaxRepositoryImpl
@@ -41,8 +35,6 @@ data class SearchUiState(
     val freeReelsResults: List<FreeReelsItem> = emptyList(),
     val flickReelsResults: List<FlickReelsItem> = emptyList(),
     val shortMaxResults: List<ShortMaxItem> = emptyList(),
-    val meloloResults: List<MeloloItem> = emptyList(),
-    val dramaNovaResults: List<DramaNovaItem> = emptyList(),
     val isSearching: Boolean = false,
     val isLoadingMore: Boolean = false,
     val hasSearched: Boolean = false,
@@ -50,9 +42,9 @@ data class SearchUiState(
     val endReached: Boolean = false,
     val errorMessage: String? = null
 ) {
-    /** Hanya DramaBox, ReelShort, ShortMax & DramaNova search yang punya param page yang berfungsi. */
+    /** Hanya DramaBox, ReelShort & ShortMax search yang punya param page yang berfungsi. */
     val canLoadMore: Boolean
-        get() = (selectedTab == 1 || selectedTab == 2 || selectedTab == 5 || selectedTab == 7) && !endReached
+        get() = (selectedTab == 1 || selectedTab == 2 || selectedTab == 5) && !endReached
 }
 
 class SearchViewModel(
@@ -61,9 +53,7 @@ class SearchViewModel(
     private val reelShortRepo: ReelShortRepository = ReelShortRepositoryImpl(),
     private val freeReelsRepo: FreeReelsRepository = FreeReelsRepositoryImpl(),
     private val flickReelsRepo: FlickReelsRepository = FlickReelsRepositoryImpl(),
-    private val shortMaxRepo: ShortMaxRepository = ShortMaxRepositoryImpl(),
-    private val meloloRepo: MeloloRepository = MeloloRepositoryImpl(),
-    private val dramaNovaRepo: DramaNovaRepository = DramaNovaRepositoryImpl()
+    private val shortMaxRepo: ShortMaxRepository = ShortMaxRepositoryImpl()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SearchUiState())
@@ -164,28 +154,6 @@ class SearchViewModel(
                             _uiState.update { it.copy(isSearching = false, errorMessage = err.localizedMessage) }
                         }
                 }
-                6 -> {
-                    meloloRepo.search(q, 1)
-                        .onSuccess { list ->
-                            _uiState.update {
-                                it.copy(isSearching = false, meloloResults = list, endReached = true)
-                            }
-                        }
-                        .onFailure { err ->
-                            _uiState.update { it.copy(isSearching = false, errorMessage = err.localizedMessage) }
-                        }
-                }
-                7 -> {
-                    dramaNovaRepo.search(q, 1)
-                        .onSuccess { list ->
-                            _uiState.update {
-                                it.copy(isSearching = false, dramaNovaResults = list, page = 1, endReached = list.isEmpty())
-                            }
-                        }
-                        .onFailure { err ->
-                            _uiState.update { it.copy(isSearching = false, errorMessage = err.localizedMessage) }
-                        }
-                }
             }
         }
     }
@@ -234,19 +202,6 @@ class SearchViewModel(
                         it.copy(
                             isLoadingMore = false,
                             shortMaxResults = it.shortMaxResults + fresh,
-                            page = nextPage,
-                            endReached = list.isEmpty() || fresh.isEmpty()
-                        )
-                    }
-                }.onFailure { _uiState.update { it.copy(isLoadingMore = false, endReached = true) } }
-
-                7 -> dramaNovaRepo.search(q, nextPage).onSuccess { list ->
-                    val existing = _uiState.value.dramaNovaResults.map { it.stableId() }.toSet()
-                    val fresh = list.filterNot { it.stableId() in existing }
-                    _uiState.update {
-                        it.copy(
-                            isLoadingMore = false,
-                            dramaNovaResults = it.dramaNovaResults + fresh,
                             page = nextPage,
                             endReached = list.isEmpty() || fresh.isEmpty()
                         )

@@ -70,29 +70,9 @@ sealed class Screen(val route: String) {
         fun createRoute(seriesId: String, episodeNum: Int = 1): String = "shortmax_player/$seriesId/$episodeNum"
     }
 
-    object MeloloHome : Screen("melolo_home")
-
-    object MeloloDetail : Screen("melolo_detail/{seriesId}") {
-        fun createRoute(seriesId: String): String = "melolo_detail/$seriesId"
-    }
-
-    object MeloloPlayer : Screen("melolo_player/{seriesId}/{episodeNum}") {
-        fun createRoute(seriesId: String, episodeNum: Int = 1): String = "melolo_player/$seriesId/$episodeNum"
-    }
-
     object PineDramaHome : Screen("pinedrama_home")
 
     object PineDramaDetail : Screen("pinedrama_detail/{collectionId}") {
         fun createRoute(collectionId: String): String = "pinedrama_detail/$collectionId"
-    }
-
-    object DramaNovaHome : Screen("dramanova_home")
-
-    object DramaNovaDetail : Screen("dramanova_detail/{seriesId}") {
-        fun createRoute(seriesId: String): String = "dramanova_detail/$seriesId"
-    }
-
-    object DramaNovaPlayer : Screen("dramanova_player/{seriesId}/{episodeNum}") {
-        fun createRoute(seriesId: String, episodeNum: Int = 1): String = "dramanova_player/$seriesId/$episodeNum"
     }
 }

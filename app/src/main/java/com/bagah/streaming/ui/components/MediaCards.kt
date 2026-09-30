@@ -779,7 +779,7 @@ fun ShortMaxCard(
 
 /**
  * Kartu generik untuk platform yang hanya butuh poster + judul + badge episode.
- * Dipakai Melolo, PineDrama, dan DramaNova agar tidak menduplikasi tata letak.
+ * Dipakai PineDrama agar tidak menduplikasi tata letak.
  */
 @Composable
 fun SimpleMediaCard(
