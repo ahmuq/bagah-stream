@@ -1,16 +1,23 @@
 name: Release APK
 
 on:
-  push:
-    branches: [ main, master ]
-    tags: [ 'v*' ]
   workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Jenis kenaikan versi'
+        type: choice
+        options: [ patch, minor, major ]
+        default: patch
+      version:
+        description: 'Set versi eksplisit (opsional, mis. 1.2.0). Kosongkan untuk pakai bump.'
+        type: string
+        required: false
 
 permissions:
   contents: write
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release-manual
   cancel-in-progress: false
 
 jobs:
@@ -35,20 +42,26 @@ jobs:
         id: ver
         run: |
           git fetch --tags --force
-          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
-            # Tag manual (minor/major): pakai versi tag apa adanya.
-            name="${GITHUB_REF#refs/tags/v}"
+          explicit="${{ github.event.inputs.version }}"
+          bump="${{ github.event.inputs.bump }}"
+          latest=$(git tag -l 'v*' | sort -V | tail -n1)
+
+          if [ -n "$explicit" ]; then
+            name="$explicit"
           else
-            latest=$(git tag -l 'v*' | sort -V | tail -n1)
             if [ -z "$latest" ]; then
-              name="1.0.0"
+              MA=1; MI=0; PA=0
             else
-              base="${latest#v}"
-              IFS=. read -r MA MI PA <<< "$base"
-              PA=$((PA + 1))
-              name="$MA.$MI.$PA"
+              IFS=. read -r MA MI PA <<< "${latest#v}"
             fi
+            case "$bump" in
+              major) MA=$((MA + 1)); MI=0; PA=0 ;;
+              minor) MI=$((MI + 1)); PA=0 ;;
+              *) PA=$((PA + 1)) ;;
+            esac
+            name="$MA.$MI.$PA"
           fi
+
           code=$(awk -F. '{print $1*10000 + $2*100 + $3}' <<< "$name")
           echo "name=$name" >> "$GITHUB_OUTPUT"
           echo "code=$code" >> "$GITHUB_OUTPUT"
