@@ -48,7 +48,6 @@ import com.bagah.streaming.ui.theme.TextMuted
 import com.bagah.streaming.ui.theme.TextPrimary
 import com.bagah.streaming.ui.theme.TextSecondary
 
-/** Satu baris daftar episode yang dipakai bersama semua platform. */
 @Composable
 fun EpisodeRow(
     number: Int,
@@ -110,7 +109,6 @@ fun EpisodeRow(
     }
 }
 
-/** Header halaman detail dengan tombol kembali. */
 @Composable
 fun DetailTopBar(label: String, onBackClick: () -> Unit) {
     Row(
@@ -139,7 +137,6 @@ fun DetailTopBar(label: String, onBackClick: () -> Unit) {
     }
 }
 
-/** Blok info series (poster + judul + deskripsi + tombol putar) untuk halaman detail. */
 @Composable
 fun DetailInfoBlock(
     title: String,
@@ -219,7 +216,6 @@ fun DetailInfoBlock(
     }
 }
 
-/** Kerangka halaman detail generik: top bar, info series, dan daftar episode. */
 @Composable
 fun GenericDetailScreen(
     topLabel: String,

@@ -79,7 +79,6 @@ class FlickReelsPlayerViewModel(
     private suspend fun loadStream(seriesId: String, episode: Int) {
         repository.getEpisode(seriesId, episode)
             .onSuccess { response ->
-                // FlickReels mengirim HLS .m3u8 langsung di bestUrl; tidak perlu dekripsi.
                 val fallback = _uiState.value.episodes
                     .firstOrNull { it.episodeNum == episode }?.bestUrl
                 val url = response.bestUrl.ifBlank { fallback.orEmpty() }
@@ -94,8 +93,6 @@ class FlickReelsPlayerViewModel(
                 }
             }
             .onFailure { err ->
-                // Sebagian episode terkunci gagal di-unlock di sisi server (HTTP 400);
-                // beri pesan yang jelas alih-alih error teknis.
                 val locked = _uiState.value.episodes
                     .firstOrNull { it.episodeNum == episode }?.locked == true
                 _uiState.update {

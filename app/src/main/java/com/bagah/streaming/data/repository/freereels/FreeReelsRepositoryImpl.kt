@@ -17,12 +17,10 @@ class FreeReelsRepositoryImpl(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : FreeReelsRepository {
 
-    // Kunci tab FreeReels pada endpoint browse.
     private val tabPopular = "503"
     private val tabNew = "505"
     private val tabAnime = "547"
 
-    // Item tanpa id tidak bisa dibuka; dibuang seperti di platform lain.
     private fun List<FreeReelsItem>.validItems(): List<FreeReelsItem> =
         filter { it.stableId().isNotBlank() }
 
@@ -61,14 +59,12 @@ class FreeReelsRepositoryImpl(
         }
 
     override suspend fun getEpisodes(seriesId: String): Result<List<FreeReelsEpisode>> =
-        // Endpoint episodes dihapus; daftar episode ikut di `detail.items`.
         getDetail(seriesId).map { it.items }
 
     override suspend fun getEpisode(
         seriesId: String,
         episode: Int
     ): Result<FreeReelsEpisodeResponse> = withContext(ioDispatcher) {
-        // URL stream: jangan dicache.
         runCatching { api.getFreeReelsEpisode(seriesId, episode) }
     }
 

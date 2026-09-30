@@ -40,7 +40,6 @@ class DramaHomeViewModel(
         loadFiltersAndHome()
     }
 
-    /** Muat ulang dengan menembus cache (disk + memori). */
     fun refresh() {
         NetworkClient.clearApiCache()
         loadFiltersAndHome()
@@ -48,7 +47,6 @@ class DramaHomeViewModel(
 
     private fun loadFiltersAndHome() {
         viewModelScope.launch {
-            // Genre diambil dari `type=filters`; dipakai tab Beranda (classify).
             val filters = repository.getFilters().getOrDefault(emptyList())
             val options = filters.firstOrNull { it.categoryName.contains("Genre", ignoreCase = true) }?.options
                 ?: filters.firstOrNull()?.options
@@ -58,7 +56,6 @@ class DramaHomeViewModel(
         }
     }
 
-    /** Filter genre untuk tab Beranda (classify). */
     fun setGenre(value: String) {
         if (value == _uiState.value.selectedGenre) return
         _uiState.update { it.copy(selectedGenre = value) }
@@ -71,14 +68,12 @@ class DramaHomeViewModel(
         loadCategory(index)
     }
 
-    /** Filter status untuk tab Beranda: All / 1 (Tamat) / 2 (Berjalan). */
     fun setStatusFilter(value: String) {
         if (value == _uiState.value.statusFilter) return
         _uiState.update { it.copy(statusFilter = value) }
         loadCategory(0)
     }
 
-    /** Tipe peringkat untuk tab Peringkat: 1 Trending, 2 Populer, 3 Terbaru. */
     fun setRankType(value: Int) {
         if (value == _uiState.value.rankType) return
         _uiState.update { it.copy(rankType = value) }
@@ -99,7 +94,6 @@ class DramaHomeViewModel(
                 )
             }
 
-            // Tab "Kategori" memakai `type=theater` yang mengembalikan kolom bersection.
             if (index == 2) {
                 repository.getTheater()
                     .onSuccess { sections ->
@@ -134,16 +128,13 @@ class DramaHomeViewModel(
         }
     }
 
-    /** Dipanggil saat daftar di-scroll mendekati bawah. */
     fun loadMore() {
         val state = _uiState.value
         if (state.isLoading || state.isLoadingMore || state.endReached) return
-        // Kategori (theater) dan Peringkat (ranking) tidak mendukung pagination.
         if (state.selectedCategoryIndex == 2 || state.selectedCategoryIndex == 3) {
             _uiState.update { it.copy(endReached = true) }
             return
         }
-        // Tandai sinkron agar tidak ada dua loadMore paralel.
         _uiState.update { it.copy(isLoadingMore = true) }
 
         viewModelScope.launch {
@@ -157,7 +148,6 @@ class DramaHomeViewModel(
                             isLoadingMore = false,
                             dramaList = (it.dramaList + fresh).distinctBy { d -> d.bookId },
                             page = nextPage,
-                            // Berhenti jika halaman kosong atau tidak ada item baru.
                             endReached = list.isEmpty() || fresh.isEmpty()
                         )
                     }

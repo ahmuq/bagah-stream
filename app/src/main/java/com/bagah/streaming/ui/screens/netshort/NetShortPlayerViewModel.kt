@@ -80,7 +80,6 @@ class NetShortPlayerViewModel(
     private suspend fun loadStream(seriesId: String, episode: Int) {
         repository.getEpisode(seriesId, episode)
             .onSuccess { response ->
-                // NetShort mengirim MP4 langsung; tidak perlu dekripsi.
                 val fallback = _uiState.value.episodes
                     .firstOrNull { it.episodeNum == episode }?.streamUrl()
                 val url = response.streamUrl().ifBlank { fallback.orEmpty() }

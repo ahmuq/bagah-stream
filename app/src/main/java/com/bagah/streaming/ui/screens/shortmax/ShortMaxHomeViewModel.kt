@@ -48,7 +48,6 @@ class ShortMaxHomeViewModel(
         _uiState.update { it.copy(selectedTab = tab) }
     }
 
-    /** Muat ulang dengan menembus cache (disk + memori). */
     fun refresh() {
         NetworkClient.clearApiCache()
         loadData()

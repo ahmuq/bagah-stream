@@ -59,7 +59,6 @@ import com.bagah.streaming.ui.theme.BgBlack
 fun BagahApp() {
     val session by SessionStore.state.collectAsState()
 
-    // Belum login -> tampilkan halaman login.
     if (!session.isLoggedIn) {
         LoginScreen()
         return
@@ -70,7 +69,6 @@ fun BagahApp() {
     val currentRoute = navBackStackEntry?.destination?.route
     var showSplash by rememberSaveable { mutableStateOf(true) }
 
-    // Show BottomBar only on top-level tabs
     val showBottomBar = currentRoute in listOf(
         Screen.AnimeHome.route,
         Screen.PlatformHub.route,
@@ -114,7 +112,6 @@ fun BagahApp() {
                 navController = navController,
                 startDestination = Screen.AnimeHome.route
             ) {
-                // 1. Anime Home
                 composable(Screen.AnimeHome.route) {
                     AnimeHomeScreen(
                         onAnimeClick = { url ->
@@ -126,7 +123,6 @@ fun BagahApp() {
                     )
                 }
 
-                // 2. Anime Detail
                 composable(
                     route = Screen.AnimeDetail.route,
                     arguments = listOf(navArgument("url") { type = NavType.StringType })
@@ -141,7 +137,6 @@ fun BagahApp() {
                     )
                 }
 
-                // 3. Anime Player
                 composable(
                     route = Screen.AnimePlayer.route,
                     arguments = listOf(
@@ -158,7 +153,6 @@ fun BagahApp() {
                     )
                 }
 
-                // 4. Drama Home
                 composable(Screen.DramaHome.route) {
                     DramaHomeScreen(
                         onDramaClick = { bookId, _ ->
@@ -170,7 +164,6 @@ fun BagahApp() {
                     )
                 }
 
-                // 5. Drama Detail
                 composable(
                     route = Screen.DramaDetail.route,
                     arguments = listOf(navArgument("bookId") { type = NavType.StringType })
@@ -187,7 +180,6 @@ fun BagahApp() {
                     )
                 }
 
-                // 5. Drama Reels Player
                 composable(
                     route = Screen.DramaReelsPlayer.route,
                     arguments = listOf(
@@ -207,7 +199,6 @@ fun BagahApp() {
                     )
                 }
 
-                // 6. ReelShort Home
                 composable(Screen.ReelShortHome.route) {
                     ReelShortHomeScreen(
                         onBookClick = { bookId ->
@@ -219,7 +210,6 @@ fun BagahApp() {
                     )
                 }
 
-                // 7. ReelShort Detail
                 composable(
                     route = Screen.ReelShortDetail.route,
                     arguments = listOf(navArgument("bookId") { type = NavType.StringType })
@@ -234,7 +224,6 @@ fun BagahApp() {
                     )
                 }
 
-                // 8. ReelShort Player
                 composable(
                     route = Screen.ReelShortPlayer.route,
                     arguments = listOf(
@@ -251,7 +240,6 @@ fun BagahApp() {
                     )
                 }
 
-                // 9. FreeReels Home
                 composable(Screen.FreeReelsHome.route) {
                     FreeReelsHomeScreen(
                         onSeriesClick = { seriesId ->
@@ -263,7 +251,6 @@ fun BagahApp() {
                     )
                 }
 
-                // 10. FreeReels Detail
                 composable(
                     route = Screen.FreeReelsDetail.route,
                     arguments = listOf(navArgument("seriesId") { type = NavType.StringType })
@@ -278,7 +265,6 @@ fun BagahApp() {
                     )
                 }
 
-                // 11. FreeReels Player
                 composable(
                     route = Screen.FreeReelsPlayer.route,
                     arguments = listOf(
@@ -295,7 +281,6 @@ fun BagahApp() {
                     )
                 }
 
-                // 12. FlickReels Home
                 composable(Screen.FlickReelsHome.route) {
                     FlickReelsHomeScreen(
                         onSeriesClick = { seriesId ->
@@ -307,7 +292,6 @@ fun BagahApp() {
                     )
                 }
 
-                // 13. FlickReels Detail
                 composable(
                     route = Screen.FlickReelsDetail.route,
                     arguments = listOf(navArgument("seriesId") { type = NavType.StringType })
@@ -322,7 +306,6 @@ fun BagahApp() {
                     )
                 }
 
-                // 14. FlickReels Player
                 composable(
                     route = Screen.FlickReelsPlayer.route,
                     arguments = listOf(
@@ -339,7 +322,6 @@ fun BagahApp() {
                     )
                 }
 
-                // 15. ShortMax Home
                 composable(Screen.ShortMaxHome.route) {
                     ShortMaxHomeScreen(
                         onSeriesClick = { seriesId ->
@@ -351,7 +333,6 @@ fun BagahApp() {
                     )
                 }
 
-                // 16. ShortMax Detail
                 composable(
                     route = Screen.ShortMaxDetail.route,
                     arguments = listOf(navArgument("seriesId") { type = NavType.StringType })
@@ -366,7 +347,6 @@ fun BagahApp() {
                     )
                 }
 
-                // 17. ShortMax Player
                 composable(
                     route = Screen.ShortMaxPlayer.route,
                     arguments = listOf(
@@ -383,14 +363,12 @@ fun BagahApp() {
                     )
                 }
 
-                // 18. Platform Hub (daftar semua platform drama)
                 composable(Screen.PlatformHub.route) {
                     PlatformHubScreen(
                         onPlatformClick = { route -> navController.navigate(route) }
                     )
                 }
 
-                // 19. PineDrama
                 composable(Screen.PineDramaHome.route) {
                     PineDramaHomeScreen(
                         onSeriesClick = { seriesId ->
@@ -428,7 +406,6 @@ fun BagahApp() {
                     )
                 }
 
-                // 20. NetShort
                 composable(Screen.NetShortHome.route) {
                     NetShortHomeScreen(
                         onSeriesClick = { seriesId ->
@@ -466,7 +443,6 @@ fun BagahApp() {
                     )
                 }
 
-                // 21. Search
                 composable(Screen.Search.route) {
                     SearchScreen(
                         onAnimeClick = { url ->
@@ -496,7 +472,6 @@ fun BagahApp() {
                     )
                 }
 
-                // Profile
                 composable(Screen.Profile.route) {
                     ProfileScreen()
                 }

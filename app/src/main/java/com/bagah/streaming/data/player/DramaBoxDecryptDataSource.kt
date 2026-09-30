@@ -12,22 +12,11 @@ import java.io.IOException
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 
-/**
- * Menyimpan kunci AES episode yang sedang diputar. Kunci berubah tiap episode,
- * sementara ExoPlayer membuat DataSource saat `open()`, jadi holder ini yang
- * menjembatani keduanya.
- */
 class DramaBoxKeyHolder {
     @Volatile
     var keyHex: String? = null
 }
 
-/**
- * DramaBox mengirim MP4 penuh yang terenkripsi AES-128-ECB per sample video.
- * ExoPlayer tidak bisa memutar file mentahnya, jadi seluruh berkas diunduh lebih
- * dulu, lalu hanya rentang byte sample video yang didekripsi (header container dan
- * atom metadata dibiarkan utuh agar tetap bisa di-parse).
- */
 class DramaBoxDecryptDataSource(
     private val client: OkHttpClient,
     private val keyHex: String
@@ -92,7 +81,6 @@ class DramaBoxDecryptDataSource(
         override fun createDataSource(): DataSource =
             DramaBoxDecryptDataSource(client, keyHolder.keyHex.orEmpty())
 
-        /** Dipakai saat kunci belum tersedia; pemutaran menunggu sampai key terisi. */
         fun hasKey(): Boolean = !keyHolder.keyHex.isNullOrBlank()
     }
 }

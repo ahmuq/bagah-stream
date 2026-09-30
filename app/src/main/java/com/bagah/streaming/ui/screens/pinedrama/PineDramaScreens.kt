@@ -112,7 +112,6 @@ fun PineDramaHomeScreen(
         if (!uiState.isLoading) isRefreshing = false
     }
 
-    
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = {
@@ -131,7 +130,7 @@ fun PineDramaHomeScreen(
             ErrorBlock(uiState.errorMessage!!) { viewModel.loadData() }
         } else {
             val gridState = rememberLazyGridState()
-            
+
             LaunchedEffect(uiState.selectedTab) {
                 gridState.scrollToItem(0)
             }
@@ -492,7 +491,6 @@ fun PineDramaPlayerScreen(
         viewModel.initPlayer(seriesId, initialEpisode)
     }
 
-    // MP4 langsung dari PineDrama; ExoPlayer memutar tanpa dekripsi.
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
             playWhenReady = true
@@ -502,7 +500,6 @@ fun PineDramaPlayerScreen(
 
     KeepScreenOn()
 
-    // Auto lanjut ke episode berikutnya saat video habis.
     DisposableEffect(exoPlayer) {
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {

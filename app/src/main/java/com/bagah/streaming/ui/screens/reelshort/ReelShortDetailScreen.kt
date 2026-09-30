@@ -120,7 +120,6 @@ fun ReelShortDetailScreen(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = 90.dp)
                 ) {
-                    // Header Bar
                     item {
                         Row(
                             modifier = Modifier
@@ -153,7 +152,6 @@ fun ReelShortDetailScreen(
                         }
                     }
 
-                    // Drama Info Banner
                     item {
                         Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                             Row(
@@ -221,7 +219,6 @@ fun ReelShortDetailScreen(
 
                             Spacer(modifier = Modifier.height(14.dp))
 
-                            // Play Episode 1 Button
                             Button(
                                 onClick = { onPlayEpisode(detail.id.ifBlank { bookId }, 1) },
                                 modifier = Modifier
@@ -249,7 +246,6 @@ fun ReelShortDetailScreen(
                         }
                     }
 
-                    // Episodes Section Header
                     item {
                         Row(
                             modifier = Modifier
@@ -272,7 +268,6 @@ fun ReelShortDetailScreen(
                         }
                     }
 
-                    // Episodes List
                     items(detail.chapters) { chapter ->
                         Row(
                             modifier = Modifier

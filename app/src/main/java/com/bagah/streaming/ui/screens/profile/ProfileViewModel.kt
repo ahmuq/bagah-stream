@@ -24,7 +24,6 @@ class ProfileViewModel(
     private val _uiState = MutableStateFlow(ProfileUiState())
     val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
-    /** Cek ulang API key untuk memperbarui info kuota/tier. */
     fun refresh() {
         val key = SessionStore.apiKey ?: return
         viewModelScope.launch {

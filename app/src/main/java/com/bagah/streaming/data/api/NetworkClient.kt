@@ -18,19 +18,13 @@ object NetworkClient {
 
     private var appContext: Context? = null
 
-    /** API key aktif (hasil login). Null = belum login. */
     @Volatile
     private var currentApiKey: String? = null
 
-    /**
-     * Panggil sekali dari Activity/Application sebelum request pertama agar cache disk
-     * punya lokasi. Kalau tidak dipanggil, caching dilewati (app tetap jalan).
-     */
     fun install(context: Context) {
         appContext = context.applicationContext
     }
 
-    /** Set API key aktif; cache dibersihkan supaya tidak bercampur antar user. */
     fun setApiKey(key: String?) {
         currentApiKey = key
         clearApiCache()
@@ -71,10 +65,6 @@ object NetworkClient {
         level = HttpLoggingInterceptor.Level.BASIC
     }
 
-    /**
-     * Menetapkan Cache-Control pada response GET supaya OkHttp menyimpannya ke disk.
-     * Endpoint stream episode tidak dicache (URL bertanda tangan + file besar).
-     */
     private val cacheControlInterceptor = Interceptor { chain ->
         val request = chain.request()
         val response = chain.proceed(request)
@@ -85,20 +75,14 @@ object NetworkClient {
         response.newBuilder().header("Cache-Control", control).build()
     }
 
-    /** TTL cache per jenis endpoint (detik). 0 = jangan dicache. */
     private fun cacheTtlSeconds(url: String): Int = when {
-        // Stream video episode: URL bertanda tangan, cepat kedaluwarsa.
         url.contains("/episode") -> 0
-        // Hasil pencarian: singkat.
         url.contains("/search") -> 120
-        // Metadata serial: sedang.
         url.contains("/detail") -> 600
-        // Daftar referensi yang jarang berubah.
         url.contains("type=filters") ||
             url.contains("type=categories") ||
             url.contains("type=classes") ||
             url.contains("type=channels") -> 21_600
-        // Feed/katalog umum.
         else -> 300
     }
 
@@ -114,10 +98,8 @@ object NetworkClient {
         .writeTimeout(30, TimeUnit.SECONDS)
         .retryOnConnectionFailure(true)
 
-    /** Klien untuk media (dekripsi DramaBox/ShortMax): tanpa cache disk. */
     val okHttpClient: OkHttpClient by lazy { baseBuilder().build() }
 
-    /** Klien untuk Retrofit (API): memakai cache disk dengan TTL. */
     private val apiHttpClient: OkHttpClient by lazy {
         baseBuilder()
             .apply { diskCache?.let { cache(it) } }
@@ -135,9 +117,7 @@ object NetworkClient {
             .create(StreamingApiService::class.java)
     }
 
-    /** Hapus semua cache API (disk + memori). Dipakai untuk "tarik untuk refresh". */
     fun clearApiCache() {
-        // evictAll (bukan delete) supaya instance Cache tetap valid dipakai OkHttp.
         diskCache?.evictAll()
         TtlCache.clear()
     }

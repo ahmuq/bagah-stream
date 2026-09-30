@@ -95,7 +95,6 @@ fun FlickReelsPlayerScreen(
         viewModel.initPlayer(seriesId, initialEpisode)
     }
 
-    // HLS .m3u8 dari FlickReels tidak terenkripsi; ExoPlayer memutar langsung.
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
             playWhenReady = true
@@ -105,7 +104,6 @@ fun FlickReelsPlayerScreen(
 
     KeepScreenOn()
 
-    // Auto lanjut ke episode berikutnya saat video habis.
     DisposableEffect(exoPlayer) {
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {

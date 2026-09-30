@@ -98,8 +98,6 @@ fun ShortMaxPlayerScreen(
         viewModel.initPlayer(seriesId, initialEpisode)
     }
 
-    // Segmen HLS ShortMax terenkripsi custom, jadi data source-nya mendekripsi
-    // tiap segmen sebelum diserahkan ke parser HLS ExoPlayer.
     val exoPlayer = remember {
         val decryptFactory = ShortMaxDecryptDataSource.Factory(NetworkClient.okHttpClient)
         val mediaSourceFactory = DefaultMediaSourceFactory(decryptFactory)
@@ -115,7 +113,6 @@ fun ShortMaxPlayerScreen(
 
     KeepScreenOn()
 
-    // Auto lanjut ke episode berikutnya saat video habis.
     DisposableEffect(exoPlayer) {
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {

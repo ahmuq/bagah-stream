@@ -110,7 +110,6 @@ fun AnimePlayerScreen(
 
     val scope = rememberCoroutineScope()
 
-    // ExoPlayer Instance
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
             playWhenReady = true
@@ -128,7 +127,6 @@ fun AnimePlayerScreen(
         }
     }
 
-    // Toggle orientation
     fun toggleFullscreen() {
         val activity = context as? Activity ?: return
         isLandscape = !isLandscape
@@ -139,7 +137,6 @@ fun AnimePlayerScreen(
         }
     }
 
-    // Clean up
     DisposableEffect(Unit) {
         onDispose {
             exoPlayer.release()
@@ -148,7 +145,6 @@ fun AnimePlayerScreen(
         }
     }
 
-    // Load episode streams
     fun fetchStream(quality: String? = null) {
         scope.launch {
             isLoadingStream = true
@@ -187,7 +183,6 @@ fun AnimePlayerScreen(
         fetchStream()
     }
 
-    // Position tracker ticker
     LaunchedEffect(isPlaying) {
         while (isPlaying) {
             currentPosition = exoPlayer.currentPosition.coerceAtLeast(0L)
@@ -196,7 +191,6 @@ fun AnimePlayerScreen(
         }
     }
 
-    // Auto-hide controls
     LaunchedEffect(showControls) {
         if (showControls) {
             delay(4000)
@@ -210,7 +204,6 @@ fun AnimePlayerScreen(
             .background(Color.Black)
             .clickable { showControls = !showControls }
     ) {
-        // Player Surface View
         AndroidView(
             factory = { ctx ->
                 PlayerView(ctx).apply {
@@ -225,7 +218,6 @@ fun AnimePlayerScreen(
             modifier = Modifier.fillMaxSize()
         )
 
-        // Loading or Error overlay
         if (isLoadingStream) {
             Box(
                 modifier = Modifier
@@ -268,7 +260,6 @@ fun AnimePlayerScreen(
             }
         }
 
-        // Animated Player Controls Overlay
         AnimatedVisibility(
             visible = showControls,
             enter = fadeIn(),
@@ -280,7 +271,6 @@ fun AnimePlayerScreen(
                     .fillMaxSize()
                     .background(Color.Black.copy(alpha = 0.45f))
             ) {
-                // Top Bar
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -311,7 +301,6 @@ fun AnimePlayerScreen(
                         )
                     }
 
-                    // Settings & Quality Menu
                     Box {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -361,7 +350,6 @@ fun AnimePlayerScreen(
                     }
                 }
 
-                // Center Play/Pause & Seek Buttons
                 Row(
                     modifier = Modifier.align(Alignment.Center),
                     horizontalArrangement = Arrangement.spacedBy(36.dp),
@@ -422,7 +410,6 @@ fun AnimePlayerScreen(
                     }
                 }
 
-                // Bottom Timeline & Fullscreen Toggle
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()

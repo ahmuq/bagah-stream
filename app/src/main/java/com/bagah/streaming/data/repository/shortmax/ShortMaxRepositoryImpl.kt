@@ -17,7 +17,6 @@ class ShortMaxRepositoryImpl(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ShortMaxRepository {
 
-    // Item tanpa id tidak bisa dibuka; dibuang seperti di platform lain.
     private fun List<ShortMaxItem>.validItems(): List<ShortMaxItem> =
         filter { it.stableId().isNotBlank() }
 
@@ -53,14 +52,12 @@ class ShortMaxRepositoryImpl(
         }
 
     override suspend fun getEpisodes(seriesId: String): Result<List<ShortMaxEpisode>> =
-        // Ambil dari detail yang sama agar tidak request dua kali.
         getDetail(seriesId).map { it.chapters }
 
     override suspend fun getEpisode(
         seriesId: String,
         episode: Int
     ): Result<ShortMaxEpisodeResponse> = withContext(ioDispatcher) {
-        // Stream HLS terenkripsi: jangan dicache.
         runCatching { api.getShortMaxEpisode(seriesId, episode) }
     }
 

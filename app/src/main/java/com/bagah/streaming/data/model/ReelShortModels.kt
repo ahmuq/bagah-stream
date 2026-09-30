@@ -14,7 +14,6 @@ data class ReelShortBook(
     val tags: List<String> = emptyList()
 )
 
-/** Dipakai repository sebagai wadah beranda; diisi dari `reelshort/browse`. */
 @Serializable
 data class ReelShortHomepageData(
     val searchKeywords: List<String> = emptyList(),

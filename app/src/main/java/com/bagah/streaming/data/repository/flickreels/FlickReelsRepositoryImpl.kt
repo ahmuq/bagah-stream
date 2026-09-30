@@ -17,7 +17,6 @@ class FlickReelsRepositoryImpl(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : FlickReelsRepository {
 
-    // Item tanpa id tidak bisa dibuka; dibuang seperti di platform lain.
     private fun List<FlickReelsItem>.validItems(): List<FlickReelsItem> =
         filter { it.id.isNotBlank() }
 
@@ -72,14 +71,12 @@ class FlickReelsRepositoryImpl(
         }
 
     override suspend fun getEpisodes(seriesId: String): Result<List<FlickReelsEpisode>> =
-        // Ambil dari detail yang sama agar tidak request dua kali.
         getDetail(seriesId).map { it.chapters }
 
     override suspend fun getEpisode(
         seriesId: String,
         episode: Int
     ): Result<FlickReelsEpisodeResponse> = withContext(ioDispatcher) {
-        // URL stream bertanda tangan: jangan dicache.
         runCatching { api.getFlickReelsEpisode(seriesId, episode) }
     }
 

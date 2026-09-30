@@ -19,12 +19,10 @@ class DramaRepositoryImpl(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : DramaRepository {
 
-    // API tetap bisa menyertakan item tanpa id; dibuang agar tidak jadi kartu kosong.
     private fun List<DramaItem>.validItems(): List<DramaItem> = filter { it.bookId.isNotBlank() }
 
     override suspend fun getHome(page: Int, status: String?, genre: String?): Result<List<DramaItem>> =
         withContext(ioDispatcher) {
-            // classify mengirim total_episodes lengkap dan mendukung pagination + status + genre.
             cachedResult("dramabox:home:$page:${status ?: "All"}:${genre ?: "All"}", TtlCache.SHORT) {
                 runCatching {
                     api.browseDrama(type = "classify", page = page, status = status, genre = genre)
@@ -40,7 +38,6 @@ class DramaRepositoryImpl(
     }
 
     override suspend fun getCategories(): Result<List<DramaItem>> = withContext(ioDispatcher) {
-        // theater mengelompokkan item per kolom; tidak mendukung pagination.
         cachedResult("dramabox:category:$categoryCacheKey", TtlCache.SHORT) {
             runCatching { api.browseDrama(type = "theater").flatItems.validItems() }
         }
@@ -79,7 +76,6 @@ class DramaRepositoryImpl(
     }
 
     override suspend fun getDetail(bookId: String): Result<DramaDetailResponse> = withContext(ioDispatcher) {
-        // full=false: metadata (judul, cover, deskripsi, jumlah episode).
         cachedResult("dramabox:detail:$bookId", TtlCache.MEDIUM) {
             runCatching { api.getDramaDetail(bookId = bookId, full = "false") }
         }
@@ -95,7 +91,6 @@ class DramaRepositoryImpl(
         bookId: String,
         episode: Int
     ): Result<DramaEpisodeResponse> = withContext(ioDispatcher) {
-        // URL stream bertanda tangan: jangan dicache.
         runCatching { api.getDramaEpisodeStream(bookId, episode) }
     }
 

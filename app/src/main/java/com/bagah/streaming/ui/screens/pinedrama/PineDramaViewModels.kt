@@ -37,7 +37,6 @@ data class PineDramaHomeUiState(
     val currentDisplayList: List<PineDramaItem>
         get() = itemsByTab[selectedTab].orEmpty().distinctBy { it.stableId() }
 
-    /** Tab "UNTUK ANDA" memakai `page`; tab kategori memakai `cursor`. */
     val canLoadMore: Boolean
         get() {
             val spec = tabSpecs.firstOrNull { it.label == selectedTab } ?: return false
@@ -68,7 +67,6 @@ class PineDramaHomeViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
-            // Kategori membentuk sebagian besar tab.
             val categories = repository.getCategories().getOrDefault(emptyList())
             if (categories.isNotEmpty()) {
                 val categoryTabs = categories
@@ -83,7 +81,6 @@ class PineDramaHomeViewModel(
         }
     }
 
-    /** Muat ulang dengan menembus cache (disk + memori). */
     fun refresh() {
         NetworkClient.clearApiCache()
         loadData()
@@ -136,7 +133,6 @@ class PineDramaHomeViewModel(
         if (state.isLoading || state.isLoadingMore || state.loadingTabs.contains(state.selectedTab)) return
         val spec = state.tabSpecs.firstOrNull { it.label == state.selectedTab } ?: return
         if (!state.canLoadMore) return
-        // Tandai sinkron agar tidak ada dua loadMore paralel.
         _uiState.update { it.copy(isLoadingMore = true) }
 
         viewModelScope.launch {
@@ -216,7 +212,6 @@ class PineDramaDetailViewModel(
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             repository.getDetail(seriesId)
                 .onSuccess { detail ->
-                    // `chapters` sudah memuat daftar episode; URL stream dari endpoint episode.
                     _uiState.update {
                         it.copy(
                             isLoading = false,
@@ -313,7 +308,6 @@ class PineDramaPlayerViewModel(
     private suspend fun loadStream(seriesId: String, episode: Int) {
         repository.getEpisode(seriesId, episode)
             .onSuccess { response ->
-                // PineDrama mengirim MP4 langsung; tidak perlu dekripsi.
                 val fallback = _uiState.value.episodes
                     .firstOrNull { it.episodeNum == episode }?.bestUrl
                 val url = response.streamUrl().ifBlank { fallback.orEmpty() }

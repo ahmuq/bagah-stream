@@ -32,7 +32,6 @@ data class PineDramaCategory(
     val scene: Int = 0
 )
 
-/** Respons `pinedrama/browse` untuk semua `type` (foryou, trending, categories, categoryId). */
 @Serializable
 data class PineDramaBrowseResponse(
     val success: Boolean = false,
@@ -98,7 +97,6 @@ data class PineDramaEpisodeResponse(
     @SerialName("play_url")
     val playUrl: String = ""
 ) {
-    /** MP4 langsung (TikTok CDN), tanpa enkripsi. */
     fun streamUrl(): String = videoUrl.ifBlank { playUrl }
 }
 

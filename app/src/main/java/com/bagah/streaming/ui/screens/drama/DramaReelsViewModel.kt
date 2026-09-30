@@ -48,10 +48,6 @@ class DramaReelsViewModel(
         }
     }
 
-    /**
-     * Mengambil URL stream dan kunci AES per-episode saat dibutuhkan, bukan sekaligus,
-     * supaya membuka satu episode tidak memicu puluhan request.
-     */
     suspend fun getStream(episode: Int): Result<com.bagah.streaming.data.model.DramaEpisodeResponse> {
         if (bookId.isBlank()) {
             return Result.failure(IllegalStateException("Drama tidak valid"))

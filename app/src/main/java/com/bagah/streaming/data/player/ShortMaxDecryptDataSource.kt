@@ -13,14 +13,6 @@ import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
 
-/**
- * ShortMax mengirim segmen HLS `.ts` terenkripsi custom: setiap segmen punya header
- * 1024 byte berawalan `shortmax`, dan menyimpan offset kunci serta panjang data
- * terenkripsi di dalam header itu. ExoPlayer tidak tahu format ini, jadi segmen
- * didekripsi di sini sebelum diteruskan ke parser.
- *
- * Parameter `#EXT-X-KEY` standar tidak dipakai, sehingga kunci dibaca dari header segmen.
- */
 class ShortMaxDecryptDataSource(
     private val client: OkHttpClient
 ) : BaseDataSource(true) {
@@ -88,10 +80,6 @@ object ShortMaxSegmentDecryptor {
     private const val HEADER_SIZE = 1024
     private val SEGMENT_IV = "shortmax00000000".toByteArray(Charsets.ISO_8859_1)
 
-    /**
-     * Mendekripsi satu segmen .ts. Segmen tanpa header `shortmax` (mis. sudah
-     * tidak terenkripsi) dikembalikan apa adanya.
-     */
     fun decryptSegment(data: ByteArray): ByteArray {
         if (data.size < HEADER_SIZE) return data
         if (!startsWithShortMax(data)) return data
@@ -120,8 +108,6 @@ object ShortMaxSegmentDecryptor {
 
             unpadded + remainder
         } catch (e: Exception) {
-            // Kalau dekripsi gagal, kembalikan data mentah supaya pemutaran tidak
-            // langsung mati; player akan melaporkan error sendiri bila data tidak valid.
             data
         }
     }
@@ -135,7 +121,6 @@ object ShortMaxSegmentDecryptor {
         return true
     }
 
-    /** Membuang padding PKCS#7 bila valid. */
     private fun removePkcs7Padding(data: ByteArray): ByteArray {
         if (data.isEmpty()) return data
         val pad = data.last().toInt() and 0xFF

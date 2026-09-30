@@ -45,7 +45,6 @@ data class ReelShortHomeUiState(
             else -> popularBooks
         }.distinctBy { it.id }
 
-    /** Hanya tab yang endpoint-nya mendukung param page yang bisa dimuat lagi. */
     val canLoadMore: Boolean
         get() = selectedTab == "UNTUK ANDA" && !endReached
 }
@@ -63,7 +62,6 @@ class ReelShortHomeViewModel(
 
     fun selectTab(tab: String) {
         _uiState.update { it.copy(selectedTab = tab) }
-        // Izinkan pagination lagi saat kembali ke tab ini.
         if (tab == "UNTUK ANDA") {
             _uiState.update { it.copy(endReached = false, forYouPage = 1) }
         }
@@ -72,14 +70,12 @@ class ReelShortHomeViewModel(
         }
     }
 
-    /** Filter genre untuk tab JELAJAH (classify). */
     fun setGenre(value: String) {
         if (value == _uiState.value.selectedGenre) return
         _uiState.update { it.copy(selectedGenre = value) }
         loadExplore()
     }
 
-    /** Filter wilayah untuk tab JELAJAH (classify). */
     fun setRegion(value: String) {
         if (value == _uiState.value.selectedRegion) return
         _uiState.update { it.copy(selectedRegion = value) }
@@ -105,7 +101,6 @@ class ReelShortHomeViewModel(
         }
     }
 
-    /** Ranking period: 1 Harian, 4 Tahunan, 14 Rilis Baru, 15 Paling Dicari, 16 Anime. */
     fun setRankingPeriod(period: Int) {
         if (period == _uiState.value.rankingPeriod) return
         _uiState.update { it.copy(rankingPeriod = period) }
@@ -129,15 +124,9 @@ class ReelShortHomeViewModel(
         }
     }
 
-    /**
-     * Dipanggil saat daftar tab aktif di-scroll mendekati bawah.
-     * Hanya tab "UNTUK ANDA" yang endpoint-nya menerapkan param page.
-     */
     fun loadMore() {
         val state = _uiState.value
         if (state.isLoading || state.isLoadingMore || !state.canLoadMore) return
-        // Tandai langsung (sinkron) agar tidak ada dua loadMore paralel yang
-        // menambahkan item sama dua kali (menyebabkan duplicate key di LazyGrid).
         _uiState.update { it.copy(isLoadingMore = true) }
 
         viewModelScope.launch {
@@ -152,8 +141,6 @@ class ReelShortHomeViewModel(
                             forYouBooks = (it.forYouBooks + fresh).distinctBy { b -> b.id },
                             allBooks = (it.allBooks + fresh).distinctBy { b -> b.id },
                             forYouPage = nextPage,
-                            // Berhenti jika halaman kosong atau tidak ada item baru
-                            // (endpoint ini bisa mengulang halaman yang sama).
                             endReached = list.isEmpty() || fresh.isEmpty()
                         )
                     }
@@ -164,7 +151,6 @@ class ReelShortHomeViewModel(
         }
     }
 
-    /** Muat ulang dengan menembus cache (disk + memori). */
     fun refresh() {
         NetworkClient.clearApiCache()
         loadData()

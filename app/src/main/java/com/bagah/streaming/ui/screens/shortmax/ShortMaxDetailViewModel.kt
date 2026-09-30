@@ -41,8 +41,6 @@ class ShortMaxDetailViewModel(
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             repository.getDetail(seriesId)
                 .onSuccess { detail ->
-                    // `chapters` pada detail tidak memuat URL stream ShortMax, jadi
-                    // daftar episode lengkap diambil dari endpoint episodes.
                     val episodes = repository.getEpisodes(seriesId).getOrDefault(emptyList())
                     _uiState.update {
                         it.copy(isLoading = false, detail = detail, episodes = episodes, errorMessage = null)

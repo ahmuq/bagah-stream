@@ -40,7 +40,6 @@ data class FreeReelsHomeUiState(
     val currentDisplayList: List<FreeReelsItem>
         get() = itemsByTab[selectedTab].orEmpty().distinctBy { it.stableId() }
 
-    /** Tab yang masih punya cursor bisa dimuat lagi. */
     val canLoadMore: Boolean
         get() = cursorByTab[selectedTab] != null
 }
@@ -64,7 +63,6 @@ class FreeReelsHomeViewModel(
         }
     }
 
-    /** Muat ulang dengan menembus cache (disk + memori). */
     fun refresh() {
         NetworkClient.clearApiCache()
         loadData()
@@ -116,7 +114,6 @@ class FreeReelsHomeViewModel(
         val label = state.selectedTab
         val spec = FREE_REELS_TABS.firstOrNull { it.label == label } ?: return
         val cursor = state.cursorByTab[label] ?: return
-        // Tandai sinkron agar tidak ada dua loadMore paralel.
         _uiState.update { it.copy(isLoadingMore = true) }
 
         viewModelScope.launch {

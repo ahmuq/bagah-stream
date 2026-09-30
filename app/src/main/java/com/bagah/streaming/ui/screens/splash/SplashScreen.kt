@@ -55,7 +55,6 @@ fun SplashPopUpIntro(
     val textAlpha = remember { Animatable(0f) }
 
     LaunchedEffect(Unit) {
-        // 1. Pop-up spring bounce
         launch {
             scale.animateTo(
                 targetValue = 1f,
@@ -71,7 +70,6 @@ fun SplashPopUpIntro(
                 animationSpec = tween(durationMillis = 400, easing = FastOutSlowInEasing)
             )
         }
-        // 2. Ripple pulse ring
         launch {
             ringScale.animateTo(
                 targetValue = 1.7f,
@@ -85,14 +83,12 @@ fun SplashPopUpIntro(
             )
         }
 
-        // 3. Text fade in
         delay(300)
         textAlpha.animateTo(
             targetValue = 1f,
             animationSpec = tween(durationMillis = 400)
         )
 
-        // Hold briefly for delightful visual impact, then exit
         delay(2200)
         onAnimationFinished()
     }
@@ -111,7 +107,6 @@ fun SplashPopUpIntro(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.size(140.dp)
             ) {
-                // Expanding ripple ring on pop-up
                 Box(
                     modifier = Modifier
                         .size(100.dp)
@@ -120,7 +115,6 @@ fun SplashPopUpIntro(
                         .border(1.5.dp, AccentWhite.copy(alpha = 0.6f), CircleShape)
                 )
 
-                // Logo Container with Bouncy Pop-up Scale
                 Box(
                     modifier = Modifier
                         .size(96.dp)

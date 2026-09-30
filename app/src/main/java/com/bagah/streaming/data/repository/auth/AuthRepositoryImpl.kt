@@ -22,7 +22,6 @@ class AuthRepositoryImpl(
                 error(response.message.ifBlank { "API key tidak valid" })
             }
         }.recoverCatching { err ->
-            // Pesan default bila server menolak (401/403 dsb).
             if (err is IllegalStateException) throw err
             throw IllegalStateException("API key tidak valid atau koneksi bermasalah")
         }

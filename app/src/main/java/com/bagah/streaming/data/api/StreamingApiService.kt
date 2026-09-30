@@ -39,13 +39,10 @@ import retrofit2.http.Query
 
 interface StreamingApiService {
 
-    /** Validasi API key untuk login. */
     @GET("api/check-key")
     suspend fun checkApiKey(
         @Query("apikey") apikey: String
     ): ApiKeyCheckResponse
-
-    // --- ANIMEPLAY ENDPOINTS ---
 
     @GET("api/animeplay/latest")
     suspend fun getAnimeLatest(
@@ -83,11 +80,6 @@ interface StreamingApiService {
         @Query("quality") quality: String? = null
     ): AnimeApiResponse<AnimeEpisodeData>
 
-
-    // --- DRAMABOX ENDPOINTS ---
-    // Satu endpoint `browse` menggantikan home/foryou/categories/ranking.
-    // `type` = foryou | classify | theater | ranking | reserve | filters.
-
     @GET("api/dramabox/browse")
     suspend fun browseDrama(
         @Query("type") type: String = "foryou",
@@ -123,9 +115,6 @@ interface StreamingApiService {
         @Query("lang") lang: String = "in"
     ): DramaSearchResponse
 
-    // --- REELSHORT ENDPOINTS ---
-    // `type` = foryou | trending | latest | ranking | categories | waterfall | bookshelf | classify.
-
     @GET("api/reelshort/browse")
     suspend fun browseReelShort(
         @Query("type") type: String = "trending",
@@ -160,11 +149,6 @@ interface StreamingApiService {
         @Query("lang") lang: String = "id"
     ): ReelShortSearchResponse
 
-    // --- FREEREELS ENDPOINTS ---
-    // `browse` menggantikan foryou/trending/latest/anime/tab.
-    // `tab` = foryou | 503 (Populer) | 505 (New) | 547 (Anime) | 622 | 516 | 504 | 506.
-    // Pagination memakai cursor: kirim `cursor` dari response sebelumnya.
-
     @GET("api/freereels/browse")
     suspend fun browseFreeReels(
         @Query("tab") tab: String = "foryou",
@@ -192,10 +176,6 @@ interface StreamingApiService {
         @Query("cursor") cursor: String? = null,
         @Query("lang") lang: String = "id-ID"
     ): FreeReelsSearchResponse
-
-    // --- FLICKREELS ENDPOINTS ---
-    // `type` = foryou | trending | latest | ranking | categories | navigation | classify.
-    // `foryou`/`classify` memakai `nextCursor`; `trending` statis.
 
     @GET("api/flickreels/browse")
     suspend fun browseFlickReels(
@@ -230,10 +210,6 @@ interface StreamingApiService {
         @Query("lang") lang: String = "id"
     ): FlickReelsSearchResponse
 
-    // --- SHORTMAX ENDPOINTS ---
-    // `type` = trending | latest | rankings | foryou | classes | <classId> (200001..200014).
-    // Stream HLS dengan segmen .ts terenkripsi custom (lihat ShortMaxDecryptDataSource).
-
     @GET("api/shortmax/browse")
     suspend fun browseShortMax(
         @Query("type") type: String = "trending",
@@ -263,10 +239,6 @@ interface StreamingApiService {
         @Query("lang") lang: String = "id"
     ): ShortMaxSearchResponse
 
-    // --- PINEDRAMA ENDPOINTS ---
-    // `type` = foryou | trending | categories | <categoryId>.
-    // Stream MP4 langsung (TikTok CDN). Kategori memakai cursor (has_more/cursor).
-
     @GET("api/pinedrama/browse")
     suspend fun browsePineDrama(
         @Query("type") type: String = "foryou",
@@ -295,11 +267,6 @@ interface StreamingApiService {
         @Query("size") size: Int = 20,
         @Query("lang") lang: String = "id"
     ): PineDramaSearchResponse
-
-    // --- NETSHORT ENDPOINTS ---
-    // `type` = mostTrending | topSearch | newRelease | soaringHeat | actorRanking
-    //          | channels | <channelId> (125,127,131,315..323).
-    // Stream berupa MP4 langsung (tanpa enkripsi). `codec` = h265 (default) | h264.
 
     @GET("api/netshort/browse")
     suspend fun browseNetShort(

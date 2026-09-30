@@ -95,7 +95,6 @@ fun NetShortPlayerScreen(
         viewModel.initPlayer(seriesId, initialEpisode)
     }
 
-    // MP4 langsung dari NetShort; ExoPlayer memutar tanpa dekripsi.
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
             playWhenReady = true
@@ -105,7 +104,6 @@ fun NetShortPlayerScreen(
 
     KeepScreenOn()
 
-    // Auto lanjut ke episode berikutnya saat video habis.
     DisposableEffect(exoPlayer) {
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {

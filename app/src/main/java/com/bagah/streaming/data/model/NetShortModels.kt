@@ -31,7 +31,6 @@ data class NetShortChannel(
     val children: List<NetShortChannel> = emptyList()
 )
 
-/** Respons `netshort/browse` untuk semua `type` (ranking, channels, dan channel angka). */
 @Serializable
 data class NetShortBrowseResponse(
     val success: Boolean = false,
@@ -86,7 +85,6 @@ data class NetShortEpisode(
     val playUrl: String = "",
     val subtitles: List<NetShortSubtitle> = emptyList()
 ) {
-    /** MP4 langsung, tanpa enkripsi. */
     fun streamUrl(): String = videoUrl.ifBlank { playUrl }
 
     fun durationSeconds(): Int = duration.toDoubleOrNull()?.toInt() ?: 0

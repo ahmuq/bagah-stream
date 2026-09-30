@@ -72,7 +72,6 @@ class FlickReelsHomeViewModel(
         loadExplore(reset = true)
     }
 
-    /** Muat ulang dengan menembus cache (disk + memori). */
     fun refresh() {
         NetworkClient.clearApiCache()
         loadData()
@@ -152,7 +151,6 @@ class FlickReelsHomeViewModel(
         val state = _uiState.value
         if (state.isLoading || state.isLoadingMore || state.loadingTab) return
         if (state.selectedTab != "JELAJAH" || state.exploreCursor == null) return
-        // Tandai sinkron agar tidak ada dua loadMore paralel.
         _uiState.update { it.copy(isLoadingMore = true) }
 
         viewModelScope.launch {

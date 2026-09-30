@@ -19,7 +19,6 @@ data class ShortMaxItem(
     val views: Long? = null,
     val tags: List<String> = emptyList()
 ) {
-    /** API mengirim id/seriesId/series_id; ambil yang pertama tidak kosong. */
     fun stableId(): String = seriesId.ifBlank { seriesIdSnake.orEmpty() }.ifBlank { id }
 
     fun episodeCount(): Int =

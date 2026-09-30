@@ -85,7 +85,6 @@ fun FreeReelsHomeScreen(
         if (!uiState.isLoading) isRefreshing = false
     }
 
-    
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = {
@@ -139,7 +138,7 @@ fun FreeReelsHomeScreen(
             }
         } else {
             val gridState = rememberLazyGridState()
-            
+
             LaunchedEffect(uiState.selectedTab) {
                 gridState.scrollToItem(0)
             }

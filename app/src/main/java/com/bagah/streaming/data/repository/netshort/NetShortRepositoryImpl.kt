@@ -17,7 +17,6 @@ class NetShortRepositoryImpl(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : NetShortRepository {
 
-    // Item tanpa id tidak bisa dibuka; dibuang seperti di platform lain.
     private fun List<NetShortItem>.validItems(): List<NetShortItem> =
         filter { it.stableId().isNotBlank() }
 
@@ -43,14 +42,12 @@ class NetShortRepositoryImpl(
         }
 
     override suspend fun getEpisodes(seriesId: String): Result<List<NetShortEpisode>> =
-        // Ambil dari detail yang sama agar tidak request dua kali.
         getDetail(seriesId).map { it.episodeList() }
 
     override suspend fun getEpisode(
         seriesId: String,
         episode: Int
     ): Result<NetShortEpisodeResponse> = withContext(ioDispatcher) {
-        // URL MP4 langsung: jangan dicache.
         runCatching { api.getNetShortEpisode(seriesId, episode) }
     }
 

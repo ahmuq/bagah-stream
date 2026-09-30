@@ -73,14 +73,12 @@ class ReelShortRepositoryImpl(
     }
 
     override suspend fun getEpisodes(bookId: String): Result<List<ReelShortChapter>> =
-        // Ambil dari detail yang sama agar tidak request dua kali.
         getDetail(bookId).map { it.chapters }
 
     override suspend fun getEpisode(
         bookId: String,
         episode: Int
     ): Result<ReelShortEpisodeResponse> = withContext(ioDispatcher) {
-        // URL stream bertanda tangan: jangan dicache.
         runCatching { api.getReelShortEpisode(bookId, episode) }
     }
 

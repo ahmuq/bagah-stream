@@ -87,7 +87,6 @@ fun FlickReelsHomeScreen(
         if (!uiState.isLoading) isRefreshing = false
     }
 
-    
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = {
@@ -141,7 +140,7 @@ fun FlickReelsHomeScreen(
             }
         } else {
             val gridState = rememberLazyGridState()
-            
+
             LaunchedEffect(uiState.selectedTab) {
                 gridState.scrollToItem(0)
             }

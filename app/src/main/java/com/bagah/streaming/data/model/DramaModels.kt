@@ -20,7 +20,6 @@ data class DramaItem(
     val tags: List<String> = emptyList()
 )
 
-/** Respons `dramabox/browse` untuk seluruh tipe (foryou, classify, theater, ranking, reserve). */
 @Serializable
 data class DramaBrowseResponse(
     val success: Boolean = false,
@@ -33,7 +32,6 @@ data class DramaBrowseResponse(
     val types: List<DramaRankType> = emptyList(),
     val filters: List<DramaFilter> = emptyList()
 ) {
-    /** theater mengelompokkan item per kolom; tab lain memakai `items` langsung. */
     val flatItems: List<DramaItem>
         get() = if (items.isNotEmpty()) items else columns.flatMap { it.items }
 }
@@ -64,7 +62,6 @@ data class DramaRankType(
     val name: String = ""
 )
 
-/** Satu kolom pada `type=theater` (mis. "Anda Mungkin Suka", "Akan Tayang"). */
 @Serializable
 data class DramaSection(
     val title: String = "",

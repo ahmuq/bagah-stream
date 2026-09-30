@@ -85,8 +85,6 @@ class FreeReelsPlayerViewModel(
     private suspend fun loadStream(seriesId: String, episode: Int) {
         repository.getEpisode(seriesId, episode)
             .onSuccess { response ->
-                // FreeReels mengirim HLS .m3u8 langsung di bestUrl; tidak perlu dekripsi.
-                // Subtitle (VTT) dipilih dari response, fallback ke daftar episode.
                 val subtitle = response.preferredSubtitle()
                     ?: _uiState.value.episodes
                         .firstOrNull { it.episodeNum == episode }

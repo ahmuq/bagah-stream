@@ -14,7 +14,6 @@ import kotlinx.coroutines.launch
 
 private data class NetShortTab(val label: String, val key: String, val isChannel: Boolean)
 
-// Ranking charts + channel taxonomy dari `netshort/browse?type=channels`.
 private val NETSHORT_TABS = listOf(
     NetShortTab("TRENDING", "mostTrending", false),
     NetShortTab("PENCARIAN", "topSearch", false),
@@ -69,7 +68,6 @@ class NetShortHomeViewModel(
         loadTab(_uiState.value.selectedTab, initial = true)
     }
 
-    /** Muat ulang dengan menembus cache (disk + memori). */
     fun refresh() {
         NetworkClient.clearApiCache()
         loadData()

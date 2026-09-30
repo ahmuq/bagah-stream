@@ -16,9 +16,7 @@ import com.bagah.streaming.ui.theme.BgBlack
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Aktifkan cache disk API sebelum request pertama.
         NetworkClient.install(applicationContext)
-        // Muat sesi tersimpan + pasang API key aktif.
         SessionStore.init(applicationContext)
         NetworkClient.setApiKey(SessionStore.apiKey)
         enableEdgeToEdge()

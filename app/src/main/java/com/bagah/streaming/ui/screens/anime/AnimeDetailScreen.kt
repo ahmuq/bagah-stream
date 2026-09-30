@@ -123,7 +123,6 @@ fun AnimeDetailScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(bottom = 40.dp)
             ) {
-                // Header Backdrop
                 item {
                     Box(
                         modifier = Modifier
@@ -137,7 +136,6 @@ fun AnimeDetailScreen(
                             modifier = Modifier.fillMaxSize()
                         )
 
-                        // Gradient Overlay
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -153,7 +151,6 @@ fun AnimeDetailScreen(
                                 )
                         )
 
-                        // Back Button
                         IconButton(
                             onClick = onBackClick,
                             modifier = Modifier
@@ -173,7 +170,6 @@ fun AnimeDetailScreen(
                     }
                 }
 
-                // Title and Meta Info
                 item {
                     Column(
                         modifier = Modifier
@@ -244,7 +240,6 @@ fun AnimeDetailScreen(
                             }
                         }
 
-                        // Genres
                         if (item.genre.isNotEmpty()) {
                             Spacer(modifier = Modifier.height(12.dp))
                             FlowRow(
@@ -263,7 +258,6 @@ fun AnimeDetailScreen(
                             }
                         }
 
-                        // Synopsis
                         if (!item.sinopsis.isNullOrBlank()) {
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
@@ -294,7 +288,6 @@ fun AnimeDetailScreen(
 
                         Spacer(modifier = Modifier.height(20.dp))
 
-                        // Chapter / Episode Header
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -315,7 +308,6 @@ fun AnimeDetailScreen(
                     }
                 }
 
-                // Episode List
                 item {
                     Column(
                         modifier = Modifier

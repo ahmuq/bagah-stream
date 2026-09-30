@@ -79,8 +79,6 @@ class ReelShortPlayerViewModel(
     private suspend fun loadEpisodeStream(bookId: String, episode: Int) {
         repository.getEpisode(bookId, episode)
             .onSuccess { response ->
-                // H264 dipilih lebih dulu demi kompatibilitas decoder hardware;
-                // HLS m3u8 dari ReelShort tidak terenkripsi, jadi tidak perlu dekripsi.
                 val preferred = response.videoList.firstOrNull {
                     it.encode?.equals("H264", ignoreCase = true) == true && it.url.isNotBlank()
                 } ?: response.videoList.firstOrNull { it.url.isNotBlank() }

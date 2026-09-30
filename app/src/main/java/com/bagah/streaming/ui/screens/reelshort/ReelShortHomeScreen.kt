@@ -95,7 +95,6 @@ fun ReelShortHomeScreen(
         if (!uiState.isLoading) isRefreshing = false
     }
 
-    
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = {
@@ -145,12 +144,11 @@ fun ReelShortHomeScreen(
             }
         } else {
             val gridState = rememberLazyGridState()
-            
+
             LaunchedEffect(uiState.selectedTab) {
                 gridState.scrollToItem(0)
             }
 
-            // Muat halaman berikutnya saat user mendekati ujung bawah daftar.
             LaunchedEffect(gridState, uiState.selectedTab) {
                 snapshotFlow {
                     gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
@@ -170,7 +168,6 @@ fun ReelShortHomeScreen(
                 verticalArrangement = Arrangement.spacedBy(14.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                // 1. Header Bar
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Row(
                         modifier = Modifier
@@ -221,7 +218,6 @@ fun ReelShortHomeScreen(
                     }
                 }
 
-                // 2. Spotlight Hero Carousel (HorizontalPager)
                 if (uiState.spotlightBooks.isNotEmpty()) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
                         val spotlight = uiState.spotlightBooks
@@ -255,7 +251,6 @@ fun ReelShortHomeScreen(
                                         modifier = Modifier.fillMaxSize()
                                     )
 
-                                    // Gradient scrim
                                     Box(
                                         modifier = Modifier
                                             .fillMaxSize()
@@ -270,7 +265,6 @@ fun ReelShortHomeScreen(
                                             )
                                     )
 
-                                    // Content overlay
                                     Column(
                                         modifier = Modifier
                                             .align(Alignment.BottomStart)
@@ -354,7 +348,6 @@ fun ReelShortHomeScreen(
                                 }
                             }
 
-                            // Carousel dots
                             if (spotlight.size > 1) {
                                 Row(
                                     modifier = Modifier
@@ -382,7 +375,6 @@ fun ReelShortHomeScreen(
                     }
                 }
 
-                // 3. For You Section (Horizontal Row)
                 if (uiState.forYouBooks.isNotEmpty()) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
                         Column(modifier = Modifier.padding(top = 10.dp, bottom = 4.dp)) {
@@ -416,7 +408,6 @@ fun ReelShortHomeScreen(
                     }
                 }
 
-                // 4. Category Tabs
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Row(
                         modifier = Modifier
@@ -450,7 +441,6 @@ fun ReelShortHomeScreen(
                     }
                 }
 
-                // 5. Ranking period filter
                 if (uiState.selectedTab == "RANKING") {
                     item(span = { GridItemSpan(maxLineSpan) }) {
                         FilterChipRow(
@@ -462,7 +452,6 @@ fun ReelShortHomeScreen(
                     }
                 }
 
-                // 5b. Explore (classify) genre & region filters
                 if (uiState.selectedTab == "JELAJAH") {
                     item(span = { GridItemSpan(maxLineSpan) }) {
                         Column {
@@ -516,7 +505,6 @@ fun ReelShortHomeScreen(
                     }
                 }
 
-                // 6. Grid of Books
                 val books = uiState.currentDisplayList
                 items(books, key = { it.id }) { book ->
                     ReelShortCard(

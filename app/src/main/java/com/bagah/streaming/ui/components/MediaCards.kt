@@ -81,7 +81,6 @@ fun AnimeCard(
                     modifier = Modifier.fillMaxSize()
                 )
 
-                // Top Badge (Score or Episode Tag)
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopStart)
@@ -128,7 +127,6 @@ fun AnimeCard(
                     }
                 }
 
-                // Subtle Bottom Vignette for Poster
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -198,7 +196,6 @@ fun DramaCard(
                     modifier = Modifier.fillMaxSize()
                 )
 
-                // Monochrome Episode Count Badge
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
@@ -218,7 +215,6 @@ fun DramaCard(
                     )
                 }
 
-                // Minimalist Play Icon Overlay
                 Box(
                     modifier = Modifier
                         .align(Alignment.Center)
@@ -235,7 +231,6 @@ fun DramaCard(
                     )
                 }
 
-                // Bottom Tag Gradient
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -904,10 +899,6 @@ fun ShortMaxCard(
     }
 }
 
-/**
- * Kartu generik untuk platform yang hanya butuh poster + judul + badge episode.
- * Dipakai PineDrama agar tidak menduplikasi tata letak.
- */
 @Composable
 fun SimpleMediaCard(
     title: String,

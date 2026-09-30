@@ -34,7 +34,6 @@ class LoginViewModel(
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             repository.checkKey(key)
                 .onSuccess { user ->
-                    // Simpan sesi + pasang key aktif; root app akan otomatis masuk.
                     SessionStore.save(key, user)
                     NetworkClient.setApiKey(key)
                     _uiState.update { it.copy(isLoading = false, errorMessage = null) }

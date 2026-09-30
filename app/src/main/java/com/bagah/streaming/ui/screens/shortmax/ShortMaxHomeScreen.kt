@@ -83,7 +83,6 @@ fun ShortMaxHomeScreen(
         if (!uiState.isLoading) isRefreshing = false
     }
 
-    
         PullToRefreshBox(
             isRefreshing = isRefreshing,
             onRefresh = {

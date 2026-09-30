@@ -89,7 +89,6 @@ fun DramaHomeScreen(
             .background(BgBlack)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // Header Bar with transparent logo
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -138,7 +137,6 @@ fun DramaHomeScreen(
                 }
             }
 
-            // Categories Filter Pills (Monochrome High Contrast)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -206,7 +204,6 @@ fun DramaHomeScreen(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Drama Grid Content
             if (uiState.isLoading && !isRefreshing) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
@@ -249,7 +246,6 @@ fun DramaHomeScreen(
                     gridState.scrollToItem(0)
                 }
 
-                // Muat halaman berikutnya saat user mendekati ujung bawah daftar.
                 LaunchedEffect(gridState, uiState.dramaList.size) {
                     snapshotFlow {
                         gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
@@ -278,7 +274,6 @@ fun DramaHomeScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     if (uiState.sections.isNotEmpty()) {
-                        // Tab Kategori: tampilkan kolom theater apa adanya (judul + item).
                         uiState.sections.forEachIndexed { sectionIndex, section ->
                             item(
                                 span = { GridItemSpan(maxLineSpan) },
@@ -340,7 +335,6 @@ fun DramaHomeScreen(
         }
     }
 }
-
 
 private val DRAMA_STATUS = listOf(
     FilterChip("Semua", "All"),

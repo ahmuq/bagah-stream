@@ -41,8 +41,6 @@ class FlickReelsDetailViewModel(
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             repository.getDetail(seriesId)
                 .onSuccess { detail ->
-                    // `detail.chapters` sudah memuat URL stream, jadi daftar episode tidak
-                    // perlu request terpisah.
                     val episodes = detail.chapters.ifEmpty {
                         repository.getEpisodes(seriesId).getOrDefault(emptyList())
                     }

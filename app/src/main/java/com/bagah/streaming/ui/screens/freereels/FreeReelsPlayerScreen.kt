@@ -97,7 +97,6 @@ fun FreeReelsPlayerScreen(
         viewModel.initPlayer(seriesId, initialEpisode)
     }
 
-    // HLS .m3u8 dari FreeReels tidak terenkripsi; ExoPlayer memutar langsung.
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
             playWhenReady = true
@@ -107,7 +106,6 @@ fun FreeReelsPlayerScreen(
 
     KeepScreenOn()
 
-    // Auto lanjut ke episode berikutnya saat video habis.
     DisposableEffect(exoPlayer) {
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {
@@ -121,7 +119,6 @@ fun FreeReelsPlayerScreen(
         }
     }
 
-    // Muat video + subtitle Indonesia (VTT) bila tersedia.
     LaunchedEffect(uiState.currentStreamUrl, uiState.currentSubtitleUrl) {
         val streamUrl = uiState.currentStreamUrl
         if (!streamUrl.isNullOrBlank()) {

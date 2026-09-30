@@ -18,7 +18,6 @@ class PineDramaRepositoryImpl(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : PineDramaRepository {
 
-    // Item tanpa id tidak bisa dibuka; dibuang seperti di platform lain.
     private fun List<PineDramaItem>.validItems(): List<PineDramaItem> =
         filter { it.stableId().isNotBlank() }
 
@@ -56,14 +55,12 @@ class PineDramaRepositoryImpl(
         }
 
     override suspend fun getEpisodes(seriesId: String): Result<List<PineDramaChapter>> =
-        // Ambil dari detail yang sama agar tidak request dua kali.
         getDetail(seriesId).map { it.chapters }
 
     override suspend fun getEpisode(
         seriesId: String,
         episode: Int
     ): Result<PineDramaEpisodeResponse> = withContext(ioDispatcher) {
-        // URL MP4 langsung: jangan dicache.
         runCatching { api.getPineDramaEpisode(seriesId, episode) }
     }
 

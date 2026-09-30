@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
 
 data class SearchUiState(
     val query: String = "",
-    val selectedTab: Int = 0, // 0 Anime, 1 DramaBox, 2 ReelShort, 3 FreeReels, 4 FlickReels, 5 ShortMax
+    val selectedTab: Int = 0,
     val animeResults: List<AnimeItem> = emptyList(),
     val dramaResults: List<DramaItem> = emptyList(),
     val reelShortResults: List<ReelShortBook> = emptyList(),
@@ -50,7 +50,6 @@ data class SearchUiState(
     val endReached: Boolean = false,
     val errorMessage: String? = null
 ) {
-    /** Tab dengan endpoint search ber-`page`. */
     val canLoadMore: Boolean
         get() = (selectedTab == 1 || selectedTab == 2 || selectedTab == 5 || selectedTab == 6 || selectedTab == 7) && !endReached
 }
@@ -98,7 +97,6 @@ class SearchViewModel(
             val tab = _uiState.value.selectedTab
             when (tab) {
                 0 -> {
-                    // Anime: satu request, tanpa pagination.
                     animeRepo.search(q)
                         .onSuccess { list ->
                             _uiState.update {
@@ -190,13 +188,11 @@ class SearchViewModel(
         }
     }
 
-    /** Dipanggil saat hasil pencarian di-scroll mendekati bawah. */
     fun loadMore() {
         val state = _uiState.value
         if (state.isSearching || state.isLoadingMore || !state.canLoadMore) return
         val q = state.query.trim()
         if (q.isBlank()) return
-        // Tandai sinkron agar tidak ada dua loadMore paralel (penyebab duplicate key).
         _uiState.update { it.copy(isLoadingMore = true) }
 
         viewModelScope.launch {

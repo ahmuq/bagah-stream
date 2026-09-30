@@ -125,7 +125,6 @@ fun AnimeHomeScreen(
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(bottom = 90.dp)
             ) {
-                // Header Bar with transparent logo
                 item {
                     Row(
                         modifier = Modifier
@@ -176,7 +175,6 @@ fun AnimeHomeScreen(
                     }
                 }
 
-                // Spotlight Hero Carousel (HorizontalPager)
                 if (spotlightItems.isNotEmpty()) {
                     item {
                         val pagerState = rememberPagerState(pageCount = { spotlightItems.size })
@@ -210,7 +208,6 @@ fun AnimeHomeScreen(
                                         modifier = Modifier.fillMaxSize()
                                     )
 
-                                    // Scrim
                                     Box(
                                         modifier = Modifier
                                             .fillMaxSize()
@@ -225,7 +222,6 @@ fun AnimeHomeScreen(
                                             )
                                     )
 
-                                    // Spotlight Content
                                     Column(
                                         modifier = Modifier
                                             .align(Alignment.BottomStart)
@@ -318,7 +314,6 @@ fun AnimeHomeScreen(
                                 }
                             }
 
-                            // Carousel Indicators
                             if (spotlightItems.size > 1) {
                                 Row(
                                     modifier = Modifier
@@ -346,14 +341,12 @@ fun AnimeHomeScreen(
                     }
                 }
 
-                // Section: Jadwal Rilis Harian (Ongoing)
                 item {
                     AnimeSectionHeader(
                         title = "Jadwal Rilis Harian (Ongoing)",
                         icon = Icons.Rounded.DateRange
                     )
 
-                    // Day Selector Chips
                     LazyRow(
                         contentPadding = PaddingValues(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -412,7 +405,6 @@ fun AnimeHomeScreen(
                     }
                 }
 
-                // Section: Latest
                 if (uiState.latest.isNotEmpty()) {
                     item {
                         AnimeSectionHeader(
@@ -430,7 +422,6 @@ fun AnimeHomeScreen(
                     }
                 }
 
-                // Section: Movies
                 if (uiState.movies.isNotEmpty()) {
                     item {
                         AnimeSectionHeader(
@@ -448,7 +439,6 @@ fun AnimeHomeScreen(
                     }
                 }
 
-                // Section: Recommendations
                 if (uiState.recommendations.isNotEmpty()) {
                     item {
                         AnimeSectionHeader(

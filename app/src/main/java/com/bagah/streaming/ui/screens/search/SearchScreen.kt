@@ -87,7 +87,6 @@ fun SearchScreen(
             .background(BgBlack)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            // Search Input Field
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -154,7 +153,6 @@ fun SearchScreen(
                 )
             }
 
-            // Platform Filter Tabs
             ScrollableTabRow(
                 selectedTabIndex = uiState.selectedTab,
                 containerColor = BgBlack,
@@ -267,7 +265,6 @@ fun SearchScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Search Results
             if (uiState.isSearching) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(

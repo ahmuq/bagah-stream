@@ -41,7 +41,6 @@ class NetShortDetailViewModel(
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             repository.getDetail(seriesId)
                 .onSuccess { detail ->
-                    // `detail.episodes`/`chapters` sudah memuat URL stream MP4.
                     _uiState.update {
                         it.copy(
                             isLoading = false,

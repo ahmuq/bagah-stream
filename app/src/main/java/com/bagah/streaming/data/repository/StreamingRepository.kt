@@ -14,7 +14,6 @@ import kotlinx.coroutines.withContext
 class StreamingRepository(
     private val api: StreamingApiService = NetworkClient.apiService
 ) {
-    // --- ANIME METHODS ---
 
     suspend fun getAnimeLatest(page: Int = 1): Result<List<AnimeItem>> = withContext(Dispatchers.IO) {
         runCatching {
@@ -73,9 +72,6 @@ class StreamingRepository(
                 response.data ?: throw IllegalStateException("Stream episode tidak ditemukan")
             }
         }
-
-
-    // --- DRAMA METHODS ---
 
     suspend fun getDramaHome(): Result<List<DramaItem>> = withContext(Dispatchers.IO) {
         runCatching { api.browseDrama(type = "foryou").flatItems }

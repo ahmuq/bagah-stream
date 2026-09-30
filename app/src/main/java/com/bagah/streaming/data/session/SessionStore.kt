@@ -15,10 +15,6 @@ data class SessionState(
     val isLoggedIn: Boolean get() = !apiKey.isNullOrBlank()
 }
 
-/**
- * Menyimpan API key + profil user di SharedPreferences supaya tidak perlu login ulang
- * setelah app ditutup. Data hilang hanya jika cache/data app dihapus atau app di-uninstall.
- */
 object SessionStore {
     private const val PREF = "bagah_session"
     private const val KEY_API = "api_key"

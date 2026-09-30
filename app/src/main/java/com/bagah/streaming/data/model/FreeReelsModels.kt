@@ -35,7 +35,6 @@ data class FreeReelsItem(
     val operationTags: List<FreeReelsOperationTag> = emptyList(),
     val episode: FreeReelsEpisode? = null
 ) {
-    /** Sebagian item tidak mengirim `key`, jadi pakai seriesId/id sebagai cadangan. */
     fun stableId(): String = key.ifBlank { seriesId }.ifBlank { id }
 }
 
@@ -53,7 +52,6 @@ data class FreeReelsSection(
     val items: List<FreeReelsItem> = emptyList()
 )
 
-/** Respons `freereels/browse` untuk semua tab (foryou dan tab angka). */
 @Serializable
 data class FreeReelsBrowseResponse(
     val success: Boolean = false,
@@ -120,7 +118,6 @@ data class FreeReelsEpisode(
     val unlocked: Boolean = false,
     val subtitles: List<FreeReelsSubtitle> = emptyList()
 ) {
-    /** HLS H264 lebih dulu demi kompatibilitas decoder hardware, lalu best_url. */
     fun streamUrl(): String = h264M3u8.ifBlank { bestUrl }.ifBlank { h265M3u8 }
 }
 
@@ -149,7 +146,6 @@ data class FreeReelsEpisodeResponse(
 ) {
     fun streamUrl(): String = h264M3u8.ifBlank { bestUrl }.ifBlank { h265M3u8 }
 
-    /** Prioritaskan subtitle Indonesia, fallback Inggris, lalu yang pertama tersedia. */
     fun preferredSubtitle(): FreeReelsSubtitle? {
         val withVtt = subtitles.filter { it.vtt.isNotBlank() }
         return withVtt.firstOrNull { it.language.equals("id-ID", true) }

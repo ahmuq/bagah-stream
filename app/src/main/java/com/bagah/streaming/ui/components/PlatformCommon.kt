@@ -199,10 +199,6 @@ data class FilterChip(
     val value: String
 )
 
-/**
- * Baris chip sekunder untuk filter (status, urutan, wilayah, dsb). Gaya lebih redup
- * daripada [PlatformTabRow] supaya jelas bedanya dengan tab utama.
- */
 @Composable
 fun FilterChipRow(
     options: List<FilterChip>,

@@ -83,7 +83,6 @@ import com.bagah.streaming.ui.theme.TextMuted
 import com.bagah.streaming.ui.theme.TextPrimary
 import com.bagah.streaming.ui.theme.TextSecondary
 
-/** Kualitas default DramaBox yang diminta; fallback ke best_url bila tidak ada. */
 private const val DEFAULT_DRAMA_QUALITY = "720"
 
 @OptIn(UnstableApi::class, ExperimentalMaterial3Api::class)
@@ -155,8 +154,6 @@ fun DramaReelsPlayerScreen(
     var streamError by remember { mutableStateOf<String?>(null) }
     var reloadKey by remember { mutableStateOf(0) }
 
-    // ExoPlayer dengan data source dekripsi DramaBox; kunci AES datang per episode
-    // lewat holder yang diperbarui efek di bawah.
     val keyHolder = remember { DramaBoxKeyHolder() }
     val exoPlayer = remember {
         val decryptFactory = DramaBoxDecryptDataSource.Factory(NetworkClient.okHttpClient, keyHolder)
@@ -171,7 +168,6 @@ fun DramaReelsPlayerScreen(
             }
     }
 
-    // Auto lanjut ke episode berikutnya saat video habis.
     DisposableEffect(exoPlayer) {
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {
@@ -187,7 +183,6 @@ fun DramaReelsPlayerScreen(
         }
     }
 
-    // Ambil URL stream + kunci untuk episode aktif, serahkan ke player.
     LaunchedEffect(episodes, currentIndex, reloadKey) {
         val episode = episodes.getOrNull(currentIndex) ?: return@LaunchedEffect
         isLoadingStream = true
@@ -283,7 +278,6 @@ fun DramaReelsPlayerScreen(
             }
         }
 
-        // Top gradient + header
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -334,7 +328,6 @@ fun DramaReelsPlayerScreen(
             }
         }
 
-        // Bottom gradient + navigation + waktu
         Box(
             modifier = Modifier
                 .fillMaxWidth()

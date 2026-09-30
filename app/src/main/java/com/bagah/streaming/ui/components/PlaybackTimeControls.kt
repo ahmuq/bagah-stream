@@ -30,10 +30,6 @@ import com.bagah.streaming.ui.theme.TextPrimary
 import com.bagah.streaming.ui.theme.TextSecondary
 import kotlinx.coroutines.delay
 
-/**
- * Kontrol waktu bersama untuk semua player: tampilkan posisi / total durasi dan
- * tombol mundur / maju 10 detik. Durasi diambil langsung dari media Player.
- */
 @Composable
 fun PlaybackTimeControls(
     player: Player,

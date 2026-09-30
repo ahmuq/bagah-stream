@@ -2,10 +2,6 @@ package com.bagah.streaming.data.cache
 
 import java.util.concurrent.ConcurrentHashMap
 
-/**
- * Cache in-memory level proses, di atas cache disk OkHttp. Menghindari baca disk +
- * deserialisasi berulang untuk data yang stabil (feed, detail, daftar referensi).
- */
 object TtlCache {
     private data class Entry(val value: Any, val expiresAt: Long)
 
@@ -34,10 +30,6 @@ object TtlCache {
     }
 }
 
-/**
- * Ambil dari cache memori; kalau tidak ada/kedaluwarsa, jalankan [loader] dan simpan
- * hasil suksesnya saja.
- */
 suspend fun <T : Any> cachedResult(
     key: String,
     ttlMs: Long,

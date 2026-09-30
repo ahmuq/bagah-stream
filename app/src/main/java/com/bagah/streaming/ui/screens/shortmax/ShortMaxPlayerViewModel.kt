@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** Resolusi yang diminta; fallback ke bestUrl bila tidak tersedia. */
 private const val SHORTMAX_QUALITY = "720"
 
 data class ShortMaxPlayerUiState(
@@ -86,8 +85,6 @@ class ShortMaxPlayerViewModel(
     private suspend fun loadStream(seriesId: String, episode: Int) {
         repository.getEpisode(seriesId, episode)
             .onSuccess { response ->
-                // URL HLS terenkripsi custom; segmennya didekripsi oleh
-                // ShortMaxDecryptDataSource saat dibaca player.
                 val url = response.streamUrl(SHORTMAX_QUALITY)
                 if (url.isBlank()) {
                     _uiState.update {

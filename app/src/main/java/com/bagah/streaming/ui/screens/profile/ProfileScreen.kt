@@ -84,7 +84,6 @@ fun ProfileScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp)
         ) {
-            // Kartu identitas
             Row(
                 modifier = Modifier
                     .fillMaxWidth()

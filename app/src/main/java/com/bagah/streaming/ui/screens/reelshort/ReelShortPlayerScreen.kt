@@ -106,7 +106,6 @@ fun ReelShortPlayerScreen(
 
     KeepScreenOn()
 
-    // Auto lanjut ke episode berikutnya saat video habis.
     DisposableEffect(exoPlayer) {
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {
@@ -120,7 +119,6 @@ fun ReelShortPlayerScreen(
         }
     }
 
-    // Update MediaItem when stream URL changes
     LaunchedEffect(uiState.currentStreamUrl) {
         val streamUrl = uiState.currentStreamUrl
         if (!streamUrl.isNullOrBlank()) {
@@ -135,7 +133,6 @@ fun ReelShortPlayerScreen(
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        // Video Surface
         if (!uiState.currentStreamUrl.isNullOrBlank()) {
             AndroidView(
                 factory = { ctx ->
@@ -156,7 +153,6 @@ fun ReelShortPlayerScreen(
             )
         }
 
-        // Loading Overlay
         if (uiState.isLoading) {
             Box(
                 modifier = Modifier
@@ -180,7 +176,6 @@ fun ReelShortPlayerScreen(
             }
         }
 
-        // Error Overlay
         if (uiState.errorMessage != null && !uiState.isLoading) {
             Box(
                 modifier = Modifier
@@ -212,7 +207,6 @@ fun ReelShortPlayerScreen(
             }
         }
 
-        // Top Gradient Scrim & Top Controls
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -285,7 +279,6 @@ fun ReelShortPlayerScreen(
             }
         }
 
-        // Bottom Gradient Scrim & Episode Navigation
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -303,7 +296,6 @@ fun ReelShortPlayerScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Prev Episode
                 IconButton(
                     onClick = { viewModel.playPrevious() },
                     enabled = uiState.currentEpisode > 1,
@@ -319,7 +311,6 @@ fun ReelShortPlayerScreen(
                     )
                 }
 
-                // Episode List Sheet Trigger + playback time controls
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Row(
                         modifier = Modifier
@@ -347,7 +338,6 @@ fun ReelShortPlayerScreen(
                     PlaybackTimeControls(player = exoPlayer)
                 }
 
-                // Next Episode
                 IconButton(
                     onClick = { viewModel.playNext() },
                     enabled = uiState.currentEpisode < uiState.totalEpisodes,
@@ -365,7 +355,6 @@ fun ReelShortPlayerScreen(
             }
         }
 
-        // Modal BottomSheet for selecting episodes
         if (showEpisodeSheet) {
             val sheetState = rememberModalBottomSheetState()
             ModalBottomSheet(
