@@ -24,9 +24,10 @@ sealed class Screen(val route: String) {
         }
     }
 
-    object DramaReelsPlayer : Screen("drama_reels/{bookId}/{initialIndex}") {
-        fun createRoute(bookId: String, initialIndex: Int = 0): String {
-            return "drama_reels/$bookId/$initialIndex"
+    object DramaReelsPlayer : Screen("drama_reels/{bookId}/{initialIndex}/{title}") {
+        fun createRoute(bookId: String, initialIndex: Int = 0, title: String = ""): String {
+            val encTitle = URLEncoder.encode(title, StandardCharsets.UTF_8.toString())
+            return "drama_reels/$bookId/$initialIndex/$encTitle"
         }
     }
 

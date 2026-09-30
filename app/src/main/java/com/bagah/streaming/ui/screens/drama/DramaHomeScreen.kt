@@ -66,7 +66,7 @@ import com.bagah.streaming.ui.theme.TextSecondary
 @Composable
 fun DramaHomeScreen(
     viewModel: DramaHomeViewModel = viewModel(),
-    onDramaClick: (bookId: String) -> Unit,
+    onDramaClick: (bookId: String, title: String) -> Unit,
     onSearchClick: () -> Unit
 ) {
     val categories = listOf("Beranda", "Untukmu", "Kategori", "Peringkat")
@@ -280,7 +280,7 @@ fun DramaHomeScreen(
                             items(section.items, key = { "s$sectionIndex-${it.bookId}" }) { drama ->
                                 DramaCard(
                                     drama = drama,
-                                    onClick = { if (drama.bookId.isNotBlank()) onDramaClick(drama.bookId) },
+                                    onClick = { if (drama.bookId.isNotBlank()) onDramaClick(drama.bookId, drama.title) },
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }
@@ -289,7 +289,7 @@ fun DramaHomeScreen(
                         items(uiState.dramaList, key = { it.bookId }) { drama ->
                             DramaCard(
                                 drama = drama,
-                                onClick = { if (drama.bookId.isNotBlank()) onDramaClick(drama.bookId) },
+                                onClick = { if (drama.bookId.isNotBlank()) onDramaClick(drama.bookId, drama.title) },
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }

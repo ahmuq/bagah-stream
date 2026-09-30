@@ -147,8 +147,8 @@ fun BagahApp() {
                 // 4. Drama Home
                 composable(Screen.DramaHome.route) {
                     DramaHomeScreen(
-                        onDramaClick = { bookId ->
-                            navController.navigate(Screen.DramaReelsPlayer.createRoute(bookId, 0))
+                        onDramaClick = { bookId, title ->
+                            navController.navigate(Screen.DramaReelsPlayer.createRoute(bookId, 0, title))
                         },
                         onSearchClick = {
                             navController.navigate(Screen.Search.route)
@@ -156,19 +156,22 @@ fun BagahApp() {
                     )
                 }
 
-                // 5. Drama Reels Player (Vertical TikTok style)
+                // 5. Drama Reels Player
                 composable(
                     route = Screen.DramaReelsPlayer.route,
                     arguments = listOf(
                         navArgument("bookId") { type = NavType.StringType },
-                        navArgument("initialIndex") { type = NavType.IntType; defaultValue = 0 }
+                        navArgument("initialIndex") { type = NavType.IntType; defaultValue = 0 },
+                        navArgument("title") { type = NavType.StringType; defaultValue = "" }
                     )
                 ) { backStack ->
                     val bookId = backStack.arguments?.getString("bookId") ?: ""
                     val initialIndex = backStack.arguments?.getInt("initialIndex") ?: 0
+                    val title = backStack.arguments?.getString("title") ?: ""
                     DramaReelsPlayerScreen(
                         bookId = bookId,
                         initialIndex = initialIndex,
+                        title = title,
                         onBackClick = { navController.popBackStack() }
                     )
                 }
@@ -438,8 +441,8 @@ fun BagahApp() {
                         onAnimeClick = { url ->
                             navController.navigate(Screen.AnimeDetail.createRoute(url))
                         },
-                        onDramaClick = { bookId ->
-                            navController.navigate(Screen.DramaReelsPlayer.createRoute(bookId, 0))
+                        onDramaClick = { bookId, title ->
+                            navController.navigate(Screen.DramaReelsPlayer.createRoute(bookId, 0, title))
                         },
                         onReelShortClick = { bookId ->
                             navController.navigate(Screen.ReelShortDetail.createRoute(bookId))

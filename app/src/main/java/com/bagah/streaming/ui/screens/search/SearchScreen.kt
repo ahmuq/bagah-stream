@@ -70,7 +70,7 @@ import com.bagah.streaming.ui.theme.TextSecondary
 fun SearchScreen(
     viewModel: SearchViewModel = viewModel(),
     onAnimeClick: (url: String) -> Unit,
-    onDramaClick: (bookId: String) -> Unit,
+    onDramaClick: (bookId: String, title: String) -> Unit,
     onReelShortClick: (bookId: String) -> Unit = {},
     onFreeReelsClick: (seriesId: String) -> Unit = {},
     onFlickReelsClick: (seriesId: String) -> Unit = {},
@@ -348,7 +348,7 @@ fun SearchScreen(
                                 verticalArrangement = Arrangement.spacedBy(14.dp)
                             ) {
                                 items(uiState.dramaResults, key = { it.bookId }) { drama ->
-                                    DramaCard(drama = drama, onClick = { onDramaClick(drama.bookId) })
+                                    DramaCard(drama = drama, onClick = { onDramaClick(drama.bookId, drama.title) })
                                 }
                                 item(span = { GridItemSpan(maxLineSpan) }) { loadMoreFooter() }
                             }
