@@ -291,6 +291,15 @@ fun SearchScreen(
                     }
                 }
 
+                if (uiState.errorMessage != null && !uiState.isSearching) {
+                    Text(
+                        text = "Gagal memuat hasil: ${uiState.errorMessage}",
+                        color = TextMuted,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                    )
+                }
+
                 when (uiState.selectedTab) {
                     0 -> {
                         if (uiState.animeResults.isEmpty()) {

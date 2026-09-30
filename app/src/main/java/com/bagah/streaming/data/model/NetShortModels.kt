@@ -16,7 +16,8 @@ data class NetShortItem(
     @SerialName("total_episodes")
     val totalEpisodes: Int = 0,
     val finished: Boolean = false,
-    val views: Long? = null,
+    @Serializable(with = FlexibleStringSerializer::class)
+    val views: String = "",
     val language: String? = null,
     val tags: List<String> = emptyList()
 ) {
