@@ -1,5 +1,7 @@
 package com.bagah.streaming.ui.screens.hub
 
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -21,22 +23,18 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
-import androidx.compose.material.icons.rounded.Movie
-import androidx.compose.material.icons.rounded.PlayCircle
-import androidx.compose.material.icons.rounded.SlowMotionVideo
-import androidx.compose.material.icons.rounded.Theaters
-import androidx.compose.material.icons.rounded.VideoLibrary
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.bagah.streaming.ui.theme.AccentWhite
+import com.bagah.streaming.R
 import com.bagah.streaming.ui.theme.BgBlack
 import com.bagah.streaming.ui.theme.BorderSubtle
 import com.bagah.streaming.ui.theme.SurfaceDark
@@ -48,7 +46,7 @@ private data class PlatformEntry(
     val name: String,
     val description: String,
     val route: String,
-    val icon: ImageVector,
+    @DrawableRes val logoRes: Int,
     val playable: Boolean = true
 )
 
@@ -57,13 +55,13 @@ fun PlatformHubScreen(
     onPlatformClick: (String) -> Unit
 ) {
     val platforms = listOf(
-        PlatformEntry("DramaBox", "Serial pendek horizontal", "drama_home", Icons.Rounded.VideoLibrary),
-        PlatformEntry("ReelShort", "Drama vertikal pendek", "reelshort_home", Icons.Rounded.PlayCircle),
-        PlatformEntry("FreeReels", "Serial pendek gratis", "freereels_home", Icons.Rounded.SlowMotionVideo),
-        PlatformEntry("FlickReels", "Serial pendek internasional", "flickreels_home", Icons.Rounded.Theaters),
-        PlatformEntry("ShortMax", "Serial pendek populer", "shortmax_home", Icons.Rounded.Movie),
-        PlatformEntry("NetShort", "Serial pendek NetShort", "netshort_home", Icons.Rounded.PlayCircle),
-        PlatformEntry("PineDrama", "Katalog mini drama", "pinedrama_home", Icons.Rounded.Theaters)
+        PlatformEntry("DramaBox", "Serial pendek horizontal", "drama_home", R.drawable.logo_dramabox),
+        PlatformEntry("ReelShort", "Drama vertikal pendek", "reelshort_home", R.drawable.logo_reelshort),
+        PlatformEntry("FreeReels", "Serial pendek gratis", "freereels_home", R.drawable.logo_freereels),
+        PlatformEntry("FlickReels", "Serial pendek internasional", "flickreels_home", R.drawable.logo_flickreels),
+        PlatformEntry("ShortMax", "Serial pendek populer", "shortmax_home", R.drawable.logo_shortmax),
+        PlatformEntry("NetShort", "Serial pendek NetShort", "netshort_home", R.drawable.logo_netshort),
+        PlatformEntry("PineDrama", "Katalog mini drama", "pinedrama_home", R.drawable.logo_pinedrama)
     )
 
     LazyColumn(
@@ -108,16 +106,17 @@ fun PlatformHubScreen(
             ) {
                 Box(
                     modifier = Modifier
-                        .size(42.dp)
-                        .background(SurfaceElevated, RoundedCornerShape(10.dp))
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(SurfaceElevated)
                         .border(1.dp, BorderSubtle, RoundedCornerShape(10.dp)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = platform.icon,
-                        contentDescription = null,
-                        tint = AccentWhite,
-                        modifier = Modifier.size(20.dp)
+                    Image(
+                        painter = painterResource(id = platform.logoRes),
+                        contentDescription = platform.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
 
