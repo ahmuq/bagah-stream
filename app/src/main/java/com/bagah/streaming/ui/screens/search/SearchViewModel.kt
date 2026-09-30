@@ -7,6 +7,7 @@ import com.bagah.streaming.data.model.DramaItem
 import com.bagah.streaming.data.model.FlickReelsItem
 import com.bagah.streaming.data.model.FreeReelsItem
 import com.bagah.streaming.data.model.NetShortItem
+import com.bagah.streaming.data.model.PineDramaItem
 import com.bagah.streaming.data.model.ReelShortBook
 import com.bagah.streaming.data.model.ShortMaxItem
 import com.bagah.streaming.data.repository.anime.AnimeRepository
@@ -19,6 +20,8 @@ import com.bagah.streaming.data.repository.freereels.FreeReelsRepository
 import com.bagah.streaming.data.repository.freereels.FreeReelsRepositoryImpl
 import com.bagah.streaming.data.repository.netshort.NetShortRepository
 import com.bagah.streaming.data.repository.netshort.NetShortRepositoryImpl
+import com.bagah.streaming.data.repository.pinedrama.PineDramaRepository
+import com.bagah.streaming.data.repository.pinedrama.PineDramaRepositoryImpl
 import com.bagah.streaming.data.repository.reelshort.ReelShortRepository
 import com.bagah.streaming.data.repository.shortmax.ShortMaxRepository
 import com.bagah.streaming.data.repository.shortmax.ShortMaxRepositoryImpl
@@ -39,6 +42,7 @@ data class SearchUiState(
     val flickReelsResults: List<FlickReelsItem> = emptyList(),
     val shortMaxResults: List<ShortMaxItem> = emptyList(),
     val netShortResults: List<NetShortItem> = emptyList(),
+    val pineDramaResults: List<PineDramaItem> = emptyList(),
     val isSearching: Boolean = false,
     val isLoadingMore: Boolean = false,
     val hasSearched: Boolean = false,
@@ -46,9 +50,9 @@ data class SearchUiState(
     val endReached: Boolean = false,
     val errorMessage: String? = null
 ) {
-    /** Hanya DramaBox, ReelShort, ShortMax & NetShort search yang punya param page yang berfungsi. */
+    /** Tab dengan endpoint search ber-`page`. */
     val canLoadMore: Boolean
-        get() = (selectedTab == 1 || selectedTab == 2 || selectedTab == 5 || selectedTab == 6) && !endReached
+        get() = (selectedTab == 1 || selectedTab == 2 || selectedTab == 5 || selectedTab == 6 || selectedTab == 7) && !endReached
 }
 
 class SearchViewModel(
@@ -58,7 +62,8 @@ class SearchViewModel(
     private val freeReelsRepo: FreeReelsRepository = FreeReelsRepositoryImpl(),
     private val flickReelsRepo: FlickReelsRepository = FlickReelsRepositoryImpl(),
     private val shortMaxRepo: ShortMaxRepository = ShortMaxRepositoryImpl(),
-    private val netShortRepo: NetShortRepository = NetShortRepositoryImpl()
+    private val netShortRepo: NetShortRepository = NetShortRepositoryImpl(),
+    private val pineDramaRepo: PineDramaRepository = PineDramaRepositoryImpl()
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SearchUiState())
@@ -170,6 +175,17 @@ class SearchViewModel(
                             _uiState.update { it.copy(isSearching = false, errorMessage = err.localizedMessage) }
                         }
                 }
+                7 -> {
+                    pineDramaRepo.search(q, 1)
+                        .onSuccess { list ->
+                            _uiState.update {
+                                it.copy(isSearching = false, pineDramaResults = list, page = 1, endReached = list.isEmpty())
+                            }
+                        }
+                        .onFailure { err ->
+                            _uiState.update { it.copy(isSearching = false, errorMessage = err.localizedMessage) }
+                        }
+                }
             }
         }
     }
@@ -231,6 +247,19 @@ class SearchViewModel(
                         it.copy(
                             isLoadingMore = false,
                             netShortResults = it.netShortResults + fresh,
+                            page = nextPage,
+                            endReached = list.isEmpty() || fresh.isEmpty()
+                        )
+                    }
+                }.onFailure { _uiState.update { it.copy(isLoadingMore = false, endReached = true) } }
+
+                7 -> pineDramaRepo.search(q, nextPage).onSuccess { list ->
+                    val existing = _uiState.value.pineDramaResults.map { it.stableId() }.toSet()
+                    val fresh = list.filterNot { it.stableId() in existing }
+                    _uiState.update {
+                        it.copy(
+                            isLoadingMore = false,
+                            pineDramaResults = it.pineDramaResults + fresh,
                             page = nextPage,
                             endReached = list.isEmpty() || fresh.isEmpty()
                         )

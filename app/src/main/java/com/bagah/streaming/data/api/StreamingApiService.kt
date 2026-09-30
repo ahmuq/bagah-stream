@@ -9,8 +9,10 @@ import com.bagah.streaming.data.model.DramaBrowseResponse
 import com.bagah.streaming.data.model.DramaDetailResponse
 import com.bagah.streaming.data.model.DramaEpisodeResponse
 import com.bagah.streaming.data.model.DramaSearchResponse
-import com.bagah.streaming.data.model.PineDramaCollectionsResponse
+import com.bagah.streaming.data.model.PineDramaBrowseResponse
 import com.bagah.streaming.data.model.PineDramaDetailResponse
+import com.bagah.streaming.data.model.PineDramaEpisodeResponse
+import com.bagah.streaming.data.model.PineDramaSearchResponse
 import com.bagah.streaming.data.model.FlickReelsBrowseResponse
 import com.bagah.streaming.data.model.FlickReelsDetailResponse
 import com.bagah.streaming.data.model.FlickReelsEpisodeResponse
@@ -255,17 +257,37 @@ interface StreamingApiService {
     ): ShortMaxSearchResponse
 
     // --- PINEDRAMA ENDPOINTS ---
+    // `type` = foryou | trending | categories | <categoryId>.
+    // Stream MP4 langsung (TikTok CDN). Kategori memakai cursor (has_more/cursor).
 
-    @GET("api/pinedrama/foryou")
-    suspend fun getPineDramaForYou(): PineDramaCollectionsResponse
-
-    @GET("api/pinedrama/trending")
-    suspend fun getPineDramaTrending(): PineDramaCollectionsResponse
+    @GET("api/pinedrama/browse")
+    suspend fun browsePineDrama(
+        @Query("type") type: String = "foryou",
+        @Query("page") page: Int? = null,
+        @Query("count") count: Int? = null,
+        @Query("lang") lang: String = "id"
+    ): PineDramaBrowseResponse
 
     @GET("api/pinedrama/detail")
     suspend fun getPineDramaDetail(
-        @Query("collectionId") collectionId: String
+        @Query("seriesId") seriesId: String,
+        @Query("lang") lang: String = "id"
     ): PineDramaDetailResponse
+
+    @GET("api/pinedrama/episode")
+    suspend fun getPineDramaEpisode(
+        @Query("seriesId") seriesId: String,
+        @Query("episode") episode: Int = 1,
+        @Query("lang") lang: String = "id"
+    ): PineDramaEpisodeResponse
+
+    @GET("api/pinedrama/search")
+    suspend fun searchPineDrama(
+        @Query("keyword") keyword: String,
+        @Query("page") page: Int = 1,
+        @Query("size") size: Int = 20,
+        @Query("lang") lang: String = "id"
+    ): PineDramaSearchResponse
 
     // --- NETSHORT ENDPOINTS ---
     // `type` = mostTrending | topSearch | newRelease | soaringHeat | actorRanking

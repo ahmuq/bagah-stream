@@ -3,57 +3,111 @@ package com.bagah.streaming.data.model
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-/**
- * PineDrama hanya menyediakan katalog (trending/foryou/detail). Endpoint episode-nya
- * selalu mengembalikan "Episode video not found", jadi platform ini browse-only.
- */
 @Serializable
 data class PineDramaItem(
-    @SerialName("collection_id")
-    val collectionId: String = "",
+    val id: String = "",
+    @SerialName("series_id")
+    val seriesId: String = "",
+    @SerialName("video_id")
+    val videoId: String = "",
+    @SerialName("play_url")
+    val playUrl: String = "",
     val title: String = "",
     val description: String? = null,
+    val cover: String = "",
     @SerialName("total_episodes")
     val totalEpisodes: Int = 0,
-    val views: Long? = null,
-    val categories: String? = null,
-    val tags: List<String> = emptyList(),
-    val cover: String = "",
-    @SerialName("is_limited_free")
-    val isLimitedFree: Boolean = false,
-    @SerialName("label_hot")
-    val labelHot: Boolean = false,
-    @SerialName("label_new")
-    val labelNew: Boolean = false
+    @Serializable(with = FlexibleStringSerializer::class)
+    val views: String = "",
+    val tags: List<String> = emptyList()
+) {
+    fun stableId(): String = seriesId.ifBlank { id }
+}
+
+@Serializable
+data class PineDramaCategory(
+    val name: String = "",
+    @SerialName("category_id")
+    val categoryId: String = "",
+    val scene: Int = 0
+)
+
+/** Respons `pinedrama/browse` untuk semua `type` (foryou, trending, categories, categoryId). */
+@Serializable
+data class PineDramaBrowseResponse(
+    val success: Boolean = false,
+    val type: String? = null,
+    val title: String? = null,
+    val page: Int? = null,
+    val total: Int = 0,
+    @SerialName("category_id")
+    val categoryId: String? = null,
+    @SerialName("category_name")
+    val categoryName: String? = null,
+    val scene: Int? = null,
+    val cursor: String? = null,
+    @SerialName("has_more")
+    val hasMore: Boolean? = null,
+    val categories: List<PineDramaCategory> = emptyList(),
+    val items: List<PineDramaItem> = emptyList()
 )
 
 @Serializable
-data class PineDramaCollectionsResponse(
-    val success: Boolean = false,
-    @SerialName("has_more")
-    val hasMore: Boolean = false,
-    val cursor: String? = null,
-    val collections: List<PineDramaItem> = emptyList()
-) {
-    fun moreAvailable(): Boolean = hasMore
-}
+data class PineDramaChapter(
+    @SerialName("episode_num")
+    val episodeNum: Int = 1,
+    @SerialName("episode_id")
+    val episodeId: String = "",
+    val title: String = "",
+    val locked: Boolean = false,
+    @SerialName("is_paid")
+    val isPaid: Boolean = false,
+    val duration: Int? = null,
+    @SerialName("best_url")
+    val bestUrl: String = ""
+)
 
 @Serializable
 data class PineDramaDetailResponse(
     val success: Boolean = false,
-    @SerialName("collection_id")
-    val collectionId: String = "",
+    val id: String = "",
+    @SerialName("series_id")
+    val seriesId: String = "",
     val title: String = "",
-    val description: String? = null,
+    val description: String = "",
+    val cover: String = "",
     @SerialName("total_episodes")
     val totalEpisodes: Int = 0,
-    val views: Long? = null,
-    val type: String? = null,
-    @SerialName("episode_label")
-    val episodeLabel: String? = null,
-    @SerialName("cover_urls")
-    val coverUrls: List<String> = emptyList()
+    val tags: List<String> = emptyList(),
+    val chapters: List<PineDramaChapter> = emptyList()
+)
+
+@Serializable
+data class PineDramaEpisodeResponse(
+    val success: Boolean = false,
+    @SerialName("series_id")
+    val seriesId: String = "",
+    @SerialName("episode_num")
+    val episodeNum: Int = 1,
+    @SerialName("episode_id")
+    val episodeId: String = "",
+    val title: String = "",
+    val locked: Boolean = false,
+    @SerialName("video_url")
+    val videoUrl: String = "",
+    @SerialName("play_url")
+    val playUrl: String = ""
 ) {
-    /** Detail hanya memberi daftar URL cover; ambil yang pertama untuk poster. */
-    fun cover(): String = coverUrls.firstOrNull().orEmpty()
+    /** MP4 langsung (TikTok CDN), tanpa enkripsi. */
+    fun streamUrl(): String = videoUrl.ifBlank { playUrl }
 }
+
+@Serializable
+data class PineDramaSearchResponse(
+    val success: Boolean = false,
+    val query: String? = null,
+    val keyword: String? = null,
+    val page: Int? = null,
+    val total: Int = 0,
+    val items: List<PineDramaItem> = emptyList()
+)

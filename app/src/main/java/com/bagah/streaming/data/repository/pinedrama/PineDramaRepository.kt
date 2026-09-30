@@ -1,14 +1,20 @@
 package com.bagah.streaming.data.repository.pinedrama
 
+import com.bagah.streaming.data.model.PineDramaCategory
+import com.bagah.streaming.data.model.PineDramaChapter
 import com.bagah.streaming.data.model.PineDramaDetailResponse
+import com.bagah.streaming.data.model.PineDramaEpisodeResponse
 import com.bagah.streaming.data.model.PineDramaItem
 
-/**
- * PineDrama hanya menyediakan katalog. Tidak ada method episode karena endpoint-nya
- * tidak pernah mengembalikan video.
- */
 interface PineDramaRepository {
-    suspend fun getForYou(): Result<List<PineDramaItem>>
-    suspend fun getTrending(): Result<List<PineDramaItem>>
-    suspend fun getDetail(collectionId: String): Result<PineDramaDetailResponse>
+    suspend fun getForYou(page: Int = 1): Result<List<PineDramaItem>>
+    suspend fun getCategories(): Result<List<PineDramaCategory>>
+    suspend fun getCategory(
+        categoryId: String,
+        cursor: String? = null
+    ): Result<Pair<List<PineDramaItem>, String?>>
+    suspend fun getDetail(seriesId: String): Result<PineDramaDetailResponse>
+    suspend fun getEpisodes(seriesId: String): Result<List<PineDramaChapter>>
+    suspend fun getEpisode(seriesId: String, episode: Int): Result<PineDramaEpisodeResponse>
+    suspend fun search(keyword: String, page: Int = 1): Result<List<PineDramaItem>>
 }

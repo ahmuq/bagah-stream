@@ -53,6 +53,7 @@ import com.bagah.streaming.ui.components.DramaCard
 import com.bagah.streaming.ui.components.FlickReelsCard
 import com.bagah.streaming.ui.components.FreeReelsCard
 import com.bagah.streaming.ui.components.NetShortCard
+import com.bagah.streaming.ui.components.SimpleMediaCard
 import com.bagah.streaming.ui.components.ShortMaxCard
 import com.bagah.streaming.ui.components.ReelShortCard
 import com.bagah.streaming.ui.theme.AccentWhite
@@ -74,7 +75,8 @@ fun SearchScreen(
     onFreeReelsClick: (seriesId: String) -> Unit = {},
     onFlickReelsClick: (seriesId: String) -> Unit = {},
     onShortMaxClick: (seriesId: String) -> Unit = {},
-    onNetShortClick: (seriesId: String) -> Unit = {}
+    onNetShortClick: (seriesId: String) -> Unit = {},
+    onPineDramaClick: (seriesId: String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
@@ -105,6 +107,7 @@ fun SearchScreen(
                                 4 -> "Cari FlickReels..."
                                 5 -> "Cari ShortMax..."
                                 6 -> "Cari NetShort..."
+                                7 -> "Cari PineDrama..."
                                 else -> "Cari short drama..."
                             },
                             color = TextMuted,
@@ -246,6 +249,17 @@ fun SearchScreen(
                             text = "NetShort",
                             color = if (uiState.selectedTab == 6) TextPrimary else TextMuted,
                             fontWeight = if (uiState.selectedTab == 6) FontWeight.Bold else FontWeight.Medium
+                        )
+                    }
+                )
+                Tab(
+                    selected = uiState.selectedTab == 7,
+                    onClick = { viewModel.onTabSelect(7) },
+                    text = {
+                        Text(
+                            text = "PineDrama",
+                            color = if (uiState.selectedTab == 7) TextPrimary else TextMuted,
+                            fontWeight = if (uiState.selectedTab == 7) FontWeight.Bold else FontWeight.Medium
                         )
                     }
                 )
@@ -433,6 +447,32 @@ fun SearchScreen(
                             ) {
                                 items(uiState.netShortResults, key = { it.stableId() }) { item ->
                                     NetShortCard(item = item, onClick = { onNetShortClick(item.stableId()) })
+                                }
+                                item(span = { GridItemSpan(maxLineSpan) }) { loadMoreFooter() }
+                            }
+                        }
+                    }
+                    7 -> {
+                        if (uiState.pineDramaResults.isEmpty()) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text(text = "Tidak ada PineDrama yang cocok dengan \"${uiState.query}\"", color = TextMuted, fontSize = 13.sp)
+                            }
+                        } else {
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(3),
+                                state = gridState,
+                                contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 90.dp),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(14.dp)
+                            ) {
+                                items(uiState.pineDramaResults, key = { it.stableId() }) { item ->
+                                    SimpleMediaCard(
+                                        title = item.title,
+                                        cover = item.cover,
+                                        episodeCount = item.totalEpisodes,
+                                        badgeText = "PINEDRAMA",
+                                        onClick = { onPineDramaClick(item.stableId()) }
+                                    )
                                 }
                                 item(span = { GridItemSpan(maxLineSpan) }) { loadMoreFooter() }
                             }

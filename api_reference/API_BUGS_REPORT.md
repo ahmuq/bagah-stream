@@ -25,7 +25,7 @@ Status temuan lama (diverifikasi ulang 2026-09-30):
 | #  | Status saat ini                                                                                       |
 | -- | ----------------------------------------------------------------------------------------------------- |
 | #1 | Belum diuji ulang (melolo tidak berubah).                                                             |
-| #2 | **Masih terjadi**: `pinedrama/episode` mengembalikan HTTP 400.                                        |
+| #2 | **Diperbaiki (2026-09-30)**: `pinedrama/episode` kini mengembalikan MP4 langsung; PineDrama sudah bisa diputar. `pinedrama` juga kini punya `browse`/`search` (lihat `pinedrama.md`). |
 | #3 | **Masih terjadi**: `melolo/detail` tetap memotong presisi ID (`...8837` → `...9000`).                 |
 | #4 | **Tidak lagi berlaku**: endpoint `dramabox/home` dihapus; `dramabox/browse` tidak lagi memuat item kosong. |
 | A  | **Diperbaiki**: spec kini di `/api/v1/openapi.json` dengan server `/api`; endpoint nyata tetap berprefix `api/`. |

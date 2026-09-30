@@ -39,6 +39,7 @@ import com.bagah.streaming.ui.screens.netshort.NetShortHomeScreen
 import com.bagah.streaming.ui.screens.netshort.NetShortPlayerScreen
 import com.bagah.streaming.ui.screens.pinedrama.PineDramaDetailScreen
 import com.bagah.streaming.ui.screens.pinedrama.PineDramaHomeScreen
+import com.bagah.streaming.ui.screens.pinedrama.PineDramaPlayerScreen
 import com.bagah.streaming.ui.screens.reelshort.ReelShortDetailScreen
 import com.bagah.streaming.ui.screens.reelshort.ReelShortHomeScreen
 import com.bagah.streaming.ui.screens.reelshort.ReelShortPlayerScreen
@@ -355,22 +356,40 @@ fun BagahApp() {
                     )
                 }
 
-                // 19. PineDrama (katalog saja)
+                // 19. PineDrama
                 composable(Screen.PineDramaHome.route) {
                     PineDramaHomeScreen(
-                        onSeriesClick = { collectionId ->
-                            navController.navigate(Screen.PineDramaDetail.createRoute(collectionId))
+                        onSeriesClick = { seriesId ->
+                            navController.navigate(Screen.PineDramaDetail.createRoute(seriesId))
                         },
                         onSearchClick = { navController.navigate(Screen.Search.route) }
                     )
                 }
                 composable(
                     route = Screen.PineDramaDetail.route,
-                    arguments = listOf(navArgument("collectionId") { type = NavType.StringType })
+                    arguments = listOf(navArgument("seriesId") { type = NavType.StringType })
                 ) { backStack ->
-                    val collectionId = backStack.arguments?.getString("collectionId") ?: ""
+                    val seriesId = backStack.arguments?.getString("seriesId") ?: ""
                     PineDramaDetailScreen(
-                        collectionId = collectionId,
+                        seriesId = seriesId,
+                        onBackClick = { navController.popBackStack() },
+                        onPlayEpisode = { sId, epNum ->
+                            navController.navigate(Screen.PineDramaPlayer.createRoute(sId, epNum))
+                        }
+                    )
+                }
+                composable(
+                    route = Screen.PineDramaPlayer.route,
+                    arguments = listOf(
+                        navArgument("seriesId") { type = NavType.StringType },
+                        navArgument("episodeNum") { type = NavType.IntType; defaultValue = 1 }
+                    )
+                ) { backStack ->
+                    val seriesId = backStack.arguments?.getString("seriesId") ?: ""
+                    val episodeNum = backStack.arguments?.getInt("episodeNum") ?: 1
+                    PineDramaPlayerScreen(
+                        seriesId = seriesId,
+                        initialEpisode = episodeNum,
                         onBackClick = { navController.popBackStack() }
                     )
                 }
@@ -436,6 +455,9 @@ fun BagahApp() {
                         },
                         onNetShortClick = { seriesId ->
                             navController.navigate(Screen.NetShortDetail.createRoute(seriesId))
+                        },
+                        onPineDramaClick = { seriesId ->
+                            navController.navigate(Screen.PineDramaDetail.createRoute(seriesId))
                         }
                     )
                 }
