@@ -19,6 +19,10 @@ import com.bagah.streaming.data.model.FreeReelsBrowseResponse
 import com.bagah.streaming.data.model.FreeReelsDetailResponse
 import com.bagah.streaming.data.model.FreeReelsEpisodeResponse
 import com.bagah.streaming.data.model.FreeReelsSearchResponse
+import com.bagah.streaming.data.model.NetShortBrowseResponse
+import com.bagah.streaming.data.model.NetShortDetailResponse
+import com.bagah.streaming.data.model.NetShortEpisodeResponse
+import com.bagah.streaming.data.model.NetShortSearchResponse
 import com.bagah.streaming.data.model.ReelShortBrowseResponse
 import com.bagah.streaming.data.model.ReelShortDetailResponse
 import com.bagah.streaming.data.model.ReelShortEpisodeResponse
@@ -262,4 +266,38 @@ interface StreamingApiService {
     suspend fun getPineDramaDetail(
         @Query("collectionId") collectionId: String
     ): PineDramaDetailResponse
+
+    // --- NETSHORT ENDPOINTS ---
+    // `type` = mostTrending | topSearch | newRelease | soaringHeat | actorRanking
+    //          | channels | <channelId> (125,127,131,315..323).
+    // Stream berupa MP4 langsung (tanpa enkripsi). `codec` = h265 (default) | h264.
+
+    @GET("api/netshort/browse")
+    suspend fun browseNetShort(
+        @Query("type") type: String = "mostTrending",
+        @Query("codec") codec: String = "h264",
+        @Query("lang") lang: String = "id_ID"
+    ): NetShortBrowseResponse
+
+    @GET("api/netshort/detail")
+    suspend fun getNetShortDetail(
+        @Query("seriesId") seriesId: String,
+        @Query("lang") lang: String = "id_ID"
+    ): NetShortDetailResponse
+
+    @GET("api/netshort/episode")
+    suspend fun getNetShortEpisode(
+        @Query("seriesId") seriesId: String,
+        @Query("episode") episode: Int = 1,
+        @Query("codec") codec: String = "h264",
+        @Query("lang") lang: String = "id_ID"
+    ): NetShortEpisodeResponse
+
+    @GET("api/netshort/search")
+    suspend fun searchNetShort(
+        @Query("keyword") keyword: String,
+        @Query("page") page: Int = 1,
+        @Query("codec") codec: String = "h264",
+        @Query("lang") lang: String = "id_ID"
+    ): NetShortSearchResponse
 }

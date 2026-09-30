@@ -52,6 +52,7 @@ import com.bagah.streaming.ui.components.AnimeCard
 import com.bagah.streaming.ui.components.DramaCard
 import com.bagah.streaming.ui.components.FlickReelsCard
 import com.bagah.streaming.ui.components.FreeReelsCard
+import com.bagah.streaming.ui.components.NetShortCard
 import com.bagah.streaming.ui.components.ShortMaxCard
 import com.bagah.streaming.ui.components.ReelShortCard
 import com.bagah.streaming.ui.theme.AccentWhite
@@ -72,7 +73,8 @@ fun SearchScreen(
     onReelShortClick: (bookId: String) -> Unit = {},
     onFreeReelsClick: (seriesId: String) -> Unit = {},
     onFlickReelsClick: (seriesId: String) -> Unit = {},
-    onShortMaxClick: (seriesId: String) -> Unit = {}
+    onShortMaxClick: (seriesId: String) -> Unit = {},
+    onNetShortClick: (seriesId: String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
@@ -102,6 +104,7 @@ fun SearchScreen(
                                 3 -> "Cari FreeReels..."
                                 4 -> "Cari FlickReels..."
                                 5 -> "Cari ShortMax..."
+                                6 -> "Cari NetShort..."
                                 else -> "Cari short drama..."
                             },
                             color = TextMuted,
@@ -232,6 +235,17 @@ fun SearchScreen(
                             text = "ShortMax",
                             color = if (uiState.selectedTab == 5) TextPrimary else TextMuted,
                             fontWeight = if (uiState.selectedTab == 5) FontWeight.Bold else FontWeight.Medium
+                        )
+                    }
+                )
+                Tab(
+                    selected = uiState.selectedTab == 6,
+                    onClick = { viewModel.onTabSelect(6) },
+                    text = {
+                        Text(
+                            text = "NetShort",
+                            color = if (uiState.selectedTab == 6) TextPrimary else TextMuted,
+                            fontWeight = if (uiState.selectedTab == 6) FontWeight.Bold else FontWeight.Medium
                         )
                     }
                 )
@@ -390,6 +404,26 @@ fun SearchScreen(
                             ) {
                                 items(uiState.shortMaxResults, key = { it.stableId() }) { item ->
                                     ShortMaxCard(item = item, onClick = { onShortMaxClick(item.stableId()) })
+                                }
+                                item(span = { GridItemSpan(maxLineSpan) }) { loadMoreFooter() }
+                            }
+                        }
+                    }
+                    6 -> {
+                        if (uiState.netShortResults.isEmpty()) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text(text = "Tidak ada NetShort yang cocok dengan \"${uiState.query}\"", color = TextMuted, fontSize = 13.sp)
+                            }
+                        } else {
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(3),
+                                state = gridState,
+                                contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 90.dp),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(14.dp)
+                            ) {
+                                items(uiState.netShortResults, key = { it.stableId() }) { item ->
+                                    NetShortCard(item = item, onClick = { onNetShortClick(item.stableId()) })
                                 }
                                 item(span = { GridItemSpan(maxLineSpan) }) { loadMoreFooter() }
                             }

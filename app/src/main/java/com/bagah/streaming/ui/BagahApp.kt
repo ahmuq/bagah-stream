@@ -34,6 +34,9 @@ import com.bagah.streaming.ui.screens.freereels.FreeReelsDetailScreen
 import com.bagah.streaming.ui.screens.freereels.FreeReelsHomeScreen
 import com.bagah.streaming.ui.screens.freereels.FreeReelsPlayerScreen
 import com.bagah.streaming.ui.screens.hub.PlatformHubScreen
+import com.bagah.streaming.ui.screens.netshort.NetShortDetailScreen
+import com.bagah.streaming.ui.screens.netshort.NetShortHomeScreen
+import com.bagah.streaming.ui.screens.netshort.NetShortPlayerScreen
 import com.bagah.streaming.ui.screens.pinedrama.PineDramaDetailScreen
 import com.bagah.streaming.ui.screens.pinedrama.PineDramaHomeScreen
 import com.bagah.streaming.ui.screens.reelshort.ReelShortDetailScreen
@@ -63,6 +66,7 @@ fun BagahApp() {
         Screen.FlickReelsHome.route,
         Screen.ShortMaxHome.route,
         Screen.PineDramaHome.route,
+        Screen.NetShortHome.route,
         Screen.Search.route
     )
 
@@ -371,7 +375,45 @@ fun BagahApp() {
                     )
                 }
 
-                // 20. Search
+                // 20. NetShort
+                composable(Screen.NetShortHome.route) {
+                    NetShortHomeScreen(
+                        onSeriesClick = { seriesId ->
+                            navController.navigate(Screen.NetShortDetail.createRoute(seriesId))
+                        },
+                        onSearchClick = { navController.navigate(Screen.Search.route) }
+                    )
+                }
+                composable(
+                    route = Screen.NetShortDetail.route,
+                    arguments = listOf(navArgument("seriesId") { type = NavType.StringType })
+                ) { backStack ->
+                    val seriesId = backStack.arguments?.getString("seriesId") ?: ""
+                    NetShortDetailScreen(
+                        seriesId = seriesId,
+                        onBackClick = { navController.popBackStack() },
+                        onPlayEpisode = { sId, epNum ->
+                            navController.navigate(Screen.NetShortPlayer.createRoute(sId, epNum))
+                        }
+                    )
+                }
+                composable(
+                    route = Screen.NetShortPlayer.route,
+                    arguments = listOf(
+                        navArgument("seriesId") { type = NavType.StringType },
+                        navArgument("episodeNum") { type = NavType.IntType; defaultValue = 1 }
+                    )
+                ) { backStack ->
+                    val seriesId = backStack.arguments?.getString("seriesId") ?: ""
+                    val episodeNum = backStack.arguments?.getInt("episodeNum") ?: 1
+                    NetShortPlayerScreen(
+                        seriesId = seriesId,
+                        initialEpisode = episodeNum,
+                        onBackClick = { navController.popBackStack() }
+                    )
+                }
+
+                // 21. Search
                 composable(Screen.Search.route) {
                     SearchScreen(
                         onAnimeClick = { url ->
@@ -391,6 +433,9 @@ fun BagahApp() {
                         },
                         onShortMaxClick = { seriesId ->
                             navController.navigate(Screen.ShortMaxDetail.createRoute(seriesId))
+                        },
+                        onNetShortClick = { seriesId ->
+                            navController.navigate(Screen.NetShortDetail.createRoute(seriesId))
                         }
                     )
                 }
