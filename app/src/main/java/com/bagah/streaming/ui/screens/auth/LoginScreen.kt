@@ -150,15 +150,6 @@ fun LoginScreen(
                     Text(text = "Masuk", fontSize = 15.sp, fontWeight = FontWeight.Bold)
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "API key hanya diminta sekali. Setelah itu kamu langsung masuk, kecuali data app dihapus atau app di-uninstall.",
-                color = TextMuted,
-                fontSize = 11.sp,
-                textAlign = TextAlign.Center,
-                lineHeight = 15.sp
-            )
         }
     }
 }
