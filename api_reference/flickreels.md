@@ -176,9 +176,6 @@ Baris `categories`: `row 21` region (`-1` Semua, `2` Asia, `1` Barat),
 
 ## Catatan cacat data
 
-- `type=latest` masih mengembalikan 0 item; `type=ranking` masih identik dengan `trending`.
+- `type=latest` sudah mengembalikan item (12); `type=ranking` masih identik dengan `trending`.
 - Item dengan `id` kosong dibuang sebelum dirender; item tanpa `title` dirender "Tanpa Judul".
-- **BUG (2026-09-30)**: `flickreels/episode` mengembalikan HTTP 400 untuk episode terkunci
-  pada sebagian series (contoh `11684`). Series lain (mis. `11694`) berhasil di-unlock
-  otomatis. `detail.chapters[].bestUrl` untuk episode terkunci kosong, jadi tidak ada
-  fallback URL.
+- Episode terkunci kini di-unlock otomatis oleh server (termasuk series `11684`).

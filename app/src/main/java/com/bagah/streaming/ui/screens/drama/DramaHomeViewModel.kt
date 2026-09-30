@@ -2,6 +2,7 @@ package com.bagah.streaming.ui.screens.drama
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bagah.streaming.data.model.DramaFilterOption
 import com.bagah.streaming.data.model.DramaItem
 import com.bagah.streaming.data.model.DramaSection
 import com.bagah.streaming.data.repository.drama.DramaRepository
@@ -21,6 +22,8 @@ data class DramaHomeUiState(
     val page: Int = 1,
     val endReached: Boolean = false,
     val statusFilter: String = "All",
+    val genres: List<DramaFilterOption> = emptyList(),
+    val selectedGenre: String = "All",
     val rankType: Int = 1,
     val errorMessage: String? = null
 )
@@ -33,6 +36,25 @@ class DramaHomeViewModel(
     val uiState: StateFlow<DramaHomeUiState> = _uiState.asStateFlow()
 
     init {
+        loadFiltersAndHome()
+    }
+
+    private fun loadFiltersAndHome() {
+        viewModelScope.launch {
+            // Genre diambil dari `type=filters`; dipakai tab Beranda (classify).
+            val filters = repository.getFilters().getOrDefault(emptyList())
+            val options = filters.firstOrNull { it.categoryName.contains("Genre", ignoreCase = true) }?.options
+                ?: filters.firstOrNull()?.options
+                ?: emptyList()
+            _uiState.update { it.copy(genres = options) }
+            loadCategory(0)
+        }
+    }
+
+    /** Filter genre untuk tab Beranda (classify). */
+    fun setGenre(value: String) {
+        if (value == _uiState.value.selectedGenre) return
+        _uiState.update { it.copy(selectedGenre = value) }
         loadCategory(0)
     }
 
@@ -140,10 +162,14 @@ class DramaHomeViewModel(
     }
 
     private suspend fun fetch(index: Int, page: Int): Result<List<DramaItem>> = when (index) {
-        0 -> repository.getHome(page, _uiState.value.statusFilter.takeIf { it != "All" })
+        0 -> repository.getHome(
+            page,
+            _uiState.value.statusFilter.takeIf { it != "All" },
+            _uiState.value.selectedGenre.takeIf { it != "All" }
+        )
         1 -> repository.getForYou(page)
         2 -> repository.getCategories()
         3 -> repository.getRanking(_uiState.value.rankType)
-        else -> repository.getHome(page, null)
+        else -> repository.getHome(page, null, null)
     }
 }

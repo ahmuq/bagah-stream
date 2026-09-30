@@ -440,6 +440,43 @@ fun ReelShortHomeScreen(
                     }
                 }
 
+                // 5b. Explore (classify) genre & region filters
+                if (uiState.selectedTab == "JELAJAH") {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Column {
+                            FilterChipRow(
+                                options = REELSHORT_GENRES,
+                                selectedValue = uiState.selectedGenre,
+                                onSelect = { viewModel.setGenre(it) },
+                                leadingLabel = "Genre"
+                            )
+                            FilterChipRow(
+                                options = REELSHORT_REGIONS,
+                                selectedValue = uiState.selectedRegion,
+                                onSelect = { viewModel.setRegion(it) },
+                                leadingLabel = "Wilayah"
+                            )
+                        }
+                    }
+                }
+
+                if (uiState.loadingExplore) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                color = AccentWhite,
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(26.dp)
+                            )
+                        }
+                    }
+                }
+
                 if (uiState.isLoadingRanking) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
                         Box(
@@ -494,4 +531,16 @@ private val REELSHORT_PERIODS = listOf(
     FilterChip("Rilis Baru", "14"),
     FilterChip("Paling Dicari", "15"),
     FilterChip("Anime", "16")
+)
+
+private val REELSHORT_GENRES = listOf(
+    FilterChip("Semua", "All"),
+    FilterChip("Pria", "676d21074582b53a14081664"),
+    FilterChip("Perempuan", "676d21074582b53a14081663")
+)
+
+private val REELSHORT_REGIONS = listOf(
+    FilterChip("Semua", "All"),
+    FilterChip("Amerika", "1"),
+    FilterChip("Asia", "2")
 )

@@ -25,7 +25,7 @@ Spec: `https://api.bagahproject.com/api/v1/openapi.json`.
 | Nilai                                                        | Arti                        |
 | ------------------------------------------------------------ | --------------------------- |
 | `mostTrending` / `topSearch` / `newRelease` / `soaringHeat`   | Papan peringkat             |
-| `actorRanking`                                               | Peringkat aktor (saat ini kosong, `total: 0`) |
+| `actorRanking`                                               | Peringkat aktor (30 item)      |
 | `channels`                                                   | Daftar taksonomi channel    |
 | `315` `316` `317` `318` `319` `320` `321` `323` `125` `131` `127` | Feed per channel      |
 
@@ -207,6 +207,6 @@ Episode terkunci otomatis di-unlock lewat mekanisme reward-ad di sisi server.
 
 ## Catatan cacat data
 
-- `type=actorRanking` mengembalikan `items: []` (`total: 0`).
+- `type=actorRanking` kini mengembalikan 30 item (fixed 2026-09-30).
 - `total_episodes` selalu `0` di semua listing; pakai `detail.totalEpisodes` untuk jumlah episode.
 - Item tanpa `series_id`/`id` dibuang sebelum dirender; item tanpa `title` dirender "Tanpa Judul".

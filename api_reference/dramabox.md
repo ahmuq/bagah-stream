@@ -204,26 +204,24 @@ Terverifikasi di device: sample 720p ~12.3 MB terdekripsi, `OMX.qcom.video.decod
 | Param                | Status | Catatan                                                              |
 | -------------------- | ------ | -------------------------------------------------------------------- |
 | `type=foryou`        | ✅     | 5 item/halaman, `total_episodes` sering `0`                          |
-| `type=classify`      | ✅     | 15 item, `is_more`; **tanpa** filter                                 |
+| `type=classify`      | ✅     | 15 item, `is_more`; mendukung `status` + `genre`                     |
 | `type=theater`       | ✅     | ber-kolom; `channelId` mengubah kolom (default 2 kolom, 299/300 = 1) |
 | `type=ranking`       | ✅     | `rankType=1|2|3` → urutan berbeda (3 = Terbaru)                      |
 | `type=reserve`       | ✅     | 5 item (rilis mendatang)                                             |
 | `type=filters`       | ✅     | 68 opsi genre (`value` seperti `1323`, `1337`, …)                    |
 | `status`             | ✅     | `1` (Tamat) vs `2` (Berjalan) menghasilkan item berbeda              |
 | `dub`                | ⚠️     | `dub=2` jalan; `dub=1` mengembalikan daftar `filters`, bukan item    |
-| `genre` (classify)   | ❌     | **Bug**: setiap nilai genre (termasuk id dari `type=filters`) → `items: []` |
+| `genre` (classify)   | ✅     | nilai dari `type=filters` (mis. `1323`) memfilter hasil (fixed 2026-09-30) |
 | `pageSize`           | ✅     | `pageSize=30` → 30 item                                              |
 | `pages` (batch)      | ✅     | `pages=3` → 45 item (15×3) dalam satu request                        |
 | `channelId` (classify)| ❌    | nilai 175/43/299/300 menghasilkan set yang sama                      |
 
-Enum `genre` di spec OpenAPI (`1362`, `1394`, …) **tidak** cocok dengan id di `type=filters`
-(`1323`, `1337`, …); keduanya sama-sama menghasilkan 0 item saat dipakai di `classify`.
+Enum `genre` di spec OpenAPI (`1362`, `1394`, …) tidak cocok dengan `value` di
+`type=filters` (`1323`, `1337`, …). Pakai `value` dari `type=filters`.
 
 ## Catatan cacat data
 
 - Di endpoint lama, `home` menyertakan satu item rusak (`series_id` kosong). Pada `browse`
   baru item rusak itu tidak lagi muncul, tetapi client tetap membuang item tanpa `series_id`.
 - `total_episodes` sering bernilai `0` pada `type=foryou`; pakai `classify` bila butuh jumlah episode.
-- **BUG (2026-09-30)**: `dramabox/episode` mengabaikan parameter `episode`; semua nomor
-  mengembalikan file video yang sama (selalu episode 1). `chapterId` selalu HTTP 400.
-  Belum bisa diperbaiki dari sisi klien.
+- **RESOLVED (2026-09-30)**: `dramabox/episode` sebelumnya selalu mengembalikan episode 1 dan `chapterId` menghasilkan HTTP 400. Hal ini disebabkan karena scraper tidak mengirimkan parameter `index` ke `chapterv2/batch/load`, hanya mengambil `chapterList[0]`, serta tidak mendukung resolusi berdasarkan `chapterId`. Sekarang sudah diperbaiki dan mendukung pemanggilan via nomor episode maupun `chapterId`.

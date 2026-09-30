@@ -16,12 +16,17 @@ data class ReelShortHomeUiState(
     val isLoading: Boolean = true,
     val isLoadingMore: Boolean = false,
     val selectedTab: String = "POPULER",
-    val tabs: List<String> = listOf("POPULER", "UNTUK ANDA", "TERBARU", "RANKING"),
+    val tabs: List<String> = listOf("POPULER", "UNTUK ANDA", "TERBARU", "RANKING", "JELAJAH"),
     val spotlightBooks: List<ReelShortBook> = emptyList(),
     val popularBooks: List<ReelShortBook> = emptyList(),
     val latestBooks: List<ReelShortBook> = emptyList(),
     val rankingBooks: List<ReelShortBook> = emptyList(),
     val forYouBooks: List<ReelShortBook> = emptyList(),
+    val exploreBooks: List<ReelShortBook> = emptyList(),
+    val selectedGenre: String = "All",
+    val selectedRegion: String = "All",
+    val exploreLoaded: Boolean = false,
+    val loadingExplore: Boolean = false,
     val allBooks: List<ReelShortBook> = emptyList(),
     val forYouPage: Int = 1,
     val rankingPeriod: Int = 1,
@@ -35,6 +40,7 @@ data class ReelShortHomeUiState(
             "POPULER" -> popularBooks
             "RANKING" -> rankingBooks
             "TERBARU" -> latestBooks
+            "JELAJAH" -> exploreBooks
             else -> popularBooks
         }.distinctBy { it.id }
 
@@ -56,6 +62,42 @@ class ReelShortHomeViewModel(
 
     fun selectTab(tab: String) {
         _uiState.update { it.copy(selectedTab = tab) }
+        if (tab == "JELAJAH" && !_uiState.value.exploreLoaded) {
+            loadExplore()
+        }
+    }
+
+    /** Filter genre untuk tab JELAJAH (classify). */
+    fun setGenre(value: String) {
+        if (value == _uiState.value.selectedGenre) return
+        _uiState.update { it.copy(selectedGenre = value) }
+        loadExplore()
+    }
+
+    /** Filter wilayah untuk tab JELAJAH (classify). */
+    fun setRegion(value: String) {
+        if (value == _uiState.value.selectedRegion) return
+        _uiState.update { it.copy(selectedRegion = value) }
+        loadExplore()
+    }
+
+    private fun loadExplore() {
+        val state = _uiState.value
+        viewModelScope.launch {
+            _uiState.update { it.copy(loadingExplore = true) }
+            repository.getClassify(
+                genre = state.selectedGenre.takeIf { v -> v != "All" },
+                region = state.selectedRegion.takeIf { v -> v != "All" }
+            ).onSuccess { list ->
+                _uiState.update {
+                    it.copy(loadingExplore = false, exploreLoaded = true, exploreBooks = list.distinctBy { b -> b.id })
+                }
+            }.onFailure {
+                _uiState.update {
+                    it.copy(loadingExplore = false, exploreLoaded = true, exploreBooks = emptyList())
+                }
+            }
+        }
     }
 
     /** Ranking period: 1 Harian, 4 Tahunan, 14 Rilis Baru, 15 Paling Dicari, 16 Anime. */

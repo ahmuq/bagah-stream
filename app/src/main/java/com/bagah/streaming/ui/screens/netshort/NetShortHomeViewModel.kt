@@ -19,6 +19,7 @@ private val NETSHORT_TABS = listOf(
     NetShortTab("PENCARIAN", "topSearch", false),
     NetShortTab("BARU", "newRelease", false),
     NetShortTab("POPULER", "soaringHeat", false),
+    NetShortTab("AKTOR", "actorRanking", false),
     NetShortTab("CH POPULER", "315", true),
     NetShortTab("KEPUASAN", "316", true),
     NetShortTab("JUARA", "317", true),

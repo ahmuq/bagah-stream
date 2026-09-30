@@ -16,9 +16,10 @@ data class FlickReelsHomeUiState(
     val isLoading: Boolean = true,
     val isLoadingMore: Boolean = false,
     val selectedTab: String = "POPULER",
-    val tabs: List<String> = listOf("POPULER", "UNTUK ANDA", "JELAJAH"),
+    val tabs: List<String> = listOf("POPULER", "TERBARU", "UNTUK ANDA", "JELAJAH"),
     val spotlightItems: List<FlickReelsItem> = emptyList(),
     val trendingItems: List<FlickReelsItem> = emptyList(),
+    val latestItems: List<FlickReelsItem> = emptyList(),
     val forYouItems: List<FlickReelsItem> = emptyList(),
     val exploreItems: List<FlickReelsItem> = emptyList(),
     val exploreCursor: String? = null,
@@ -33,6 +34,7 @@ data class FlickReelsHomeUiState(
     val currentDisplayList: List<FlickReelsItem>
         get() = when (selectedTab) {
             "UNTUK ANDA" -> forYouItems.ifEmpty { trendingItems }
+            "TERBARU" -> latestItems.ifEmpty { trendingItems }
             "JELAJAH" -> exploreItems
             else -> trendingItems
         }.distinctBy { it.id }
@@ -74,9 +76,11 @@ class FlickReelsHomeViewModel(
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
 
             val trendingDeferred = async { repository.getTrending() }
+            val latestDeferred = async { repository.getLatest() }
             val forYouDeferred = async { repository.getForYou() }
 
             val trending = trendingDeferred.await().getOrDefault(emptyList())
+            val latest = latestDeferred.await().getOrDefault(emptyList())
             val forYou = forYouDeferred.await().getOrDefault(emptyList())
 
             if (trending.isEmpty() && forYou.isEmpty()) {
@@ -92,6 +96,7 @@ class FlickReelsHomeViewModel(
                         isLoading = false,
                         spotlightItems = trending.take(6).ifEmpty { forYou.take(6) },
                         trendingItems = trending,
+                        latestItems = latest,
                         forYouItems = forYou,
                         errorMessage = null
                     )

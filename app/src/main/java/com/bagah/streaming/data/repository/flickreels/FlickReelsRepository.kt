@@ -14,6 +14,7 @@ interface FlickReelsRepository {
         cursor: String? = null
     ): Result<Pair<List<FlickReelsItem>, String?>>
     suspend fun getForYou(): Result<List<FlickReelsItem>>
+    suspend fun getLatest(): Result<List<FlickReelsItem>>
     suspend fun getTrending(): Result<List<FlickReelsItem>>
     suspend fun getDetail(seriesId: String): Result<FlickReelsDetailResponse>
     suspend fun getEpisodes(seriesId: String): Result<List<FlickReelsEpisode>>

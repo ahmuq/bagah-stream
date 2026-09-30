@@ -4,6 +4,7 @@ import com.bagah.streaming.data.api.NetworkClient
 import com.bagah.streaming.data.api.StreamingApiService
 import com.bagah.streaming.data.model.DramaEpisode
 import com.bagah.streaming.data.model.DramaEpisodeResponse
+import com.bagah.streaming.data.model.DramaFilter
 import com.bagah.streaming.data.model.DramaItem
 import com.bagah.streaming.data.model.DramaSection
 import kotlinx.coroutines.CoroutineDispatcher
@@ -18,11 +19,12 @@ class DramaRepositoryImpl(
     // API tetap bisa menyertakan item tanpa id; dibuang agar tidak jadi kartu kosong.
     private fun List<DramaItem>.validItems(): List<DramaItem> = filter { it.bookId.isNotBlank() }
 
-    override suspend fun getHome(page: Int, status: String?): Result<List<DramaItem>> =
+    override suspend fun getHome(page: Int, status: String?, genre: String?): Result<List<DramaItem>> =
         withContext(ioDispatcher) {
-            // classify mengirim total_episodes lengkap dan mendukung pagination + status.
+            // classify mengirim total_episodes lengkap dan mendukung pagination + status + genre.
             runCatching {
-                api.browseDrama(type = "classify", page = page, status = status).flatItems.validItems()
+                api.browseDrama(type = "classify", page = page, status = status, genre = genre)
+                    .flatItems.validItems()
             }
         }
 
@@ -49,8 +51,13 @@ class DramaRepositoryImpl(
         }
     }
 
-    override suspend fun getRanking(rankType: Int): Result<List<DramaItem>> = withContext(ioDispatcher) {
+    override suspend fun getFilters(): Result<List<DramaFilter>> = withContext(ioDispatcher) {
         runCatching {
+            api.browseDrama(type = "filters").filters.filter { it.options.isNotEmpty() }
+        }
+    }
+
+    override suspend fun getRanking(rankType: Int): Result<List<DramaItem>> = withContext(ioDispatcher) {        runCatching {
             api.browseDrama(type = "ranking", rankType = rankType.toString()).flatItems.validItems()
         }
     }

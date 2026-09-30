@@ -34,6 +34,16 @@ class ReelShortRepositoryImpl(
         runCatching { api.browseReelShort(type = "trending").items }
     }
 
+    override suspend fun getClassify(
+        genre: String?,
+        region: String?,
+        page: Int
+    ): Result<List<ReelShortBook>> = withContext(ioDispatcher) {
+        runCatching {
+            api.browseReelShort(type = "classify", genre = genre, region = region, page = page).items
+        }
+    }
+
     override suspend fun getLatest(): Result<List<ReelShortBook>> = withContext(ioDispatcher) {
         runCatching { api.browseReelShort(type = "latest").items }
     }

@@ -161,8 +161,8 @@ Book (dipakai `foryou`, `trending`, `latest`, `ranking`, `classify`, `waterfall`
 | `pages` (batch)      | ✅     | `pages=3` → 60 item (20×3)                                    |
 | `type=categories`    | ✅     | grup: Genre, Wilayah, Dubbing, Jenis Konten, Tag              |
 | `tag` (classify)     | ❌     | **Abaikan**: set 20 id identik dengan tanpa filter            |
-| `genre` (classify)   | ❌     | Pria vs Perempuan → 20 id identik (overlap 20/20)             |
-| `region` (classify)  | ❌     | diabaikan                                                     |
+| `genre` (classify)   | ✅     | Pria vs Perempuan kini beda (fixed 2026-09-30)                |
+| `region` (classify)  | ✅     | `region=2` (ASIA) mengubah hasil (fixed 2026-09-30)           |
 | `dub` (classify)     | ❌     | diabaikan                                                     |
 | `type=foryou` `page` | ⚠️     | `totalPages` biasanya 1; pakai `lastBookId` bila ada          |
 

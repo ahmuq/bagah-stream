@@ -47,6 +47,10 @@ class FlickReelsRepositoryImpl(
         runCatching { api.browseFlickReels(type = "trending").items.validItems() }
     }
 
+    override suspend fun getLatest(): Result<List<FlickReelsItem>> = withContext(ioDispatcher) {
+        runCatching { api.browseFlickReels(type = "latest").items.validItems() }
+    }
+
     override suspend fun getDetail(seriesId: String): Result<FlickReelsDetailResponse> =
         withContext(ioDispatcher) {
             runCatching { api.getFlickReelsDetail(seriesId) }

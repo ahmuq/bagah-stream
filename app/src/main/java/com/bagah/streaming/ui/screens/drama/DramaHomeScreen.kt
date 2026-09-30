@@ -164,13 +164,26 @@ fun DramaHomeScreen(
             Spacer(modifier = Modifier.height(4.dp))
 
             when (uiState.selectedCategoryIndex) {
-                0 -> FilterChipRow(
-                    options = DRAMA_STATUS,
-                    selectedValue = uiState.statusFilter,
-                    onSelect = { viewModel.setStatusFilter(it) },
-                    leadingLabel = "Status",
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
+                0 -> Column {
+                    FilterChipRow(
+                        options = DRAMA_STATUS,
+                        selectedValue = uiState.statusFilter,
+                        onSelect = { viewModel.setStatusFilter(it) },
+                        leadingLabel = "Status",
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                    if (uiState.genres.isNotEmpty()) {
+                        val genreChips = listOf(FilterChip("Semua", "All")) +
+                            uiState.genres.map { FilterChip(it.display, it.value) }
+                        FilterChipRow(
+                            options = genreChips,
+                            selectedValue = uiState.selectedGenre,
+                            onSelect = { viewModel.setGenre(it) },
+                            leadingLabel = "Genre",
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
+                    }
+                }
                 3 -> FilterChipRow(
                     options = DRAMA_RANK_TYPES,
                     selectedValue = uiState.rankType.toString(),
