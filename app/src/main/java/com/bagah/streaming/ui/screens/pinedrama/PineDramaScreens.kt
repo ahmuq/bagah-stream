@@ -85,6 +85,7 @@ import com.bagah.streaming.ui.components.PlatformHeader
 import com.bagah.streaming.ui.components.PlatformTabRow
 import com.bagah.streaming.ui.components.SimpleMediaCard
 import com.bagah.streaming.ui.components.SpotlightBadge
+import com.bagah.streaming.ui.components.PlaybackTimeControls
 import com.bagah.streaming.ui.theme.AccentBlack
 import com.bagah.streaming.ui.theme.AccentWhite
 import com.bagah.streaming.ui.theme.BgBlack
@@ -649,27 +650,31 @@ fun PineDramaPlayerScreen(
                     )
                 }
 
-                Row(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(AccentWhite)
-                        .clickable { showEpisodeSheet = true }
-                        .padding(horizontal = 18.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.FormatListNumbered,
-                        contentDescription = "Pilih Episode",
-                        tint = AccentBlack,
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "Episode ${uiState.currentEpisode}",
-                        color = AccentBlack,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(AccentWhite)
+                            .clickable { showEpisodeSheet = true }
+                            .padding(horizontal = 18.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.FormatListNumbered,
+                            contentDescription = "Pilih Episode",
+                            tint = AccentBlack,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Episode ${uiState.currentEpisode}",
+                            color = AccentBlack,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    PlaybackTimeControls(player = exoPlayer)
                 }
 
                 IconButton(

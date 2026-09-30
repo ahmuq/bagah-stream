@@ -32,7 +32,9 @@ import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.FormatListNumbered
+import androidx.compose.material.icons.rounded.Forward10
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Replay10
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -57,6 +59,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -84,6 +87,7 @@ import com.bagah.streaming.ui.theme.TextMuted
 import com.bagah.streaming.ui.theme.TextPrimary
 import com.bagah.streaming.ui.theme.TextSecondary
 
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(UnstableApi::class, ExperimentalMaterial3Api::class)
@@ -170,6 +174,26 @@ fun DramaReelsPlayerScreen(
     var isPlaying by remember { mutableStateOf(true) }
     var isLiked by remember { mutableStateOf(false) }
     var playbackError by remember { mutableStateOf<String?>(null) }
+    var positionMs by remember { mutableStateOf(0L) }
+    var durationMs by remember { mutableStateOf(0L) }
+
+    // Ticker durasi: perbarui posisi & total durasi tiap 500 ms.
+    LaunchedEffect(exoPlayer) {
+        while (true) {
+            if (exoPlayer.playbackState == Player.STATE_READY || exoPlayer.isPlaying) {
+                positionMs = exoPlayer.currentPosition.coerceAtLeast(0)
+                val dur = exoPlayer.duration
+                durationMs = if (dur > 0) dur else 0L
+            }
+            delay(500)
+        }
+    }
+
+    // Reset posisi saat pindah episode.
+    LaunchedEffect(pagerState.currentPage) {
+        positionMs = 0L
+        durationMs = 0L
+    }
 
     // Auto-advance when video ends
     DisposableEffect(exoPlayer) {
@@ -383,14 +407,62 @@ fun DramaReelsPlayerScreen(
                         text = activeEpisode?.title ?: "Episode",
                         color = TextPrimary,
                         fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "Geser ke atas untuk episode berikutnya",
-                        color = TextMuted,
-                        fontSize = 11.sp
-                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        IconButton(
+                            onClick = {
+                                val dur = exoPlayer.duration
+                                val max = if (dur > 0) dur else Long.MAX_VALUE
+                                val target = (exoPlayer.currentPosition - 10_000L).coerceIn(0L, max)
+                                exoPlayer.seekTo(target)
+                                positionMs = target
+                            },
+                            modifier = Modifier
+                                .size(32.dp)
+                                .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                                .border(1.dp, BorderSubtle, CircleShape)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Replay10,
+                                contentDescription = "Mundur 10 detik",
+                                tint = TextPrimary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                        Text(
+                            text = "${formatPlaybackTime(positionMs)} / ${formatPlaybackTime(durationMs)}",
+                            color = TextSecondary,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        IconButton(
+                            onClick = {
+                                val dur = exoPlayer.duration
+                                val max = if (dur > 0) dur else Long.MAX_VALUE
+                                val target = (exoPlayer.currentPosition + 10_000L).coerceIn(0L, max)
+                                exoPlayer.seekTo(target)
+                                positionMs = target
+                            },
+                            modifier = Modifier
+                                .size(32.dp)
+                                .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                                .border(1.dp, BorderSubtle, CircleShape)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Forward10,
+                                contentDescription = "Maju 10 detik",
+                                tint = TextPrimary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
                 }
 
                 // Quick Episode Sheet trigger
@@ -484,3 +556,11 @@ fun DramaReelsPlayerScreen(
     }
 }
 
+
+private fun formatPlaybackTime(ms: Long): String {
+    if (ms <= 0) return "00:00"
+    val totalSeconds = ms / 1000
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return "%02d:%02d".format(minutes, seconds)
+}
