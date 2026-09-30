@@ -113,7 +113,7 @@ class SearchViewModel(
                     dramaRepo.search(q, 1)
                         .onSuccess { list ->
                             _uiState.update {
-                                it.copy(isSearching = false, dramaResults = list, page = 1, endReached = list.isEmpty())
+                                it.copy(isSearching = false, dramaResults = list.distinctBy { d -> d.bookId }, page = 1, endReached = list.isEmpty())
                             }
                         }
                         .onFailure { err ->
@@ -124,7 +124,7 @@ class SearchViewModel(
                     reelShortRepo.search(q, 1)
                         .onSuccess { list ->
                             _uiState.update {
-                                it.copy(isSearching = false, reelShortResults = list, page = 1, endReached = list.isEmpty())
+                                it.copy(isSearching = false, reelShortResults = list.distinctBy { b -> b.id }, page = 1, endReached = list.isEmpty())
                             }
                         }
                         .onFailure { err ->
@@ -135,7 +135,7 @@ class SearchViewModel(
                     freeReelsRepo.search(q)
                         .onSuccess { list ->
                             _uiState.update {
-                                it.copy(isSearching = false, freeReelsResults = list, endReached = true)
+                                it.copy(isSearching = false, freeReelsResults = list.distinctBy { f -> f.stableId() }, endReached = true)
                             }
                         }
                         .onFailure { err ->
@@ -146,7 +146,7 @@ class SearchViewModel(
                     flickReelsRepo.search(q)
                         .onSuccess { list ->
                             _uiState.update {
-                                it.copy(isSearching = false, flickReelsResults = list, endReached = true)
+                                it.copy(isSearching = false, flickReelsResults = list.distinctBy { f -> f.id }, endReached = true)
                             }
                         }
                         .onFailure { err ->
@@ -157,7 +157,7 @@ class SearchViewModel(
                     shortMaxRepo.search(q, 1)
                         .onSuccess { list ->
                             _uiState.update {
-                                it.copy(isSearching = false, shortMaxResults = list, page = 1, endReached = list.isEmpty())
+                                it.copy(isSearching = false, shortMaxResults = list.distinctBy { s -> s.stableId() }, page = 1, endReached = list.isEmpty())
                             }
                         }
                         .onFailure { err ->
@@ -168,7 +168,7 @@ class SearchViewModel(
                     netShortRepo.search(q, 1)
                         .onSuccess { list ->
                             _uiState.update {
-                                it.copy(isSearching = false, netShortResults = list, page = 1, endReached = list.isEmpty())
+                                it.copy(isSearching = false, netShortResults = list.distinctBy { s -> s.stableId() }, page = 1, endReached = list.isEmpty())
                             }
                         }
                         .onFailure { err ->
@@ -179,7 +179,7 @@ class SearchViewModel(
                     pineDramaRepo.search(q, 1)
                         .onSuccess { list ->
                             _uiState.update {
-                                it.copy(isSearching = false, pineDramaResults = list, page = 1, endReached = list.isEmpty())
+                                it.copy(isSearching = false, pineDramaResults = list.distinctBy { d -> d.stableId() }, page = 1, endReached = list.isEmpty())
                             }
                         }
                         .onFailure { err ->
@@ -196,9 +196,10 @@ class SearchViewModel(
         if (state.isSearching || state.isLoadingMore || !state.canLoadMore) return
         val q = state.query.trim()
         if (q.isBlank()) return
+        // Tandai sinkron agar tidak ada dua loadMore paralel (penyebab duplicate key).
+        _uiState.update { it.copy(isLoadingMore = true) }
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoadingMore = true) }
             val nextPage = state.page + 1
             when (state.selectedTab) {
                 1 -> dramaRepo.search(q, nextPage).onSuccess { list ->
@@ -207,7 +208,7 @@ class SearchViewModel(
                     _uiState.update {
                         it.copy(
                             isLoadingMore = false,
-                            dramaResults = it.dramaResults + fresh,
+                            dramaResults = (it.dramaResults + fresh).distinctBy { d -> d.bookId },
                             page = nextPage,
                             endReached = list.isEmpty() || fresh.isEmpty()
                         )
@@ -220,7 +221,7 @@ class SearchViewModel(
                     _uiState.update {
                         it.copy(
                             isLoadingMore = false,
-                            reelShortResults = it.reelShortResults + fresh,
+                            reelShortResults = (it.reelShortResults + fresh).distinctBy { b -> b.id },
                             page = nextPage,
                             endReached = list.isEmpty() || fresh.isEmpty()
                         )
@@ -233,7 +234,7 @@ class SearchViewModel(
                     _uiState.update {
                         it.copy(
                             isLoadingMore = false,
-                            shortMaxResults = it.shortMaxResults + fresh,
+                            shortMaxResults = (it.shortMaxResults + fresh).distinctBy { s -> s.stableId() },
                             page = nextPage,
                             endReached = list.isEmpty() || fresh.isEmpty()
                         )
@@ -246,7 +247,7 @@ class SearchViewModel(
                     _uiState.update {
                         it.copy(
                             isLoadingMore = false,
-                            netShortResults = it.netShortResults + fresh,
+                            netShortResults = (it.netShortResults + fresh).distinctBy { s -> s.stableId() },
                             page = nextPage,
                             endReached = list.isEmpty() || fresh.isEmpty()
                         )
@@ -259,7 +260,7 @@ class SearchViewModel(
                     _uiState.update {
                         it.copy(
                             isLoadingMore = false,
-                            pineDramaResults = it.pineDramaResults + fresh,
+                            pineDramaResults = (it.pineDramaResults + fresh).distinctBy { d -> d.stableId() },
                             page = nextPage,
                             endReached = list.isEmpty() || fresh.isEmpty()
                         )

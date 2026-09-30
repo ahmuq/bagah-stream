@@ -36,7 +36,7 @@ data class ReelShortHomeUiState(
             "RANKING" -> rankingBooks
             "TERBARU" -> latestBooks
             else -> popularBooks
-        }
+        }.distinctBy { it.id }
 
     /** Hanya tab yang endpoint-nya mendukung param page yang bisa dimuat lagi. */
     val canLoadMore: Boolean
@@ -88,11 +88,12 @@ class ReelShortHomeViewModel(
      */
     fun loadMore() {
         val state = _uiState.value
-        if (state.isLoading || state.isLoadingMore) return
-        if (!state.canLoadMore) return
+        if (state.isLoading || state.isLoadingMore || !state.canLoadMore) return
+        // Tandai langsung (sinkron) agar tidak ada dua loadMore paralel yang
+        // menambahkan item sama dua kali (menyebabkan duplicate key di LazyGrid).
+        _uiState.update { it.copy(isLoadingMore = true) }
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoadingMore = true) }
             val nextPage = state.forYouPage + 1
             repository.getForYou(nextPage)
                 .onSuccess { list ->
@@ -101,8 +102,8 @@ class ReelShortHomeViewModel(
                     _uiState.update {
                         it.copy(
                             isLoadingMore = false,
-                            forYouBooks = it.forYouBooks + fresh,
-                            allBooks = it.allBooks + fresh.filterNot { b -> b.id in it.allBooks.map { x -> x.id }.toSet() },
+                            forYouBooks = (it.forYouBooks + fresh).distinctBy { b -> b.id },
+                            allBooks = (it.allBooks + fresh).distinctBy { b -> b.id },
                             forYouPage = nextPage,
                             // Berhenti jika halaman kosong atau tidak ada item baru
                             // (endpoint ini bisa mengulang halaman yang sama).

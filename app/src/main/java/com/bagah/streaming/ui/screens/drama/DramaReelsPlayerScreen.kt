@@ -75,6 +75,7 @@ import androidx.compose.foundation.border
 import com.bagah.streaming.data.api.NetworkClient
 import com.bagah.streaming.data.player.DramaBoxDecryptDataSource
 import com.bagah.streaming.data.player.DramaBoxKeyHolder
+import com.bagah.streaming.ui.components.KeepScreenOn
 import com.bagah.streaming.ui.theme.AccentBlack
 import com.bagah.streaming.ui.theme.AccentWhite
 import com.bagah.streaming.ui.theme.BgBlack
@@ -109,6 +110,8 @@ fun DramaReelsPlayerScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     var showEpisodeSheet by remember { mutableStateOf(false) }
+
+    KeepScreenOn()
 
     if (uiState.isLoading) {
         Box(

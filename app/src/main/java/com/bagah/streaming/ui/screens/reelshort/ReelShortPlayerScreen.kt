@@ -68,6 +68,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
+import com.bagah.streaming.ui.components.KeepScreenOn
 import com.bagah.streaming.ui.components.PlaybackTimeControls
 import com.bagah.streaming.ui.theme.AccentBlack
 import com.bagah.streaming.ui.theme.AccentWhite
@@ -99,12 +100,22 @@ fun ReelShortPlayerScreen(
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
             playWhenReady = true
-            repeatMode = Player.REPEAT_MODE_ONE
+            repeatMode = Player.REPEAT_MODE_OFF
         }
     }
 
-    DisposableEffect(Unit) {
+    KeepScreenOn()
+
+    // Auto lanjut ke episode berikutnya saat video habis.
+    DisposableEffect(exoPlayer) {
+        val listener = object : Player.Listener {
+            override fun onPlaybackStateChanged(state: Int) {
+                if (state == Player.STATE_ENDED) viewModel.playNext()
+            }
+        }
+        exoPlayer.addListener(listener)
         onDispose {
+            exoPlayer.removeListener(listener)
             exoPlayer.release()
         }
     }

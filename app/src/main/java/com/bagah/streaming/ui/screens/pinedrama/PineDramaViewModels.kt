@@ -27,13 +27,14 @@ data class PineDramaHomeUiState(
     val cursorByTab: Map<String, String?> = emptyMap(),
     val pageByTab: Map<String, Int?> = emptyMap(),
     val loadingTabs: Set<String> = emptySet(),
+    val isLoadingMore: Boolean = false,
     val errorMessage: String? = null
 ) {
     val tabs: List<String>
         get() = tabSpecs.map { it.label }
 
     val currentDisplayList: List<PineDramaItem>
-        get() = itemsByTab[selectedTab].orEmpty()
+        get() = itemsByTab[selectedTab].orEmpty().distinctBy { it.stableId() }
 
     /** Tab "UNTUK ANDA" memakai `page`; tab kategori memakai `cursor`. */
     val canLoadMore: Boolean
@@ -125,28 +126,36 @@ class PineDramaHomeViewModel(
 
     fun loadMore() {
         val state = _uiState.value
-        if (state.isLoading || state.loadingTabs.contains(state.selectedTab)) return
+        if (state.isLoading || state.isLoadingMore || state.loadingTabs.contains(state.selectedTab)) return
         val spec = state.tabSpecs.firstOrNull { it.label == state.selectedTab } ?: return
         if (!state.canLoadMore) return
+        // Tandai sinkron agar tidak ada dua loadMore paralel.
+        _uiState.update { it.copy(isLoadingMore = true) }
 
         viewModelScope.launch {
             val label = state.selectedTab
             val existing = state.itemsByTab[label].orEmpty()
             if (spec.isCategory) {
-                val cursor = state.cursorByTab[label] ?: return@launch
+                val cursor = state.cursorByTab[label] ?: run {
+                    _uiState.update { it.copy(isLoadingMore = false) }
+                    return@launch
+                }
                 repository.getCategory(spec.key, cursor = cursor)
                     .onSuccess { (items, next) ->
                         val known = existing.map { it.stableId() }.toSet()
                         val fresh = items.filterNot { it.stableId() in known }
                         _uiState.update {
                             it.copy(
-                                itemsByTab = it.itemsByTab + (label to existing + fresh),
+                                isLoadingMore = false,
+                                itemsByTab = it.itemsByTab + (label to (existing + fresh).distinctBy { f -> f.stableId() }),
                                 cursorByTab = it.cursorByTab + (label to next)
                             )
                         }
                     }
                     .onFailure {
-                        _uiState.update { it.copy(cursorByTab = it.cursorByTab + (label to null)) }
+                        _uiState.update {
+                            it.copy(isLoadingMore = false, cursorByTab = it.cursorByTab + (label to null))
+                        }
                     }
             } else {
                 val nextPage = (state.pageByTab[label] ?: 1) + 1
@@ -156,13 +165,16 @@ class PineDramaHomeViewModel(
                         val fresh = items.filterNot { it.stableId() in known }
                         _uiState.update {
                             it.copy(
-                                itemsByTab = it.itemsByTab + (label to existing + fresh),
+                                isLoadingMore = false,
+                                itemsByTab = it.itemsByTab + (label to (existing + fresh).distinctBy { f -> f.stableId() }),
                                 pageByTab = it.pageByTab + (label to if (fresh.isEmpty()) null else nextPage)
                             )
                         }
                     }
                     .onFailure {
-                        _uiState.update { it.copy(pageByTab = it.pageByTab + (label to null)) }
+                        _uiState.update {
+                            it.copy(isLoadingMore = false, pageByTab = it.pageByTab + (label to null))
+                        }
                     }
             }
         }

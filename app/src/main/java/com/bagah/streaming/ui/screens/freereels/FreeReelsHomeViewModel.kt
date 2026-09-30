@@ -37,7 +37,7 @@ data class FreeReelsHomeUiState(
     val errorMessage: String? = null
 ) {
     val currentDisplayList: List<FreeReelsItem>
-        get() = itemsByTab[selectedTab].orEmpty()
+        get() = itemsByTab[selectedTab].orEmpty().distinctBy { it.stableId() }
 
     /** Tab yang masih punya cursor bisa dimuat lagi. */
     val canLoadMore: Boolean
@@ -109,9 +109,10 @@ class FreeReelsHomeViewModel(
         val label = state.selectedTab
         val spec = FREE_REELS_TABS.firstOrNull { it.label == label } ?: return
         val cursor = state.cursorByTab[label] ?: return
+        // Tandai sinkron agar tidak ada dua loadMore paralel.
+        _uiState.update { it.copy(isLoadingMore = true) }
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoadingMore = true) }
             repository.getBrowse(spec.key, cursor)
                 .onSuccess { (list, next) ->
                     val existing = _uiState.value.itemsByTab[label].orEmpty().map { it.stableId() }.toSet()
@@ -119,7 +120,7 @@ class FreeReelsHomeViewModel(
                     _uiState.update {
                         it.copy(
                             isLoadingMore = false,
-                            itemsByTab = it.itemsByTab + (label to it.itemsByTab[label].orEmpty() + fresh),
+                            itemsByTab = it.itemsByTab + (label to (it.itemsByTab[label].orEmpty() + fresh).distinctBy { f -> f.stableId() }),
                             cursorByTab = it.cursorByTab + (label to next)
                         )
                     }

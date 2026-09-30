@@ -5,6 +5,7 @@ import com.bagah.streaming.data.api.StreamingApiService
 import com.bagah.streaming.data.model.DramaEpisode
 import com.bagah.streaming.data.model.DramaEpisodeResponse
 import com.bagah.streaming.data.model.DramaItem
+import com.bagah.streaming.data.model.DramaSection
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -32,6 +33,20 @@ class DramaRepositoryImpl(
     override suspend fun getCategories(): Result<List<DramaItem>> = withContext(ioDispatcher) {
         // theater mengelompokkan item per kolom; tidak mendukung pagination.
         runCatching { api.browseDrama(type = "theater").flatItems.validItems() }
+    }
+
+    override suspend fun getTheater(): Result<List<DramaSection>> = withContext(ioDispatcher) {
+        runCatching {
+            api.browseDrama(type = "theater").columns
+                .map { column ->
+                    DramaSection(
+                        title = column.title,
+                        subtitle = column.subtitle,
+                        items = column.items.validItems()
+                    )
+                }
+                .filter { it.items.isNotEmpty() }
+        }
     }
 
     override suspend fun getRanking(rankType: Int): Result<List<DramaItem>> = withContext(ioDispatcher) {

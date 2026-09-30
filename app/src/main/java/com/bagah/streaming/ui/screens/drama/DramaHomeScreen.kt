@@ -241,12 +241,45 @@ fun DramaHomeScreen(
                     horizontalArrangement = Arrangement.spacedBy(14.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    items(uiState.dramaList, key = { it.bookId }) { drama ->
-                        DramaCard(
-                            drama = drama,
-                            onClick = { if (drama.bookId.isNotBlank()) onDramaClick(drama.bookId) },
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                    if (uiState.sections.isNotEmpty()) {
+                        // Tab Kategori: tampilkan kolom theater apa adanya (judul + item).
+                        uiState.sections.forEachIndexed { sectionIndex, section ->
+                            item(
+                                span = { GridItemSpan(maxLineSpan) },
+                                key = "section-$sectionIndex"
+                            ) {
+                                Column(modifier = Modifier.padding(top = 6.dp, bottom = 2.dp)) {
+                                    Text(
+                                        text = section.title.ifBlank { "Kategori" },
+                                        color = TextPrimary,
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                    if (section.subtitle.isNotBlank()) {
+                                        Text(
+                                            text = section.subtitle,
+                                            color = TextMuted,
+                                            fontSize = 11.sp
+                                        )
+                                    }
+                                }
+                            }
+                            items(section.items, key = { "s$sectionIndex-${it.bookId}" }) { drama ->
+                                DramaCard(
+                                    drama = drama,
+                                    onClick = { if (drama.bookId.isNotBlank()) onDramaClick(drama.bookId) },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
+                    } else {
+                        items(uiState.dramaList, key = { it.bookId }) { drama ->
+                            DramaCard(
+                                drama = drama,
+                                onClick = { if (drama.bookId.isNotBlank()) onDramaClick(drama.bookId) },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
                     }
 
                     if (uiState.isLoadingMore) {

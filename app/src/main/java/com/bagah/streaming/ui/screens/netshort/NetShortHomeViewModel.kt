@@ -42,7 +42,7 @@ data class NetShortHomeUiState(
     val errorMessage: String? = null
 ) {
     val currentDisplayList: List<NetShortItem>
-        get() = itemsByTab[selectedTab].orEmpty()
+        get() = itemsByTab[selectedTab].orEmpty().distinctBy { it.stableId() }
 }
 
 class NetShortHomeViewModel(

@@ -94,10 +94,18 @@ class FlickReelsPlayerViewModel(
                 }
             }
             .onFailure { err ->
+                // Sebagian episode terkunci gagal di-unlock di sisi server (HTTP 400);
+                // beri pesan yang jelas alih-alih error teknis.
+                val locked = _uiState.value.episodes
+                    .firstOrNull { it.episodeNum == episode }?.locked == true
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        errorMessage = err.localizedMessage ?: "Gagal memuat video episode $episode"
+                        errorMessage = if (locked) {
+                            "Episode $episode terkunci dan belum bisa dibuka dari sumber. Pilih episode lain."
+                        } else {
+                            err.localizedMessage ?: "Gagal memuat video episode $episode"
+                        }
                     )
                 }
             }

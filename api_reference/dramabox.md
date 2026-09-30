@@ -224,3 +224,6 @@ Enum `genre` di spec OpenAPI (`1362`, `1394`, …) **tidak** cocok dengan id di 
 - Di endpoint lama, `home` menyertakan satu item rusak (`series_id` kosong). Pada `browse`
   baru item rusak itu tidak lagi muncul, tetapi client tetap membuang item tanpa `series_id`.
 - `total_episodes` sering bernilai `0` pada `type=foryou`; pakai `classify` bila butuh jumlah episode.
+- **BUG (2026-09-30)**: `dramabox/episode` mengabaikan parameter `episode`; semua nomor
+  mengembalikan file video yang sama (selalu episode 1). `chapterId` selalu HTTP 400.
+  Belum bisa diperbaiki dari sisi klien.

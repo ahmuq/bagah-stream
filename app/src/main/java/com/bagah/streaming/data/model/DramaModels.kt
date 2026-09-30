@@ -64,6 +64,14 @@ data class DramaRankType(
     val name: String = ""
 )
 
+/** Satu kolom pada `type=theater` (mis. "Anda Mungkin Suka", "Akan Tayang"). */
+@Serializable
+data class DramaSection(
+    val title: String = "",
+    val subtitle: String = "",
+    val items: List<DramaItem> = emptyList()
+)
+
 @Serializable
 data class DramaFilter(
     val type: Int = 0,

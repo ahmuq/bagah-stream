@@ -1,282 +1,206 @@
 # Laporan Bug API — api.bagahproject.com
 
-Tanggal awal: 2026-09-29
+Tanggal: 2026-09-30
 Pelapor: pengembang app Bagah Streaming (Android)
 Base URL: `https://api.bagahproject.com/api/...`
 Auth: header `x-api-key: ahmuqkey`
-
-Cara reproduksi di bawah memakai `curl` dan satu skrip Python. Semua sudah saya uji.
-
----
-
-## Pembaruan 2026-09-30
-
-API dirombak besar: DramaBox, ReelShort, ShortMax, FreeReels, dan FlickReels kini memakai
-endpoint terpadu `browse` (plus `detail`, `episode`, `search`); endpoint lama seperti
-`dramabox/home`, `reelshort/homepage`, `*/episodes` sudah **dihapus**. Detail bentuk response
-baru ada di dokumen per platform (`dramabox.md`, `reelshort.md`, `shortmax.md`,
-`freereels.md`, `flickreels.md`).
-
-Catatan: platform **Melolo** dan **DramaNova** sudah tidak dipakai di app (dihapus
-2026-09-30), jadi temuan #1 dan #3 di bawah disimpan hanya sebagai arsip.
-
-Status temuan lama (diverifikasi ulang 2026-09-30):
-
-| #  | Status saat ini                                                                                       |
-| -- | ----------------------------------------------------------------------------------------------------- |
-| #1 | Belum diuji ulang (melolo tidak berubah).                                                             |
-| #2 | **Diperbaiki (2026-09-30)**: `pinedrama/episode` kini mengembalikan MP4 langsung; PineDrama sudah bisa diputar. `pinedrama` juga kini punya `browse`/`search` (lihat `pinedrama.md`). |
-| #3 | **Masih terjadi**: `melolo/detail` tetap memotong presisi ID (`...8837` → `...9000`).                 |
-| #4 | **Tidak lagi berlaku**: endpoint `dramabox/home` dihapus; `dramabox/browse` tidak lagi memuat item kosong. |
-| A  | **Diperbaiki**: spec kini di `/api/v1/openapi.json` dengan server `/api`; endpoint nyata tetap berprefix `api/`. |
-| B  | Sebagian: pagination tetap tidak konsisten (lihat dokumen per platform).                              |
-| C  | **Masih**: `flickreels/browse type=latest` selalu 0 item.                                             |
-| D  | **Masih**: `flickreels/browse type=ranking` identik dengan `trending`.                                |
-| E  | **Masih**: `shortmax/search` dan `freereels/search` kadang mengirim `title` kosong.                   |
-
-Temuan baru pada `browse`:
-
-- **dramabox**: `type=classify` + `genre=<id>` selalu `items: []` (dicoba id enum spec
-  `1362`/`1394`/… maupun id dari `type=filters` `1323`/`1337`/…). `dub=1` mengembalikan
-  daftar `filters`, bukan item. Enum `genre` di OpenAPI tidak cocok dengan id di `type=filters`.
-  `channelId` tidak berpengaruh di `classify` (hanya mengubah jumlah kolom di `theater`).
-- **reelshort**: `type=classify` mengabaikan `tag`, `genre`, `region`, dan `dub`
-  (set 20 id identik dengan tanpa filter).
-- **shortmax**: `type=<classId>` mengembalikan set item identik antar kelas
-  (200001 = 200002 = 200003 = 200007), jadi filter kelas tidak berfungsi. `size` tampak diabaikan.
-- **dramabox `type=foryou`**: sering mengirim `total_episodes: 0` (pakai `type=classify` bila butuh jumlah episode).
-- **flickreels `type=foryou`**: memakai cursor `nextCursor` (bukan `page`).
-
-Yang berfungsi: `dramabox` `status`/`rankType`/`pageSize`/`pages`; `reelshort`
-`period`/`limit`/`lastBookId`/`pages`; `shortmax` `page` pada class; `freereels` semua `tab`
-+ `cursor` + `search tab`; `flickreels` `tag`/`channel`/`region`/`sort`/`cursor`/`pages`.
-
----
-
-## BUG #1 — Melolo: video MP4 tidak bisa diputar (file rusak)
-
-**Severity:** Tinggi (fitur pemutaran Melolo tidak berfungsi)
-
-**Endpoint:** `GET /api/melolo/episode?seriesId=7665176763617528837&episode=1`
-
-**Gejala:** URL `data.urls.video_1` bisa diunduh (HTTP 206, ~10 MB), header MP4
-(`ftypisom` → `moov`) normal, tapi **tidak bisa diputar** oleh ExoPlayer (Media3 1.5.0):
-
-```
-androidx.media3.common.ParserException: Invalid NAL length
-  {contentIsMalformed=true, dataType=1}
-    at Mp4Extractor.readSample(Mp4Extractor.java:913)
-```
-
-**Bukti tambahan:**
-
-- File 64 byte pertama: `0000 001c 6674 7970 6973 6f6d ...` → MP4 valid secara struktur awal.
-- `ffprobe` menerima file (durasi `120.697007`, video `hevc`, audio `aac`) **tetapi** melaporkan:
-  ```
-  [aac @ ...] Reserved bit set.
-  [aac @ ...] Number of bands (32) exceeds limit (31).
-  ```
-  → indikasi bitstream audio rusak.
-- `video_1` **sama persis** dengan `bestUrl` (tidak ada alternatif resolusi/format lain).
-- Emulator uji **mendukung HEVC** (`C2SoftHevcDec` aktif), jadi bukan masalah codec device.
-- Platform lain (DramaNova, MP4 biasa) **berhasil diputar** di player yang sama → bukan bug player client.
-
-**Dugaan:** file MP4 dari sumber Melolo tidak konsisten untuk streaming progresif
-(fragmen NAL corrupt). Mungkin perlu remux/re-encode di sisi API.
-
-**Cara reproduksi:**
-
-```bash
-curl -s -H "x-api-key: ahmuqkey" \
-  "https://api.bagahproject.com/api/melolo/episode?seriesId=7665176763617528837&episode=1" \
-  | python3 -c "import sys,json;print(json.load(sys.stdin)['data']['urls']['video_1'])"
-# lalu unduh URL tsb dan cek dengan ffprobe / coba putar
-```
-
----
-
-## BUG #2 — PineDrama: semua endpoint episode tidak mengembalikan video
-
-**Severity:** Tinggi (PineDrama tidak bisa diputar sama sekali)
-
-**Endpoint:**
-
-- `GET /api/pinedrama/episode?collectionId=7674243081832125461&episode=1`
-- `GET /api/pinedrama/episode?collectionId=7674243081832125461&episode=2`
-
-**Gejala:** endpoint selalu gagal, padahal katalog (`trending`/`foryou`/`detail`) normal.
-
-```json
-{ "success": false, "message": "Episode video not found in response" }
-```
-
-Endpoint `GET /api/pinedrama/episodes?collectionId=7674243081832125461` juga
-mengembalikan daftar kosong padahal `totalEpisodes: 62`:
-
-```json
-{
-  "success": true,
-  "collectionId": "7674243081832125461",
-  "totalEpisodes": 62,
-  "episodes": []
-}
-```
-
-**Dampak:** fitur pemutaran PineDrama di app terpaksa dinonaktifkan (browse-only).
-
-**Cara reproduksi:**
-
-```bash
-curl -s -H "x-api-key: ahmuqkey" \
-  "https://api.bagahproject.com/api/pinedrama/episode?collectionId=7674243081832125461&episode=1"
-curl -s -H "x-api-key: ahmuqkey" \
-  "https://api.bagahproject.com/api/pinedrama/episodes?collectionId=7674243081832125461"
-```
-
----
-
-## BUG #3 — ID series 64-bit terpotong presisi di response Melolo
-
-**Severity:** Sedang (memengaruhi konsumen API yang memakai ID dari response)
-
-**Endpoint:** `GET /api/melolo/detail?seriesId=7665176763617528837`
-
-**Gejala:** ID dikirim `7665176763617528837` tetapi di response JSON tertulis
-`7665176763617529000`.
-
-```
-request seriesId : 7665176763617528837
-response seriesId: 7665176763617529000   <-- berbeda!
-```
-
-**Penyebab dugaan:** nilai melebihi batas presisi aman angka 64-bit bila diproses
-sebagai `double` (JavaScript / JSON number). Seharusnya dikirim sebagai **string**.
-
-**Dampak nyata:** bila ID dari response dipakai untuk request berikutnya, API menolak:
-
-```bash
-# pakai ID asli -> BERHASIL
-curl -s -H "x-api-key: ahmuqkey" \
-  "https://api.bagahproject.com/api/melolo/episode?seriesId=7665176763617528837&episode=1"
-# -> {"success":true,"message":"Episode stream fetched successfully"}
-
-# pakai ID dari response detail -> GAGAL
-curl -s -H "x-api-key: ahmuqkey" \
-  "https://api.bagahproject.com/api/melolo/episode?seriesId=7665176763617529000&episode=1"
-# -> {"success":false,"message":"Series 7665176763617529000 not found: 该剧集已下架"}
-```
-
-**Fix disarankan:** semua field ID (`id`, `series_id`, `episode_id`, `collection_id`)
-dikirim sebagai **string**, bukan number. Ini juga berlaku untuk DramaNova dan ShortMax
-yang punya ID panjang serupa.
-
----
-
-## BUG #4 — `dramabox/home` menyertakan 1 item rusak per halaman
-
-**Severity:** Sedang (menyebabkan HTTP 400 bila item ditap)
-
-**Endpoint:** `GET /api/dramabox/home?page=1&lang=in` (berlaku untuk semua halaman)
-
-**Gejala:** setiap halaman berisi **tepat satu item** dengan `series_id` kosong:
-
-```json
-{
-  "series_id": "",
-  "title": "",
-  "description": "",
-  "cover": "",
-  "total_episodes": 0,
-  "views": "7.1K",
-  "category": null,
-  "is_complete": false
-}
-```
-
-**Dampak:** item ini tampil sebagai kartu kosong di UI. Jika ditap, app mengirim
-`/api/dramabox/episodes?bookId=` (kosong) → **HTTP 400**.
-
-```bash
-curl -s -H "x-api-key: ahmuqkey" \
-  "https://api.bagahproject.com/api/dramabox/episodes?bookId=&lang=in"
-# -> HTTP 400
-```
-
-**Fix disarankan:** filter item tanpa `series_id` di sisi API.
-
----
-
-## CATATAN (bukan bug, tapi bikin bingung)
-
-### A. Prefix path harus `api/`, bukan `api/v1/`
-
-Docs di https://api.bagahproject.com/docs menyebut `/api/v1/openapi.json` dan
-server `"/api/v1"`, tetapi endpoint yang benar-benar jalan memakai prefix **`api/`**:
-
-```bash
-curl -s -H "x-api-key: ahmuqkey" "https://api.bagahproject.com/api/v1/dramabox/home?lang=in"
-# -> {"success":false,"message":"Endpoint not found"}   (404)
-
-curl -s -H "x-api-key: ahmuqkey" "https://api.bagahproject.com/api/dramabox/home?lang=in"
-# -> 200 OK
-```
-
-**Saran:** selaraskan antara spec OpenAPI dan endpoint nyata.
-
-### B. Parameter `page` tidak konsisten antar endpoint
-
-| Endpoint                                 | `page` berfungsi? | Catatan                                                  |
-| ---------------------------------------- | ----------------- | -------------------------------------------------------- |
-| `dramabox/home`                          | ✅                | halaman tinggi (>~4) mengulang halaman 1                 |
-| `dramabox/foryou`                        | ✅                |                                                          |
-| `dramabox/search`                        | ✅                |                                                          |
-| `dramabox/categories`                    | ❌                | tanpa param page                                         |
-| `search` (melolo)                        | ❌                | `page` diabaikan                                         |
-| `reelshort/search`                       | ✅                |                                                          |
-| `reelshort/foryou`                       | ❌                | page 1 & 2 identik                                       |
-| `reelshort/trending`/`latest`/`homepage` | ❌                | statis                                                   |
-| `flickreels/foryou`                      | ❌                | page 1/2/3 identik                                       |
-| `flickreels/latest`                      | ❌                | **selalu kosong (0 item)**                               |
-| `flickreels/rankings`                    | ❌                | **identik 100% dengan `trending`**                       |
-| `shortmax/search`                        | ✅                |                                                          |
-| `shortmax/foryou`                        | ❌                | page 1/2/3 identik                                       |
-| `dramanova/trending`                     | ✅                |                                                          |
-| `freereels/foryou`                       | ⚠️                | **wajib cursor `next`**, param `offset` manual diabaikan |
-
-**Saran:** dokumentasikan dengan jelas endpoint mana yang mendukung pagination,
-dan samakan mekanismenya (page vs cursor).
-
-### C. `flickreels/latest` selalu kosong
-
-```bash
-curl -s -H "x-api-key: ahmuqkey" "https://api.bagahproject.com/api/flickreels/latest?lang=id"
-# -> { "success": true, "title": "Terbaru", "page": 1, "items": [] }
-```
-
-Juga kosong untuk `lang=en` dan `page=2`. Kemungkinan endpoint belum terhubung ke data.
-
-### D. `flickreels/rankings` duplikat persis `trending`
-
-Kedua endpoint mengembalikan **42 item dengan urutan ID identik**:
-
-```
-trending n=42 rankings n=42 identik=True
-```
-
-### E. Judul kosong di sebagian hasil pencarian
-
-`shortmax/search` dan `freereels/search` kadang mengembalikan item dengan `title: ""`
-(mis. seriesId `zFtxTcWqvH`). Client menampilkannya sebagai "Tanpa Judul" agar tidak
-jadi kartu kosong, tapi lebih baik API tidak mengirim judul kosong.
+Spec: `https://api.bagahproject.com/api/v1/openapi.json`
+
+Platform yang dipakai app: **AnimePlay, DramaBox, ReelShort, FreeReels, FlickReels,
+ShortMax, NetShort, PineDrama**. Semua sudah diverifikasi ulang pada 2026-09-30.
+Dokumen bentuk response per platform: `dramabox.md`, `reelshort.md`, `freereels.md`,
+`flickreels.md`, `shortmax.md`, `netshort.md`, `pinedrama.md`, `animeplay.md`.
 
 ---
 
 ## Ringkasan prioritas
 
-| Prioritas | Bug                         | Dampak                               |
-| --------- | --------------------------- | ------------------------------------ |
-| 🔴 Tinggi | #1 Melolo MP4 rusak         | Tidak bisa diputar                   |
-| 🔴 Tinggi | #2 PineDrama episode kosong | Tidak bisa diputar                   |
-| 🟡 Sedang | #3 ID 64-bit terpotong      | Request lanjutan gagal (400)         |
-| 🟡 Sedang | #4 dramabox item rusak      | Kartu kosong + 400                   |
-| 🟢 Info   | A–E                         | Inkonsistensi & data kosong/duplikat |
+| Prioritas | Temuan                                                        | Dampak                              |
+| --------- | ------------------------------------------------------------- | ----------------------------------- |
+| 🔴 Tinggi | `dramabox/episode` mengabaikan nomor episode                  | Selalu memutar episode 1            |
+| 🔴 Tinggi | `flickreels/episode` HTTP 400 (sebagian episode terkunci)     | Episode tertentu tidak bisa diputar |
+| 🟡 Sedang | `dramabox/browse type=classify` + `genre` → `items: []`       | Filter genre tak bisa dipakai       |
+| 🟡 Sedang | `reelshort/browse type=classify` abaikan `tag/genre/region/dub` | Filter tak berfungsi              |
+| 🟡 Sedang | `shortmax/browse type=<classId>` set identik antar kelas      | Filter kelas tak berfungsi          |
+| 🟡 Sedang | `flickreels/browse type=latest` selalu kosong                 | Tidak ada konten "Terbaru"          |
+| 🟢 Rendah | `flickreels/browse type=ranking` duplikat `trending`          | Tidak ada ranking asli              |
+| 🟢 Rendah | Judul kosong di `shortmax/search` & `freereels/search`        | Kartu "Tanpa Judul"                 |
+| 🟢 Rendah | `dramabox/browse type=foryou` `total_episodes: 0`             | Badge episode kosong                |
+| 🟢 Rendah | `netshort/browse type=actorRanking` kosong                     | Fitur peringkat aktor kosong        |
+| 🟢 Info   | Mekanisme pagination tidak konsisten                           | Lihat tabel pagination              |
+
+---
+
+## BUG #1 — `dramabox/episode` mengabaikan nomor episode (Tinggi)
+
+**Endpoint:** `GET /api/dramabox/episode?bookId=<id>&episode=<n>&lang=in`
+
+**Gejala:** semua nomor episode mengembalikan **file video yang sama** (selalu episode 1).
+Hanya `episode_id` dan tanda tangan URL yang berbeda; nama file identik.
+
+```bash
+# Semua menghasilkan file yang sama (mis. 701554126.720p.wz.h264.encrypt.mp4):
+curl -s -H "x-api-key: ahmuqkey" "https://api.bagahproject.com/api/dramabox/episode?bookId=42000027287&episode=1&lang=in"  | python3 -c "import sys,json;print(json.load(sys.stdin)['best_url'].split('/')[-1][:46])"
+curl -s -H "x-api-key: ahmuqkey" "https://api.bagahproject.com/api/dramabox/episode?bookId=42000027287&episode=5&lang=in"  | python3 -c "import sys,json;print(json.load(sys.stdin)['best_url'].split('/')[-1][:46])"
+curl -s -H "x-api-key: ahmuqkey" "https://api.bagahproject.com/api/dramabox/episode?bookId=42000027287&episode=10&lang=in" | python3 -c "import sys,json;print(json.load(sys.stdin)['best_url'].split('/')[-1][:46])"
+```
+
+Hasil sama pada semua series yang diuji (`42000027287`, `42000029655`, `42000026344`),
+baik lewat `best_url` maupun `qualities`. Parameter `chapterId` malah selalu HTTP 400.
+
+**Dampak:** app selalu memutar episode 1 meski pengguna memilih episode lain.
+
+**Fix disarankan:** agar `episode` (atau `chapterId` dengan format yang benar) memengaruhi
+`best_url`/`qualities`.
+
+---
+
+## BUG #2 — `flickreels/episode` HTTP 400 pada sebagian episode terkunci (Tinggi)
+
+**Endpoint:** `GET /api/flickreels/episode?seriesId=<id>&episode=<n>&lang=id`
+
+**Gejala:** untuk sebagian series, episode yang ditandai terkunci (`locked: true` di
+`detail.chapters`) gagal diambil:
+
+```bash
+# Series 11684 "Gelandangan Penyelamat NASA"
+curl -s -o /dev/null -w "%{http_code}\n" -H "x-api-key: ahmuqkey" "https://api.bagahproject.com/api/flickreels/episode?seriesId=11684&episode=1&lang=id"   # 200
+curl -s -o /dev/null -w "%{http_code}\n" -H "x-api-key: ahmuqkey" "https://api.bagahproject.com/api/flickreels/episode?seriesId=11684&episode=20&lang=id"  # 400
+curl -s -o /dev/null -w "%{http_code}\n" -H "x-api-key: ahmuqkey" "https://api.bagahproject.com/api/flickreels/episode?seriesId=11684&episode=45&lang=id"  # 400
+```
+
+**Inkonsisten:** series lain (`11694`, `8105`, `2846`, `11517`) episode terkuncinya
+berhasil di-unlock otomatis (HTTP 200 + URL). Jadi perilaku unlock tidak seragam.
+
+**Tambahan:** `flickreels/detail` `chapters[].bestUrl` untuk episode terkunci selalu kosong,
+sehingga tidak ada URL cadangan dari sisi klien.
+
+**Fix disarankan:** samakan perilaku auto-unlock ad-reward untuk semua series.
+
+---
+
+## BUG #3 — `dramabox/browse type=classify` + `genre` mengembalikan item kosong (Sedang)
+
+`type=classify&genre=<id>` selalu `items: []`, baik memakai id enum OpenAPI
+(`1362`, `1394`, …) maupun id asli dari `type=filters` (`1323`, `1337`, …). `type=classify`
+tanpa `genre` normal (15 item).
+
+```bash
+curl -s -H "x-api-key: ahmuqkey" "https://api.bagahproject.com/api/dramabox/browse?type=classify&genre=1323&lang=in" | python3 -c "import sys,json;print(len(json.load(sys.stdin).get('items',[])))"
+# -> 0
+```
+
+Catatan terkait: `dub=1` mengembalikan daftar `filters`, bukan item. Enum `genre` di
+OpenAPI tidak cocok dengan `value` pada `type=filters`.
+
+---
+
+## BUG #4 — `reelshort/browse type=classify` mengabaikan filter (Sedang)
+
+Filter `tag`, `genre`, `region`, dan `dub` tidak berpengaruh: hasil tetap 20 id yang sama
+seperti tanpa filter (Pria vs Perempuan 20/20 sama).
+
+```bash
+for q in "" "&genre=676d21074582b53a14081664" "&genre=676d21074582b53a14081663"; do
+  curl -s -H "x-api-key: ahmuqkey" "https://api.bagahproject.com/api/reelshort/browse?type=classify$q&lang=id" \
+    | python3 -c "import sys,json;print([i['id'] for i in json.load(sys.stdin)['items']][:3])"
+done
+```
+
+---
+
+## BUG #5 — `shortmax/browse type=<classId>` set identik antar kelas (Sedang)
+
+Semua `classId` mengembalikan item yang sama (200001 = 200002 = 200003 = 200007).
+
+```bash
+for c in 200001 200002 200003 200007; do
+  curl -s -H "x-api-key: ahmuqkey" "https://api.bagahproject.com/api/shortmax/browse?type=$c&lang=id" \
+    | python3 -c "import sys,json;print([i['id'] for i in json.load(sys.stdin)['items']][:3])"
+done
+```
+
+---
+
+## BUG #6 — `flickreels/browse type=latest` selalu kosong (Sedang)
+
+```bash
+curl -s -H "x-api-key: ahmuqkey" "https://api.bagahproject.com/api/flickreels/browse?type=latest&lang=id"
+# -> { "success": true, "title": "Populer", "items": [] }
+```
+
+Kosong juga untuk `lang=en`. Dugaan endpoint belum terhubung ke data.
+
+---
+
+## BUG #7 — `flickreels/browse type=ranking` duplikat `trending` (Rendah)
+
+Kedua type mengembalikan 42 id dengan urutan identik.
+
+---
+
+## BUG #8 — Judul kosong di hasil pencarian (Rendah)
+
+`shortmax/search` dan `freereels/search` kadang mengirim `title: ""` (mis. seriesId
+`zFtxTcWqvH`). Klien menampilkan "Tanpa Judul" agar tidak jadi kartu kosong, tapi lebih
+baik API tidak mengirim judul kosong.
+
+---
+
+## BUG #9 — `dramabox/browse type=foryou` `total_episodes: 0` (Rendah)
+
+Hampir semua item di `type=foryou` mengirim `total_episodes: 0`, sehingga badge episode
+kosong. `type=classify` mengirim jumlah yang benar.
+
+---
+
+## BUG #10 — `netshort/browse type=actorRanking` kosong (Rendah)
+
+```bash
+curl -s -H "x-api-key: ahmuqkey" "https://api.bagahproject.com/api/netshort/browse?type=actorRanking&lang=id_ID"
+# -> { "success": true, "total": 0, "items": [] }
+```
+
+---
+
+## Catatan
+
+### A. Prefix path harus `api/`, bukan `api/v1/`
+
+Spec OpenAPI menyebut server `"/api/v1"`, tetapi endpoint nyata memakai prefix **`api/`**
+dan spec ada di `/api/v1/openapi.json`. Saran: selaraskan spec dengan endpoint nyata.
+
+### B. Mekanisme pagination tidak konsisten (endpoint saat ini)
+
+| Endpoint                              | Pagination                                    |
+| ------------------------------------- | --------------------------------------------- |
+| `dramabox/browse` `foryou`/`classify` | ✅ `page`                                     |
+| `dramabox/browse` `theater`/`ranking` | ❌ statis                                     |
+| `dramabox/search`                     | ✅ `page`                                     |
+| `reelshort/browse` `ranking`          | ✅ `period` + `page`                          |
+| `reelshort/browse` `classify`         | ⚠️ `lastBookId` (page mengulang)              |
+| `reelshort/search`                    | ✅ `page`                                     |
+| `freereels/browse`                    | ✅ `cursor` (offset manual diabaikan)         |
+| `freereels/search`                    | ✅ `cursor`                                   |
+| `flickreels/browse` `foryou`/`classify`| ✅ `cursor` (`nextCursor`)                   |
+| `flickreels/search`                   | ✅ `page`                                     |
+| `shortmax/browse` `<classId>`         | ✅ `page` (+ `has_more`/`isEnd`)              |
+| `shortmax/browse` `trending`/`latest` | ❌ statis                                     |
+| `shortmax/search`                     | ✅ `page`                                     |
+| `netshort/browse` (semua type)        | ❌ statis                                     |
+| `netshort/search`                     | ✅ `page`                                     |
+| `pinedrama/browse` `foryou`           | ✅ `page`                                     |
+| `pinedrama/browse` `<categoryId>`     | ✅ `cursor` (`has_more`)                      |
+| `pinedrama/search`                    | ✅ `page`                                     |
+
+**Saran:** dokumentasikan eksplisit mana yang pakai `page` vs `cursor`.
+
+---
+
+## Sudah diperbaiki
+
+- ✅ **PineDrama** (2026-09-30): `pinedrama/episode` kini mengembalikan MP4 langsung
+  (TikTok CDN) dan bisa diputar; ditambah `browse` (foryou/trending/categories/category)
+  dan `search`. Lihat `pinedrama.md`.
+- ✅ **DramaBox item rusak**: endpoint lama `dramabox/home` (yang menyertakan 1 item dengan
+  `series_id` kosong) sudah dihapus; `dramabox/browse` tidak lagi memuat item tersebut.

@@ -3,6 +3,7 @@ package com.bagah.streaming.ui.screens.drama
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bagah.streaming.data.model.DramaItem
+import com.bagah.streaming.data.model.DramaSection
 import com.bagah.streaming.data.repository.drama.DramaRepository
 import com.bagah.streaming.data.repository.drama.DramaRepositoryImpl
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +17,7 @@ data class DramaHomeUiState(
     val isLoading: Boolean = true,
     val isLoadingMore: Boolean = false,
     val dramaList: List<DramaItem> = emptyList(),
+    val sections: List<DramaSection> = emptyList(),
     val page: Int = 1,
     val endReached: Boolean = false,
     val statusFilter: String = "All",
@@ -63,17 +65,43 @@ class DramaHomeViewModel(
                     errorMessage = null,
                     page = 1,
                     endReached = false,
-                    dramaList = emptyList()
+                    dramaList = emptyList(),
+                    sections = emptyList()
                 )
             }
-            val result = fetch(index, 1)
-            result.onSuccess { list ->
-                _uiState.update {
-                    it.copy(isLoading = false, dramaList = list, page = 1, endReached = list.isEmpty())
-                }
-            }.onFailure { err ->
-                _uiState.update { it.copy(isLoading = false, errorMessage = err.localizedMessage ?: "Gagal memuat drama") }
+
+            // Tab "Kategori" memakai `type=theater` yang mengembalikan kolom bersection.
+            if (index == 2) {
+                repository.getTheater()
+                    .onSuccess { sections ->
+                        _uiState.update {
+                            it.copy(isLoading = false, sections = sections, endReached = true)
+                        }
+                    }
+                    .onFailure { err ->
+                        _uiState.update {
+                            it.copy(isLoading = false, errorMessage = err.localizedMessage ?: "Gagal memuat kategori")
+                        }
+                    }
+                return@launch
             }
+
+            fetch(index, 1)
+                .onSuccess { list ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            dramaList = list.distinctBy { d -> d.bookId },
+                            page = 1,
+                            endReached = list.isEmpty()
+                        )
+                    }
+                }
+                .onFailure { err ->
+                    _uiState.update {
+                        it.copy(isLoading = false, errorMessage = err.localizedMessage ?: "Gagal memuat drama")
+                    }
+                }
         }
     }
 
@@ -86,9 +114,10 @@ class DramaHomeViewModel(
             _uiState.update { it.copy(endReached = true) }
             return
         }
+        // Tandai sinkron agar tidak ada dua loadMore paralel.
+        _uiState.update { it.copy(isLoadingMore = true) }
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoadingMore = true) }
             val nextPage = state.page + 1
             fetch(state.selectedCategoryIndex, nextPage)
                 .onSuccess { list ->
@@ -97,10 +126,9 @@ class DramaHomeViewModel(
                     _uiState.update {
                         it.copy(
                             isLoadingMore = false,
-                            dramaList = it.dramaList + fresh,
+                            dramaList = (it.dramaList + fresh).distinctBy { d -> d.bookId },
                             page = nextPage,
-                            // Berhenti jika halaman kosong atau tidak ada item baru
-                            // (sebagian endpoint mengulang halaman terakhir).
+                            // Berhenti jika halaman kosong atau tidak ada item baru.
                             endReached = list.isEmpty() || fresh.isEmpty()
                         )
                     }

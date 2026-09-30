@@ -62,11 +62,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
+import com.bagah.streaming.ui.components.KeepScreenOn
 import com.bagah.streaming.ui.components.PlaybackTimeControls
 import com.bagah.streaming.ui.theme.AccentBlack
 import com.bagah.streaming.ui.theme.AccentWhite
@@ -98,18 +101,44 @@ fun FreeReelsPlayerScreen(
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
             playWhenReady = true
-            repeatMode = Player.REPEAT_MODE_ONE
+            repeatMode = Player.REPEAT_MODE_OFF
         }
     }
 
-    DisposableEffect(Unit) {
-        onDispose { exoPlayer.release() }
+    KeepScreenOn()
+
+    // Auto lanjut ke episode berikutnya saat video habis.
+    DisposableEffect(exoPlayer) {
+        val listener = object : Player.Listener {
+            override fun onPlaybackStateChanged(state: Int) {
+                if (state == Player.STATE_ENDED) viewModel.playNext()
+            }
+        }
+        exoPlayer.addListener(listener)
+        onDispose {
+            exoPlayer.removeListener(listener)
+            exoPlayer.release()
+        }
     }
 
-    LaunchedEffect(uiState.currentStreamUrl) {
+    // Muat video + subtitle Indonesia (VTT) bila tersedia.
+    LaunchedEffect(uiState.currentStreamUrl, uiState.currentSubtitleUrl) {
         val streamUrl = uiState.currentStreamUrl
         if (!streamUrl.isNullOrBlank()) {
-            exoPlayer.setMediaItem(MediaItem.fromUri(Uri.parse(streamUrl)))
+            val builder = MediaItem.Builder().setUri(Uri.parse(streamUrl))
+            val subtitleUrl = uiState.currentSubtitleUrl
+            if (!subtitleUrl.isNullOrBlank()) {
+                builder.setSubtitleConfigurations(
+                    listOf(
+                        MediaItem.SubtitleConfiguration.Builder(Uri.parse(subtitleUrl))
+                            .setMimeType(MimeTypes.TEXT_VTT)
+                            .setLanguage(uiState.currentSubtitleLanguage)
+                            .setSelectionFlags(C.SELECTION_FLAG_DEFAULT or C.SELECTION_FLAG_AUTOSELECT)
+                            .build()
+                    )
+                )
+            }
+            exoPlayer.setMediaItem(builder.build())
             exoPlayer.prepare()
             exoPlayer.play()
         }

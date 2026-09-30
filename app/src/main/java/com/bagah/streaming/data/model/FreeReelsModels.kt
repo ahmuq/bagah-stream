@@ -144,9 +144,19 @@ data class FreeReelsEpisodeResponse(
     val duration: Int? = null,
     @SerialName("video_type")
     val videoType: String? = null,
-    val unlocked: Boolean = false
+    val unlocked: Boolean = false,
+    val subtitles: List<FreeReelsSubtitle> = emptyList()
 ) {
     fun streamUrl(): String = h264M3u8.ifBlank { bestUrl }.ifBlank { h265M3u8 }
+
+    /** Prioritaskan subtitle Indonesia, fallback Inggris, lalu yang pertama tersedia. */
+    fun preferredSubtitle(): FreeReelsSubtitle? {
+        val withVtt = subtitles.filter { it.vtt.isNotBlank() }
+        return withVtt.firstOrNull { it.language.equals("id-ID", true) }
+            ?: withVtt.firstOrNull { it.language.startsWith("id", true) }
+            ?: withVtt.firstOrNull { it.language.startsWith("en", true) }
+            ?: withVtt.firstOrNull()
+    }
 }
 
 @Serializable

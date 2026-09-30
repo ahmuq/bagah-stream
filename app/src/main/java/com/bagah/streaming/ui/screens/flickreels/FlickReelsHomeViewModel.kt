@@ -35,7 +35,7 @@ data class FlickReelsHomeUiState(
             "UNTUK ANDA" -> forYouItems.ifEmpty { trendingItems }
             "JELAJAH" -> exploreItems
             else -> trendingItems
-        }
+        }.distinctBy { it.id }
 
     val canLoadMore: Boolean
         get() = selectedTab == "JELAJAH" && exploreCursor != null
@@ -140,9 +140,10 @@ class FlickReelsHomeViewModel(
         val state = _uiState.value
         if (state.isLoading || state.isLoadingMore || state.loadingTab) return
         if (state.selectedTab != "JELAJAH" || state.exploreCursor == null) return
+        // Tandai sinkron agar tidak ada dua loadMore paralel.
+        _uiState.update { it.copy(isLoadingMore = true) }
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoadingMore = true) }
             repository.getClassify(
                 tag = state.selectedTag.takeIf { v -> v != "All" },
                 channel = state.selectedChannel.takeIf { v -> v != "All" },
@@ -155,7 +156,7 @@ class FlickReelsHomeViewModel(
                 _uiState.update {
                     it.copy(
                         isLoadingMore = false,
-                        exploreItems = it.exploreItems + fresh,
+                        exploreItems = (it.exploreItems + fresh).distinctBy { f -> f.id },
                         exploreCursor = cursor
                     )
                 }

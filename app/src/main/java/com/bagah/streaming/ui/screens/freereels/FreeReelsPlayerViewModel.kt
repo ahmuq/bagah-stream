@@ -18,6 +18,8 @@ data class FreeReelsPlayerUiState(
     val totalEpisodes: Int = 0,
     val episodes: List<FreeReelsEpisode> = emptyList(),
     val currentStreamUrl: String? = null,
+    val currentSubtitleUrl: String? = null,
+    val currentSubtitleLanguage: String = "id",
     val isLoading: Boolean = true,
     val errorMessage: String? = null
 )
@@ -84,22 +86,33 @@ class FreeReelsPlayerViewModel(
         repository.getEpisode(seriesId, episode)
             .onSuccess { response ->
                 // FreeReels mengirim HLS .m3u8 langsung di bestUrl; tidak perlu dekripsi.
-                if (response.bestUrl.isBlank()) {
-                    // Coba pakai URL dari daftar episode sebagai cadangan.
-                    val fromList = _uiState.value.episodes
-                        .firstOrNull { it.episodeNum == episode }?.bestUrl
-                    if (fromList.isNullOrBlank()) {
-                        _uiState.update {
-                            it.copy(isLoading = false, errorMessage = "URL video tidak tersedia.")
+                // Subtitle (VTT) dipilih dari response, fallback ke daftar episode.
+                val subtitle = response.preferredSubtitle()
+                    ?: _uiState.value.episodes
+                        .firstOrNull { it.episodeNum == episode }
+                        ?.let { ep ->
+                            val withVtt = ep.subtitles.filter { it.vtt.isNotBlank() }
+                            withVtt.firstOrNull { it.language.equals("id-ID", true) }
+                                ?: withVtt.firstOrNull()
                         }
-                    } else {
-                        _uiState.update {
-                            it.copy(isLoading = false, currentStreamUrl = fromList, errorMessage = null)
-                        }
+
+                val url = response.streamUrl().ifBlank {
+                    _uiState.value.episodes.firstOrNull { it.episodeNum == episode }?.streamUrl().orEmpty()
+                }
+
+                if (url.isBlank()) {
+                    _uiState.update {
+                        it.copy(isLoading = false, errorMessage = "URL video tidak tersedia.")
                     }
                 } else {
                     _uiState.update {
-                        it.copy(isLoading = false, currentStreamUrl = response.bestUrl, errorMessage = null)
+                        it.copy(
+                            isLoading = false,
+                            currentStreamUrl = url,
+                            currentSubtitleUrl = subtitle?.vtt?.takeIf { v -> v.isNotBlank() },
+                            currentSubtitleLanguage = subtitle?.language?.substringBefore('-')?.lowercase() ?: "id",
+                            errorMessage = null
+                        )
                     }
                 }
             }
