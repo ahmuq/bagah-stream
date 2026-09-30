@@ -2,6 +2,7 @@ package com.bagah.streaming.data.repository.drama
 
 import com.bagah.streaming.data.api.NetworkClient
 import com.bagah.streaming.data.api.StreamingApiService
+import com.bagah.streaming.data.model.DramaDetailResponse
 import com.bagah.streaming.data.model.DramaEpisode
 import com.bagah.streaming.data.model.DramaEpisodeResponse
 import com.bagah.streaming.data.model.DramaFilter
@@ -57,9 +58,15 @@ class DramaRepositoryImpl(
         }
     }
 
-    override suspend fun getRanking(rankType: Int): Result<List<DramaItem>> = withContext(ioDispatcher) {        runCatching {
+    override suspend fun getRanking(rankType: Int): Result<List<DramaItem>> = withContext(ioDispatcher) {
+        runCatching {
             api.browseDrama(type = "ranking", rankType = rankType.toString()).flatItems.validItems()
         }
+    }
+
+    override suspend fun getDetail(bookId: String): Result<DramaDetailResponse> = withContext(ioDispatcher) {
+        // full=false: metadata (judul, cover, deskripsi, jumlah episode).
+        runCatching { api.getDramaDetail(bookId = bookId, full = "false") }
     }
 
     override suspend fun getEpisodes(bookId: String): Result<List<DramaEpisode>> = withContext(ioDispatcher) {
