@@ -29,7 +29,6 @@ private val NETSHORT_TABS = listOf(
     NetShortTab("WANITA", "320", true),
     NetShortTab("ROMANTIS", "321", true),
     NetShortTab("CH BARU", "323", true),
-    NetShortTab("VIP", "125", true),
     NetShortTab("DUBBING", "131", true),
     NetShortTab("ANIME", "127", true)
 )

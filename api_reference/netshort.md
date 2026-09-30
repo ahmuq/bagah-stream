@@ -208,5 +208,6 @@ Episode terkunci otomatis di-unlock lewat mekanisme reward-ad di sisi server.
 ## Catatan cacat data
 
 - `type=actorRanking` kini mengembalikan 30 item (fixed 2026-09-30).
+- `type=125` (VIP) mengembalikan 0 item; tab VIP tidak ditampilkan di app.
 - `total_episodes` selalu `0` di semua listing; pakai `detail.totalEpisodes` untuk jumlah episode.
 - Item tanpa `series_id`/`id` dibuang sebelum dirender; item tanpa `title` dirender "Tanpa Judul".
