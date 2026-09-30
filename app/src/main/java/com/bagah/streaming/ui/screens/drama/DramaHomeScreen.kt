@@ -31,13 +31,18 @@ import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,6 +68,7 @@ import com.bagah.streaming.ui.theme.TextMuted
 import com.bagah.streaming.ui.theme.TextPrimary
 import com.bagah.streaming.ui.theme.TextSecondary
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DramaHomeScreen(
     viewModel: DramaHomeViewModel = viewModel(),
@@ -71,6 +77,11 @@ fun DramaHomeScreen(
 ) {
     val categories = listOf("Beranda", "Untukmu", "Kategori", "Peringkat")
     val uiState by viewModel.uiState.collectAsState()
+    var isRefreshing by remember { mutableStateOf(false) }
+
+    LaunchedEffect(uiState.isLoading) {
+        if (!uiState.isLoading) isRefreshing = false
+    }
 
     Box(
         modifier = Modifier
@@ -196,7 +207,7 @@ fun DramaHomeScreen(
             Spacer(modifier = Modifier.height(4.dp))
 
             // Drama Grid Content
-            if (uiState.isLoading) {
+            if (uiState.isLoading && !isRefreshing) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Center,
@@ -234,6 +245,10 @@ fun DramaHomeScreen(
             } else {
                 val gridState = rememberLazyGridState()
 
+                LaunchedEffect(uiState.selectedCategoryIndex) {
+                    gridState.scrollToItem(0)
+                }
+
                 // Muat halaman berikutnya saat user mendekati ujung bawah daftar.
                 LaunchedEffect(gridState, uiState.dramaList.size) {
                     snapshotFlow {
@@ -246,6 +261,14 @@ fun DramaHomeScreen(
                     }
                 }
 
+                PullToRefreshBox(
+                    isRefreshing = isRefreshing,
+                    onRefresh = {
+                        isRefreshing = true
+                        viewModel.refresh()
+                    },
+                    modifier = Modifier.fillMaxSize()
+                ) {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(2),
                     state = gridState,
@@ -311,6 +334,7 @@ fun DramaHomeScreen(
                             }
                         }
                     }
+                }
                 }
             }
         }

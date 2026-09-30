@@ -2,6 +2,8 @@ package com.bagah.streaming.data.repository.pinedrama
 
 import com.bagah.streaming.data.api.NetworkClient
 import com.bagah.streaming.data.api.StreamingApiService
+import com.bagah.streaming.data.cache.TtlCache
+import com.bagah.streaming.data.cache.cachedResult
 import com.bagah.streaming.data.model.PineDramaCategory
 import com.bagah.streaming.data.model.PineDramaChapter
 import com.bagah.streaming.data.model.PineDramaDetailResponse
@@ -22,43 +24,53 @@ class PineDramaRepositoryImpl(
 
     override suspend fun getForYou(page: Int): Result<List<PineDramaItem>> =
         withContext(ioDispatcher) {
-            runCatching { api.browsePineDrama(type = "foryou", page = page).items.validItems() }
+            cachedResult("pinedrama:foryou:$page", TtlCache.SHORT) {
+                runCatching { api.browsePineDrama(type = "foryou", page = page).items.validItems() }
+            }
         }
 
     override suspend fun getCategories(): Result<List<PineDramaCategory>> =
         withContext(ioDispatcher) {
-            runCatching { api.browsePineDrama(type = "categories").categories }
+            cachedResult("pinedrama:categories", TtlCache.LONG) {
+                runCatching { api.browsePineDrama(type = "categories").categories }
+            }
         }
 
     override suspend fun getCategory(
         categoryId: String,
         cursor: String?
     ): Result<Pair<List<PineDramaItem>, String?>> = withContext(ioDispatcher) {
-        runCatching {
-            val response = api.browsePineDrama(type = categoryId, count = 20, lang = "id")
-            response.items.validItems() to response.cursor
+        cachedResult("pinedrama:category:$categoryId:${cursor ?: "first"}", TtlCache.SHORT) {
+            runCatching {
+                val response = api.browsePineDrama(type = categoryId, count = 20, lang = "id")
+                response.items.validItems() to response.cursor
+            }
         }
     }
 
     override suspend fun getDetail(seriesId: String): Result<PineDramaDetailResponse> =
         withContext(ioDispatcher) {
-            runCatching { api.getPineDramaDetail(seriesId) }
+            cachedResult("pinedrama:detail:$seriesId", TtlCache.MEDIUM) {
+                runCatching { api.getPineDramaDetail(seriesId) }
+            }
         }
 
     override suspend fun getEpisodes(seriesId: String): Result<List<PineDramaChapter>> =
-        withContext(ioDispatcher) {
-            runCatching { api.getPineDramaDetail(seriesId).chapters }
-        }
+        // Ambil dari detail yang sama agar tidak request dua kali.
+        getDetail(seriesId).map { it.chapters }
 
     override suspend fun getEpisode(
         seriesId: String,
         episode: Int
     ): Result<PineDramaEpisodeResponse> = withContext(ioDispatcher) {
+        // URL MP4 langsung: jangan dicache.
         runCatching { api.getPineDramaEpisode(seriesId, episode) }
     }
 
     override suspend fun search(keyword: String, page: Int): Result<List<PineDramaItem>> =
         withContext(ioDispatcher) {
-            runCatching { api.searchPineDrama(keyword, page).items.validItems() }
+            cachedResult("pinedrama:search:$keyword:$page", TtlCache.SHORT) {
+                runCatching { api.searchPineDrama(keyword, page).items.validItems() }
+            }
         }
 }

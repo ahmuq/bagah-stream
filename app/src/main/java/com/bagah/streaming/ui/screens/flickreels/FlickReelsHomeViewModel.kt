@@ -1,5 +1,6 @@
 package com.bagah.streaming.ui.screens.flickreels
 
+import com.bagah.streaming.data.api.NetworkClient
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bagah.streaming.data.model.FlickReelsItem
@@ -69,6 +70,12 @@ class FlickReelsHomeViewModel(
     private fun updateFilter(transform: (FlickReelsHomeUiState) -> FlickReelsHomeUiState) {
         _uiState.update(transform)
         loadExplore(reset = true)
+    }
+
+    /** Muat ulang dengan menembus cache (disk + memori). */
+    fun refresh() {
+        NetworkClient.clearApiCache()
+        loadData()
     }
 
     fun loadData() {

@@ -1,5 +1,6 @@
 package com.bagah.streaming.ui.screens.shortmax
 
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -33,12 +34,17 @@ import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -64,6 +70,7 @@ import com.bagah.streaming.ui.theme.TextMuted
 import com.bagah.streaming.ui.theme.TextPrimary
 import com.bagah.streaming.ui.theme.TextSecondary
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShortMaxHomeScreen(
     viewModel: ShortMaxHomeViewModel = viewModel(),
@@ -71,13 +78,25 @@ fun ShortMaxHomeScreen(
     onSearchClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var isRefreshing by remember { mutableStateOf(false) }
+    LaunchedEffect(uiState.isLoading) {
+        if (!uiState.isLoading) isRefreshing = false
+    }
 
-    Box(
+    
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                isRefreshing = true
+                viewModel.refresh()
+            },
+            modifier = Modifier.fillMaxSize()
+        ) {Box(
         modifier = Modifier
             .fillMaxSize()
             .background(BgBlack)
     ) {
-        if (uiState.isLoading) {
+        if (uiState.isLoading && !isRefreshing) {
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
@@ -375,3 +394,4 @@ fun ShortMaxHomeScreen(
         }
     }
 }
+        }

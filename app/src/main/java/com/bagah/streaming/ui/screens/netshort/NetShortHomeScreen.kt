@@ -1,5 +1,7 @@
 package com.bagah.streaming.ui.screens.netshort
 
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,9 +15,13 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -28,6 +34,7 @@ import com.bagah.streaming.ui.components.PlatformTabRow
 import com.bagah.streaming.ui.theme.AccentWhite
 import com.bagah.streaming.ui.theme.BgBlack
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NetShortHomeScreen(
     viewModel: NetShortHomeViewModel = viewModel(),
@@ -35,14 +42,27 @@ fun NetShortHomeScreen(
     onSearchClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var isRefreshing by remember { mutableStateOf(false) }
+    LaunchedEffect(uiState.isLoading) {
+        if (!uiState.isLoading) isRefreshing = false
+    }
 
-    Box(
+    
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                isRefreshing = true
+                viewModel.refresh()
+            },
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Box(
         modifier = Modifier
             .fillMaxSize()
             .background(BgBlack)
     ) {
         when {
-            uiState.isLoading -> LoadingBlock("Memuat NetShort...")
+            uiState.isLoading && !isRefreshing -> LoadingBlock("Memuat NetShort...")
 
             uiState.errorMessage != null && uiState.currentDisplayList.isEmpty() ->
                 ErrorBlock(uiState.errorMessage ?: "Terjadi kesalahan", viewModel::loadData)
@@ -98,3 +118,4 @@ fun NetShortHomeScreen(
         }
     }
 }
+        }

@@ -1,5 +1,6 @@
 package com.bagah.streaming.ui.screens.shortmax
 
+import com.bagah.streaming.data.api.NetworkClient
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bagah.streaming.data.model.ShortMaxItem
@@ -45,6 +46,12 @@ class ShortMaxHomeViewModel(
 
     fun selectTab(tab: String) {
         _uiState.update { it.copy(selectedTab = tab) }
+    }
+
+    /** Muat ulang dengan menembus cache (disk + memori). */
+    fun refresh() {
+        NetworkClient.clearApiCache()
+        loadData()
     }
 
     fun loadData() {

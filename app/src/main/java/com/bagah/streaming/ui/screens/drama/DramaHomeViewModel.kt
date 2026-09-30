@@ -1,5 +1,6 @@
 package com.bagah.streaming.ui.screens.drama
 
+import com.bagah.streaming.data.api.NetworkClient
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bagah.streaming.data.model.DramaFilterOption
@@ -36,6 +37,12 @@ class DramaHomeViewModel(
     val uiState: StateFlow<DramaHomeUiState> = _uiState.asStateFlow()
 
     init {
+        loadFiltersAndHome()
+    }
+
+    /** Muat ulang dengan menembus cache (disk + memori). */
+    fun refresh() {
+        NetworkClient.clearApiCache()
         loadFiltersAndHome()
     }
 

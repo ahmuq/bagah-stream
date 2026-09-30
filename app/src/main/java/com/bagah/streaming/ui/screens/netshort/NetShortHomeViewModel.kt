@@ -2,6 +2,7 @@ package com.bagah.streaming.ui.screens.netshort
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bagah.streaming.data.api.NetworkClient
 import com.bagah.streaming.data.model.NetShortItem
 import com.bagah.streaming.data.repository.netshort.NetShortRepository
 import com.bagah.streaming.data.repository.netshort.NetShortRepositoryImpl
@@ -67,6 +68,12 @@ class NetShortHomeViewModel(
 
     fun loadData() {
         loadTab(_uiState.value.selectedTab, initial = true)
+    }
+
+    /** Muat ulang dengan menembus cache (disk + memori). */
+    fun refresh() {
+        NetworkClient.clearApiCache()
+        loadData()
     }
 
     private fun loadTab(label: String, initial: Boolean) {

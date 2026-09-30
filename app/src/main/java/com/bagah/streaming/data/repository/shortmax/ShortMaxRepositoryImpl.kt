@@ -2,6 +2,8 @@ package com.bagah.streaming.data.repository.shortmax
 
 import com.bagah.streaming.data.api.NetworkClient
 import com.bagah.streaming.data.api.StreamingApiService
+import com.bagah.streaming.data.cache.TtlCache
+import com.bagah.streaming.data.cache.cachedResult
 import com.bagah.streaming.data.model.ShortMaxDetailResponse
 import com.bagah.streaming.data.model.ShortMaxEpisode
 import com.bagah.streaming.data.model.ShortMaxEpisodeResponse
@@ -20,41 +22,52 @@ class ShortMaxRepositoryImpl(
         filter { it.stableId().isNotBlank() }
 
     override suspend fun getForYou(page: Int): Result<List<ShortMaxItem>> = withContext(ioDispatcher) {
-        runCatching { api.browseShortMax(type = "foryou", page = page).items.validItems() }
+        cachedResult("shortmax:foryou:$page", TtlCache.SHORT) {
+            runCatching { api.browseShortMax(type = "foryou", page = page).items.validItems() }
+        }
     }
 
     override suspend fun getTrending(page: Int): Result<List<ShortMaxItem>> = withContext(ioDispatcher) {
-        runCatching { api.browseShortMax(type = "trending", page = page).items.validItems() }
+        cachedResult("shortmax:trending:$page", TtlCache.SHORT) {
+            runCatching { api.browseShortMax(type = "trending", page = page).items.validItems() }
+        }
     }
 
     override suspend fun getLatest(page: Int): Result<List<ShortMaxItem>> = withContext(ioDispatcher) {
-        runCatching { api.browseShortMax(type = "latest", page = page).items.validItems() }
+        cachedResult("shortmax:latest:$page", TtlCache.SHORT) {
+            runCatching { api.browseShortMax(type = "latest", page = page).items.validItems() }
+        }
     }
 
     override suspend fun getRankings(page: Int): Result<List<ShortMaxItem>> = withContext(ioDispatcher) {
-        runCatching { api.browseShortMax(type = "rankings", page = page).items.validItems() }
+        cachedResult("shortmax:rankings:$page", TtlCache.SHORT) {
+            runCatching { api.browseShortMax(type = "rankings", page = page).items.validItems() }
+        }
     }
 
     override suspend fun getDetail(seriesId: String): Result<ShortMaxDetailResponse> =
         withContext(ioDispatcher) {
-            runCatching { api.getShortMaxDetail(seriesId) }
+            cachedResult("shortmax:detail:$seriesId", TtlCache.MEDIUM) {
+                runCatching { api.getShortMaxDetail(seriesId) }
+            }
         }
 
     override suspend fun getEpisodes(seriesId: String): Result<List<ShortMaxEpisode>> =
-        withContext(ioDispatcher) {
-            // Endpoint episodes dihapus; daftar chapter sudah ikut di detail.
-            runCatching { api.getShortMaxDetail(seriesId).chapters }
-        }
+        // Ambil dari detail yang sama agar tidak request dua kali.
+        getDetail(seriesId).map { it.chapters }
 
     override suspend fun getEpisode(
         seriesId: String,
         episode: Int
     ): Result<ShortMaxEpisodeResponse> = withContext(ioDispatcher) {
+        // Stream HLS terenkripsi: jangan dicache.
         runCatching { api.getShortMaxEpisode(seriesId, episode) }
     }
 
     override suspend fun search(keyword: String, page: Int): Result<List<ShortMaxItem>> =
         withContext(ioDispatcher) {
-            runCatching { api.searchShortMax(keyword, page).items.validItems() }
+            cachedResult("shortmax:search:$keyword:$page", TtlCache.SHORT) {
+                runCatching { api.searchShortMax(keyword, page).items.validItems() }
+            }
         }
 }

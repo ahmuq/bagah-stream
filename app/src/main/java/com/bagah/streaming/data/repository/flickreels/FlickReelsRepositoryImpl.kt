@@ -2,6 +2,8 @@ package com.bagah.streaming.data.repository.flickreels
 
 import com.bagah.streaming.data.api.NetworkClient
 import com.bagah.streaming.data.api.StreamingApiService
+import com.bagah.streaming.data.cache.TtlCache
+import com.bagah.streaming.data.cache.cachedResult
 import com.bagah.streaming.data.model.FlickReelsDetailResponse
 import com.bagah.streaming.data.model.FlickReelsEpisode
 import com.bagah.streaming.data.model.FlickReelsEpisodeResponse
@@ -26,51 +28,65 @@ class FlickReelsRepositoryImpl(
         sort: String?,
         cursor: String?
     ): Result<Pair<List<FlickReelsItem>, String?>> = withContext(ioDispatcher) {
-        runCatching {
-            val response = api.browseFlickReels(
-                type = "classify",
-                tag = tag,
-                channel = channel,
-                region = region,
-                sort = sort,
-                cursor = cursor
-            )
-            response.items.validItems() to response.nextCursor
+        cachedResult(
+            "flickreels:classify:${tag ?: "All"}:${channel ?: "All"}:${region ?: "All"}:${sort ?: "1"}:${cursor ?: "first"}",
+            TtlCache.SHORT
+        ) {
+            runCatching {
+                val response = api.browseFlickReels(
+                    type = "classify",
+                    tag = tag,
+                    channel = channel,
+                    region = region,
+                    sort = sort,
+                    cursor = cursor
+                )
+                response.items.validItems() to response.nextCursor
+            }
         }
     }
 
     override suspend fun getForYou(): Result<List<FlickReelsItem>> = withContext(ioDispatcher) {
-        runCatching { api.browseFlickReels(type = "foryou").items.validItems() }
+        cachedResult("flickreels:foryou", TtlCache.SHORT) {
+            runCatching { api.browseFlickReels(type = "foryou").items.validItems() }
+        }
     }
 
     override suspend fun getTrending(): Result<List<FlickReelsItem>> = withContext(ioDispatcher) {
-        runCatching { api.browseFlickReels(type = "trending").items.validItems() }
+        cachedResult("flickreels:trending", TtlCache.SHORT) {
+            runCatching { api.browseFlickReels(type = "trending").items.validItems() }
+        }
     }
 
     override suspend fun getLatest(): Result<List<FlickReelsItem>> = withContext(ioDispatcher) {
-        runCatching { api.browseFlickReels(type = "latest").items.validItems() }
+        cachedResult("flickreels:latest", TtlCache.SHORT) {
+            runCatching { api.browseFlickReels(type = "latest").items.validItems() }
+        }
     }
 
     override suspend fun getDetail(seriesId: String): Result<FlickReelsDetailResponse> =
         withContext(ioDispatcher) {
-            runCatching { api.getFlickReelsDetail(seriesId) }
+            cachedResult("flickreels:detail:$seriesId", TtlCache.MEDIUM) {
+                runCatching { api.getFlickReelsDetail(seriesId) }
+            }
         }
 
     override suspend fun getEpisodes(seriesId: String): Result<List<FlickReelsEpisode>> =
-        withContext(ioDispatcher) {
-            // Endpoint episodes dihapus; daftar chapter sudah ikut di detail.
-            runCatching { api.getFlickReelsDetail(seriesId).chapters }
-        }
+        // Ambil dari detail yang sama agar tidak request dua kali.
+        getDetail(seriesId).map { it.chapters }
 
     override suspend fun getEpisode(
         seriesId: String,
         episode: Int
     ): Result<FlickReelsEpisodeResponse> = withContext(ioDispatcher) {
+        // URL stream bertanda tangan: jangan dicache.
         runCatching { api.getFlickReelsEpisode(seriesId, episode) }
     }
 
     override suspend fun search(keyword: String): Result<List<FlickReelsItem>> =
         withContext(ioDispatcher) {
-            runCatching { api.searchFlickReels(keyword).items.validItems() }
+            cachedResult("flickreels:search:$keyword", TtlCache.SHORT) {
+                runCatching { api.searchFlickReels(keyword).items.validItems() }
+            }
         }
 }

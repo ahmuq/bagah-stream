@@ -2,6 +2,8 @@ package com.bagah.streaming.data.repository.freereels
 
 import com.bagah.streaming.data.api.NetworkClient
 import com.bagah.streaming.data.api.StreamingApiService
+import com.bagah.streaming.data.cache.TtlCache
+import com.bagah.streaming.data.cache.cachedResult
 import com.bagah.streaming.data.model.FreeReelsDetailResponse
 import com.bagah.streaming.data.model.FreeReelsEpisode
 import com.bagah.streaming.data.model.FreeReelsEpisodeResponse
@@ -28,51 +30,52 @@ class FreeReelsRepositoryImpl(
         tab: String,
         cursor: String?
     ): Result<Pair<List<FreeReelsItem>, String?>> = withContext(ioDispatcher) {
-        runCatching {
-            val response = api.browseFreeReels(tab = tab, cursor = cursor)
-            response.allItems.validItems() to response.cursor
+        cachedResult("freereels:browse:$tab:${cursor ?: "first"}", TtlCache.SHORT) {
+            runCatching {
+                val response = api.browseFreeReels(tab = tab, cursor = cursor)
+                response.allItems.validItems() to response.cursor
+            }
         }
     }
 
     override suspend fun getForYou(next: String?): Result<Pair<List<FreeReelsItem>, String?>> =
         getBrowse(tab = "foryou", cursor = next)
 
-    override suspend fun getTrending(): Result<List<FreeReelsItem>> = withContext(ioDispatcher) {
-        runCatching { api.browseFreeReels(tab = tabPopular).allItems.validItems() }
-    }
+    override suspend fun getTrending(): Result<List<FreeReelsItem>> =
+        getBrowse(tabPopular).map { it.first }
 
-    override suspend fun getLatest(): Result<List<FreeReelsItem>> = withContext(ioDispatcher) {
-        runCatching { api.browseFreeReels(tab = tabNew).allItems.validItems() }
-    }
+    override suspend fun getLatest(): Result<List<FreeReelsItem>> =
+        getBrowse(tabNew).map { it.first }
 
-    override suspend fun getAnime(): Result<List<FreeReelsItem>> = withContext(ioDispatcher) {
-        runCatching { api.browseFreeReels(tab = tabAnime).allItems.validItems() }
-    }
+    override suspend fun getAnime(): Result<List<FreeReelsItem>> =
+        getBrowse(tabAnime).map { it.first }
 
-    override suspend fun getTab(tabKey: String): Result<List<FreeReelsItem>> = withContext(ioDispatcher) {
-        runCatching { api.browseFreeReels(tab = tabKey).allItems.validItems() }
-    }
+    override suspend fun getTab(tabKey: String): Result<List<FreeReelsItem>> =
+        getBrowse(tabKey).map { it.first }
 
     override suspend fun getDetail(seriesId: String): Result<FreeReelsDetailResponse> =
         withContext(ioDispatcher) {
-            runCatching { api.getFreeReelsDetail(seriesId) }
+            cachedResult("freereels:detail:$seriesId", TtlCache.MEDIUM) {
+                runCatching { api.getFreeReelsDetail(seriesId) }
+            }
         }
 
     override suspend fun getEpisodes(seriesId: String): Result<List<FreeReelsEpisode>> =
-        withContext(ioDispatcher) {
-            // Endpoint episodes dihapus; daftar episode ikut di `detail.items`.
-            runCatching { api.getFreeReelsDetail(seriesId).items }
-        }
+        // Endpoint episodes dihapus; daftar episode ikut di `detail.items`.
+        getDetail(seriesId).map { it.items }
 
     override suspend fun getEpisode(
         seriesId: String,
         episode: Int
     ): Result<FreeReelsEpisodeResponse> = withContext(ioDispatcher) {
+        // URL stream: jangan dicache.
         runCatching { api.getFreeReelsEpisode(seriesId, episode) }
     }
 
     override suspend fun search(keyword: String): Result<List<FreeReelsItem>> =
         withContext(ioDispatcher) {
-            runCatching { api.searchFreeReels(keyword).items.validItems() }
+            cachedResult("freereels:search:$keyword", TtlCache.SHORT) {
+                runCatching { api.searchFreeReels(keyword).items.validItems() }
+            }
         }
 }

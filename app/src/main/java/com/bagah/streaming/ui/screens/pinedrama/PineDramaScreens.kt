@@ -48,6 +48,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -98,6 +99,7 @@ import com.bagah.streaming.ui.theme.TextMuted
 import com.bagah.streaming.ui.theme.TextPrimary
 import com.bagah.streaming.ui.theme.TextSecondary
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PineDramaHomeScreen(
     viewModel: PineDramaHomeViewModel = viewModel(),
@@ -105,18 +107,34 @@ fun PineDramaHomeScreen(
     onSearchClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var isRefreshing by remember { mutableStateOf(false) }
+    LaunchedEffect(uiState.isLoading) {
+        if (!uiState.isLoading) isRefreshing = false
+    }
 
-    Box(
+    
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = {
+                isRefreshing = true
+                viewModel.refresh()
+            },
+            modifier = Modifier.fillMaxSize()
+        ) {Box(
         modifier = Modifier
             .fillMaxSize()
             .background(BgBlack)
     ) {
-        if (uiState.isLoading) {
+        if (uiState.isLoading && !isRefreshing) {
             LoadingBlock("Memuat PineDrama...")
         } else if (uiState.errorMessage != null && uiState.currentDisplayList.isEmpty()) {
             ErrorBlock(uiState.errorMessage!!) { viewModel.loadData() }
         } else {
             val gridState = rememberLazyGridState()
+            
+            LaunchedEffect(uiState.selectedTab) {
+                gridState.scrollToItem(0)
+            }
 
             LaunchedEffect(gridState, uiState.selectedTab) {
                 snapshotFlow {
@@ -242,6 +260,7 @@ fun PineDramaHomeScreen(
         }
     }
 }
+        }
 
 @Composable
 fun PineDramaDetailScreen(

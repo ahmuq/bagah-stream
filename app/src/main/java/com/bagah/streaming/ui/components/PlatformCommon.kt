@@ -50,7 +50,11 @@ import com.bagah.streaming.ui.theme.TextPrimary
 import com.bagah.streaming.ui.theme.TextSecondary
 
 @Composable
-fun PlatformHeader(badge: String, subtitle: String, onSearchClick: () -> Unit) {
+fun PlatformHeader(
+    badge: String,
+    subtitle: String,
+    onSearchClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()

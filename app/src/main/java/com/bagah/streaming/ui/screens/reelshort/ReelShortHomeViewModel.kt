@@ -1,5 +1,6 @@
 package com.bagah.streaming.ui.screens.reelshort
 
+import com.bagah.streaming.data.api.NetworkClient
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bagah.streaming.data.model.ReelShortBook
@@ -62,6 +63,10 @@ class ReelShortHomeViewModel(
 
     fun selectTab(tab: String) {
         _uiState.update { it.copy(selectedTab = tab) }
+        // Izinkan pagination lagi saat kembali ke tab ini.
+        if (tab == "UNTUK ANDA") {
+            _uiState.update { it.copy(endReached = false, forYouPage = 1) }
+        }
         if (tab == "JELAJAH" && !_uiState.value.exploreLoaded) {
             loadExplore()
         }
@@ -157,6 +162,12 @@ class ReelShortHomeViewModel(
                     _uiState.update { it.copy(isLoadingMore = false, endReached = true) }
                 }
         }
+    }
+
+    /** Muat ulang dengan menembus cache (disk + memori). */
+    fun refresh() {
+        NetworkClient.clearApiCache()
+        loadData()
     }
 
     fun loadData() {

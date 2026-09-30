@@ -3,6 +3,7 @@ package com.bagah.streaming.ui.screens.pinedrama
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.bagah.streaming.data.api.NetworkClient
 import com.bagah.streaming.data.model.PineDramaChapter
 import com.bagah.streaming.data.model.PineDramaDetailResponse
 import com.bagah.streaming.data.model.PineDramaItem
@@ -80,6 +81,12 @@ class PineDramaHomeViewModel(
 
             loadTab(_uiState.value.selectedTab, initial = true)
         }
+    }
+
+    /** Muat ulang dengan menembus cache (disk + memori). */
+    fun refresh() {
+        NetworkClient.clearApiCache()
+        loadData()
     }
 
     private fun loadTab(label: String, initial: Boolean) {
