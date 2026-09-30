@@ -18,9 +18,9 @@ Spec: `https://api.bagahproject.com/api/v1/openapi.json`.
 | `shortmax/search`    | `keyword`, `page`, `size`, `lang`  | Cari series    |
 
 `type` = `trending` \| `latest` \| `rankings` \| `foryou` \| `classes` \| `<classId>`.
-`classId`: `200001` Modern, `200002` Kuno, `200003` Fantasi, `200004` Realitas,
+`classId`: `200001` Modern, `200002` Kuno, `200003` Fantasi, `200004` Realistas,
 `200005` Misteri, `200006` Perkotaan, `200007` Sejarah, `200008` hot,
-`200009` Fiksi Ilmiah, `200010` Realistic, `200012` Fantasi, `200014`.
+`200009` Fiksi Ilmiah, `200010` Realistic, `200012` Fanta, `200014`.
 `lang` = `id` \| `en` \| `es` \| `pt` \| `zh`.
 
 ## Bentuk Response
@@ -174,6 +174,21 @@ ShortMax mengirim **HLS** dengan segmen `.ts` yang terenkripsi custom — bukan
 Info resmi tersedia di `crypto_info` pada `shortmax/episode`. Implementasi Kotlin:
 `data/player/ShortMaxDecryptDataSource.kt`. Terverifikasi di device: segmen terdekripsi,
 `OMX.qcom.video.decoder.avc` + `c2.android.aac.decoder` aktif.
+
+## Filter & parameter (hasil uji 2026-09-30)
+
+| Param              | Status | Catatan                                                              |
+| ------------------ | ------ | -------------------------------------------------------------------- |
+| `type=classes`     | ✅     | daftar kelas: Modern, Kuno, Fantasi, Realistas, Misteri, Perkotaan, Sejarah, hot, Fiksi Ilmiah, Realistic, Fanta, `200014` |
+| `type=<classId>`   | ⚠️     | menerima `page`/`size`, tetapi **set item identik antar class** (200001 = 200002 = 200003 = 200007) → filter kelas tidak berfungsi |
+| `type=trending`    | ✅     | statis 110 item                                                      |
+| `type=latest`      | ✅     | 100 item                                                             |
+| `type=foryou`      | ✅     | 20 item, menyertakan `currentEpisode`                                |
+| `page` (class)     | ✅     | `page=2` → item berbeda                                              |
+| `size`             | ⚠️     | tampak diabaikan pada list statis (trending tetap 110 walau `size=5`) |
+| `pages` (batch)    | ⚠️     | berpengaruh pada class, tidak pada list statis                      |
+
+Nama kelas dari `type=classes`: `contents` (gender) + `classes` (kategori).
 
 ## Catatan cacat data
 

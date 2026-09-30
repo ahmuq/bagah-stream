@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -37,8 +38,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,6 +57,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.bagah.streaming.R
 import com.bagah.streaming.ui.components.FlickReelsCard
+import com.bagah.streaming.ui.components.FilterChip
+import com.bagah.streaming.ui.components.FilterChipRow
 import com.bagah.streaming.ui.theme.AccentBlack
 import com.bagah.streaming.ui.theme.AccentWhite
 import com.bagah.streaming.ui.theme.BgBlack
@@ -117,8 +122,22 @@ fun FlickReelsHomeScreen(
                 }
             }
         } else {
+            val gridState = rememberLazyGridState()
+
+            LaunchedEffect(gridState, uiState.selectedTab) {
+                snapshotFlow {
+                    gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+                }.collect { lastVisible ->
+                    val total = gridState.layoutInfo.totalItemsCount
+                    if (total > 0 && lastVisible >= total - 4) {
+                        viewModel.loadMore()
+                    }
+                }
+            }
+
             LazyVerticalGrid(
                 columns = GridCells.Fixed(3),
+                state = gridState,
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 90.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp),
@@ -364,6 +383,54 @@ fun FlickReelsHomeScreen(
                     }
                 }
 
+                if (uiState.selectedTab == "JELAJAH") {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Column {
+                            FilterChipRow(
+                                options = FLICK_SORTS,
+                                selectedValue = uiState.selectedSort,
+                                onSelect = viewModel::setSort,
+                                leadingLabel = "Urutkan"
+                            )
+                            FilterChipRow(
+                                options = FLICK_CHANNELS,
+                                selectedValue = uiState.selectedChannel,
+                                onSelect = viewModel::setChannel,
+                                leadingLabel = "Kanal"
+                            )
+                            FilterChipRow(
+                                options = FLICK_REGIONS,
+                                selectedValue = uiState.selectedRegion,
+                                onSelect = viewModel::setRegion,
+                                leadingLabel = "Wilayah"
+                            )
+                            FilterChipRow(
+                                options = FLICK_TAGS,
+                                selectedValue = uiState.selectedTag,
+                                onSelect = viewModel::setTag,
+                                leadingLabel = "Tag"
+                            )
+                        }
+                    }
+                }
+
+                if (uiState.loadingTab) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                color = AccentWhite,
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(26.dp)
+                            )
+                        }
+                    }
+                }
+
                 items(uiState.currentDisplayList, key = { it.id }) { item ->
                     FlickReelsCard(
                         item = item,
@@ -375,3 +442,39 @@ fun FlickReelsHomeScreen(
         }
     }
 }
+
+private val FLICK_SORTS = listOf(
+    FilterChip("Populer", "1"),
+    FilterChip("Terbaru", "2")
+)
+
+private val FLICK_CHANNELS = listOf(
+    FilterChip("Semua", "All"),
+    FilterChip("Pria", "1"),
+    FilterChip("Wanita", "2")
+)
+
+private val FLICK_REGIONS = listOf(
+    FilterChip("Semua", "All"),
+    FilterChip("Barat", "1"),
+    FilterChip("Asia", "2")
+)
+
+private val FLICK_TAGS = listOf(
+    FilterChip("Semua", "All"),
+    FilterChip("CEO/Miliarder", "1583"),
+    FilterChip("Dendam", "1560"),
+    FilterChip("Heroine", "1687"),
+    FilterChip("Reinkarnasi", "1834"),
+    FilterChip("Nikah Dulu", "1826"),
+    FilterChip("Nikah Kilat", "1746"),
+    FilterChip("Cinta Semalam", "1738"),
+    FilterChip("Lintas Waktu", "1802"),
+    FilterChip("Bangkit", "1754"),
+    FilterChip("Penebusan", "1850"),
+    FilterChip("Beda Usia", "1842"),
+    FilterChip("Takdir Kejam", "2155"),
+    FilterChip("Komedi", "2307"),
+    FilterChip("Elit Profesional", "2431"),
+    FilterChip("Asia Kuno", "1472")
+)

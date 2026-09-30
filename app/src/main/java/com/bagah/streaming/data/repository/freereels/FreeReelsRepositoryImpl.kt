@@ -24,13 +24,18 @@ class FreeReelsRepositoryImpl(
     private fun List<FreeReelsItem>.validItems(): List<FreeReelsItem> =
         filter { it.stableId().isNotBlank() }
 
-    override suspend fun getForYou(next: String?): Result<Pair<List<FreeReelsItem>, String?>> =
-        withContext(ioDispatcher) {
-            runCatching {
-                val response = api.browseFreeReels(tab = "foryou", cursor = next)
-                response.allItems.validItems() to response.cursor
-            }
+    override suspend fun getBrowse(
+        tab: String,
+        cursor: String?
+    ): Result<Pair<List<FreeReelsItem>, String?>> = withContext(ioDispatcher) {
+        runCatching {
+            val response = api.browseFreeReels(tab = tab, cursor = cursor)
+            response.allItems.validItems() to response.cursor
         }
+    }
+
+    override suspend fun getForYou(next: String?): Result<Pair<List<FreeReelsItem>, String?>> =
+        getBrowse(tab = "foryou", cursor = next)
 
     override suspend fun getTrending(): Result<List<FreeReelsItem>> = withContext(ioDispatcher) {
         runCatching { api.browseFreeReels(tab = tabPopular).allItems.validItems() }

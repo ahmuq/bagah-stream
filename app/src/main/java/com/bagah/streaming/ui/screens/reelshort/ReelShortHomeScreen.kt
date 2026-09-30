@@ -64,6 +64,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.bagah.streaming.R
 import com.bagah.streaming.data.model.ReelShortBook
+import com.bagah.streaming.ui.components.FilterChip
+import com.bagah.streaming.ui.components.FilterChipRow
 import com.bagah.streaming.ui.components.ReelShortCard
 import com.bagah.streaming.ui.theme.AccentBlack
 import com.bagah.streaming.ui.theme.AccentWhite
@@ -426,7 +428,36 @@ fun ReelShortHomeScreen(
                     }
                 }
 
-                // 5. Grid of Books
+                // 5. Ranking period filter
+                if (uiState.selectedTab == "RANKING") {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        FilterChipRow(
+                            options = REELSHORT_PERIODS,
+                            selectedValue = uiState.rankingPeriod.toString(),
+                            onSelect = { viewModel.setRankingPeriod(it.toIntOrNull() ?: 1) },
+                            leadingLabel = "Periode"
+                        )
+                    }
+                }
+
+                if (uiState.isLoadingRanking) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                color = AccentWhite,
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(26.dp)
+                            )
+                        }
+                    }
+                }
+
+                // 6. Grid of Books
                 val books = uiState.currentDisplayList
                 items(books, key = { it.id }) { book ->
                     ReelShortCard(
@@ -456,3 +487,11 @@ fun ReelShortHomeScreen(
         }
     }
 }
+
+private val REELSHORT_PERIODS = listOf(
+    FilterChip("Top Harian", "1"),
+    FilterChip("Top Tahunan", "4"),
+    FilterChip("Rilis Baru", "14"),
+    FilterChip("Paling Dicari", "15"),
+    FilterChip("Anime", "16")
+)

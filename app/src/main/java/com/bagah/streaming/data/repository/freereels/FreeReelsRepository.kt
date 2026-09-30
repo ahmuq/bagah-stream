@@ -6,6 +6,7 @@ import com.bagah.streaming.data.model.FreeReelsEpisodeResponse
 import com.bagah.streaming.data.model.FreeReelsItem
 
 interface FreeReelsRepository {
+    suspend fun getBrowse(tab: String, cursor: String? = null): Result<Pair<List<FreeReelsItem>, String?>>
     suspend fun getForYou(next: String? = null): Result<Pair<List<FreeReelsItem>, String?>>
     suspend fun getTrending(): Result<List<FreeReelsItem>>
     suspend fun getLatest(): Result<List<FreeReelsItem>>

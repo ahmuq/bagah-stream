@@ -151,6 +151,25 @@ Book (dipakai `foryou`, `trending`, `latest`, `ranking`, `classify`, `waterfall`
 | `trending`/`latest`/`ranking`     | ❌ statis                                              |
 | `waterfall`/`bookshelf`/`classify`| memakai `lastBookId` untuk halaman berikutnya          |
 
+## Filter & parameter (hasil uji 2026-09-30)
+
+| Param                | Status | Catatan                                                       |
+| -------------------- | ------ | ------------------------------------------------------------- |
+| `type=ranking`       | ✅     | `period=1|4|14|15|16` → set berbeda (mis. period=4 ≠ period=1) |
+| `limit`              | ✅     | `limit=5` → 5 item                                            |
+| `lastBookId`         | ✅     | cursor halaman berikutnya (classify/waterfall/bookshelf)      |
+| `pages` (batch)      | ✅     | `pages=3` → 60 item (20×3)                                    |
+| `type=categories`    | ✅     | grup: Genre, Wilayah, Dubbing, Jenis Konten, Tag              |
+| `tag` (classify)     | ❌     | **Abaikan**: set 20 id identik dengan tanpa filter            |
+| `genre` (classify)   | ❌     | Pria vs Perempuan → 20 id identik (overlap 20/20)             |
+| `region` (classify)  | ❌     | diabaikan                                                     |
+| `dub` (classify)     | ❌     | diabaikan                                                     |
+| `type=foryou` `page` | ⚠️     | `totalPages` biasanya 1; pakai `lastBookId` bila ada          |
+
+Grup `categories`: `Genre` (`676d...664` Pria, `676d...663` Perempuan), `Wilayah`
+(`1` Amerika, `2` ASIA), `Dubbing` (`0` Asli, `1` Dubbing), `Jenis Konten`
+(`1` Drama Pendek, `2` Serial Interaktif), `Tag` (banyak id).
+
 ## Catatan Pemutaran
 
 - Format **HLS (.m3u8)** di `best_url` / `video_list` — Media3 ExoPlayer memutar langsung, **tanpa dekripsi**.

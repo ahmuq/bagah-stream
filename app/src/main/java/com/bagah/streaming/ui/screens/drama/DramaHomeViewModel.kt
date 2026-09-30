@@ -18,6 +18,8 @@ data class DramaHomeUiState(
     val dramaList: List<DramaItem> = emptyList(),
     val page: Int = 1,
     val endReached: Boolean = false,
+    val statusFilter: String = "All",
+    val rankType: Int = 1,
     val errorMessage: String? = null
 )
 
@@ -36,6 +38,20 @@ class DramaHomeViewModel(
         if (index == _uiState.value.selectedCategoryIndex && _uiState.value.dramaList.isNotEmpty()) return
         _uiState.update { it.copy(selectedCategoryIndex = index) }
         loadCategory(index)
+    }
+
+    /** Filter status untuk tab Beranda: All / 1 (Tamat) / 2 (Berjalan). */
+    fun setStatusFilter(value: String) {
+        if (value == _uiState.value.statusFilter) return
+        _uiState.update { it.copy(statusFilter = value) }
+        loadCategory(0)
+    }
+
+    /** Tipe peringkat untuk tab Peringkat: 1 Trending, 2 Populer, 3 Terbaru. */
+    fun setRankType(value: Int) {
+        if (value == _uiState.value.rankType) return
+        _uiState.update { it.copy(rankType = value) }
+        loadCategory(3)
     }
 
     fun loadCategory(index: Int = _uiState.value.selectedCategoryIndex) {
@@ -65,8 +81,8 @@ class DramaHomeViewModel(
     fun loadMore() {
         val state = _uiState.value
         if (state.isLoading || state.isLoadingMore || state.endReached) return
-        // Kategori tidak mendukung pagination (tanpa param page).
-        if (state.selectedCategoryIndex == 2) {
+        // Kategori (theater) dan Peringkat (ranking) tidak mendukung pagination.
+        if (state.selectedCategoryIndex == 2 || state.selectedCategoryIndex == 3) {
             _uiState.update { it.copy(endReached = true) }
             return
         }
@@ -96,9 +112,10 @@ class DramaHomeViewModel(
     }
 
     private suspend fun fetch(index: Int, page: Int): Result<List<DramaItem>> = when (index) {
-        0 -> repository.getHome(page)
+        0 -> repository.getHome(page, _uiState.value.statusFilter.takeIf { it != "All" })
         1 -> repository.getForYou(page)
         2 -> repository.getCategories()
-        else -> repository.getHome(page)
+        3 -> repository.getRanking(_uiState.value.rankType)
+        else -> repository.getHome(page, null)
     }
 }

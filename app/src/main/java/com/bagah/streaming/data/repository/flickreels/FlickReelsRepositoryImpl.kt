@@ -19,6 +19,26 @@ class FlickReelsRepositoryImpl(
     private fun List<FlickReelsItem>.validItems(): List<FlickReelsItem> =
         filter { it.id.isNotBlank() }
 
+    override suspend fun getClassify(
+        tag: String?,
+        channel: String?,
+        region: String?,
+        sort: String?,
+        cursor: String?
+    ): Result<Pair<List<FlickReelsItem>, String?>> = withContext(ioDispatcher) {
+        runCatching {
+            val response = api.browseFlickReels(
+                type = "classify",
+                tag = tag,
+                channel = channel,
+                region = region,
+                sort = sort,
+                cursor = cursor
+            )
+            response.items.validItems() to response.nextCursor
+        }
+    }
+
     override suspend fun getForYou(): Result<List<FlickReelsItem>> = withContext(ioDispatcher) {
         runCatching { api.browseFlickReels(type = "foryou").items.validItems() }
     }

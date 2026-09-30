@@ -44,6 +44,7 @@ import com.bagah.streaming.ui.theme.AccentWhite
 import com.bagah.streaming.ui.theme.BorderSubtle
 import com.bagah.streaming.ui.theme.CardBorderDark
 import com.bagah.streaming.ui.theme.SurfaceDark
+import com.bagah.streaming.ui.theme.SurfaceElevated
 import com.bagah.streaming.ui.theme.TextMuted
 import com.bagah.streaming.ui.theme.TextPrimary
 import com.bagah.streaming.ui.theme.TextSecondary
@@ -183,6 +184,66 @@ fun PlatformTabRow(tabs: List<String>, selected: String, onSelect: (String) -> U
                     color = if (isSelected) AccentBlack else TextSecondary,
                     fontSize = 12.sp,
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
+                )
+            }
+        }
+    }
+}
+
+data class FilterChip(
+    val label: String,
+    val value: String
+)
+
+/**
+ * Baris chip sekunder untuk filter (status, urutan, wilayah, dsb). Gaya lebih redup
+ * daripada [PlatformTabRow] supaya jelas bedanya dengan tab utama.
+ */
+@Composable
+fun FilterChipRow(
+    options: List<FilterChip>,
+    selectedValue: String,
+    onSelect: (String) -> Unit,
+    leadingLabel: String? = null,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (leadingLabel != null) {
+            Text(
+                text = leadingLabel,
+                color = TextMuted,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+        }
+
+        options.forEach { option ->
+            val isSelected = selectedValue == option.value
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(if (isSelected) SurfaceElevated else Color.Transparent)
+                    .border(
+                        width = 1.dp,
+                        color = if (isSelected) AccentWhite else BorderSubtle,
+                        shape = RoundedCornerShape(14.dp)
+                    )
+                    .clickable { onSelect(option.value) }
+                    .padding(horizontal = 11.dp, vertical = 5.dp)
+            ) {
+                Text(
+                    text = option.label,
+                    color = if (isSelected) AccentWhite else TextMuted,
+                    fontSize = 11.sp,
+                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
                 )
             }
         }

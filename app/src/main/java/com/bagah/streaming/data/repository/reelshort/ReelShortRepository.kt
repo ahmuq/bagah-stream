@@ -8,6 +8,7 @@ import com.bagah.streaming.data.model.ReelShortHomepageData
 
 interface ReelShortRepository {
     suspend fun getHomepage(page: Int = 1): Result<ReelShortHomepageData>
+    suspend fun getRanking(period: Int = 1, page: Int = 1): Result<List<ReelShortBook>>
     suspend fun getTrending(): Result<List<ReelShortBook>>
     suspend fun getLatest(): Result<List<ReelShortBook>>
     suspend fun getForYou(page: Int = 1): Result<List<ReelShortBook>>

@@ -199,6 +199,26 @@ Implementasi Kotlin: `data/player/DramaBoxDecryptDataSource.kt`.
 Referensi Python: `api_reference/dramabox_decrypt_reference.py`.
 Terverifikasi di device: sample 720p ~12.3 MB terdekripsi, `OMX.qcom.video.decoder.avc` aktif.
 
+## Filter & parameter (hasil uji 2026-09-30)
+
+| Param                | Status | Catatan                                                              |
+| -------------------- | ------ | -------------------------------------------------------------------- |
+| `type=foryou`        | ✅     | 5 item/halaman, `total_episodes` sering `0`                          |
+| `type=classify`      | ✅     | 15 item, `is_more`; **tanpa** filter                                 |
+| `type=theater`       | ✅     | ber-kolom; `channelId` mengubah kolom (default 2 kolom, 299/300 = 1) |
+| `type=ranking`       | ✅     | `rankType=1|2|3` → urutan berbeda (3 = Terbaru)                      |
+| `type=reserve`       | ✅     | 5 item (rilis mendatang)                                             |
+| `type=filters`       | ✅     | 68 opsi genre (`value` seperti `1323`, `1337`, …)                    |
+| `status`             | ✅     | `1` (Tamat) vs `2` (Berjalan) menghasilkan item berbeda              |
+| `dub`                | ⚠️     | `dub=2` jalan; `dub=1` mengembalikan daftar `filters`, bukan item    |
+| `genre` (classify)   | ❌     | **Bug**: setiap nilai genre (termasuk id dari `type=filters`) → `items: []` |
+| `pageSize`           | ✅     | `pageSize=30` → 30 item                                              |
+| `pages` (batch)      | ✅     | `pages=3` → 45 item (15×3) dalam satu request                        |
+| `channelId` (classify)| ❌    | nilai 175/43/299/300 menghasilkan set yang sama                      |
+
+Enum `genre` di spec OpenAPI (`1362`, `1394`, …) **tidak** cocok dengan id di `type=filters`
+(`1323`, `1337`, …); keduanya sama-sama menghasilkan 0 item saat dipakai di `classify`.
+
 ## Catatan cacat data
 
 - Di endpoint lama, `home` menyertakan satu item rusak (`series_id` kosong). Pada `browse`

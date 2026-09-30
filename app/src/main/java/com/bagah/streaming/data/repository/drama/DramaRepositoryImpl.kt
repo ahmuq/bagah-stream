@@ -17,10 +17,13 @@ class DramaRepositoryImpl(
     // API tetap bisa menyertakan item tanpa id; dibuang agar tidak jadi kartu kosong.
     private fun List<DramaItem>.validItems(): List<DramaItem> = filter { it.bookId.isNotBlank() }
 
-    override suspend fun getHome(page: Int): Result<List<DramaItem>> = withContext(ioDispatcher) {
-        // classify mengirim total_episodes lengkap dan mendukung pagination.
-        runCatching { api.browseDrama(type = "classify", page = page).flatItems.validItems() }
-    }
+    override suspend fun getHome(page: Int, status: String?): Result<List<DramaItem>> =
+        withContext(ioDispatcher) {
+            // classify mengirim total_episodes lengkap dan mendukung pagination + status.
+            runCatching {
+                api.browseDrama(type = "classify", page = page, status = status).flatItems.validItems()
+            }
+        }
 
     override suspend fun getForYou(page: Int): Result<List<DramaItem>> = withContext(ioDispatcher) {
         runCatching { api.browseDrama(type = "foryou", page = page).flatItems.validItems() }
@@ -29,6 +32,12 @@ class DramaRepositoryImpl(
     override suspend fun getCategories(): Result<List<DramaItem>> = withContext(ioDispatcher) {
         // theater mengelompokkan item per kolom; tidak mendukung pagination.
         runCatching { api.browseDrama(type = "theater").flatItems.validItems() }
+    }
+
+    override suspend fun getRanking(rankType: Int): Result<List<DramaItem>> = withContext(ioDispatcher) {
+        runCatching {
+            api.browseDrama(type = "ranking", rankType = rankType.toString()).flatItems.validItems()
+        }
     }
 
     override suspend fun getEpisodes(bookId: String): Result<List<DramaEpisode>> = withContext(ioDispatcher) {

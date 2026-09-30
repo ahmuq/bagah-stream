@@ -14,18 +14,31 @@ import kotlinx.coroutines.launch
 
 data class FlickReelsHomeUiState(
     val isLoading: Boolean = true,
+    val isLoadingMore: Boolean = false,
     val selectedTab: String = "POPULER",
-    val tabs: List<String> = listOf("POPULER", "UNTUK ANDA"),
+    val tabs: List<String> = listOf("POPULER", "UNTUK ANDA", "JELAJAH"),
     val spotlightItems: List<FlickReelsItem> = emptyList(),
     val trendingItems: List<FlickReelsItem> = emptyList(),
     val forYouItems: List<FlickReelsItem> = emptyList(),
+    val exploreItems: List<FlickReelsItem> = emptyList(),
+    val exploreCursor: String? = null,
+    val exploreLoaded: Boolean = false,
+    val loadingTab: Boolean = false,
+    val selectedChannel: String = "All",
+    val selectedRegion: String = "All",
+    val selectedSort: String = "1",
+    val selectedTag: String = "All",
     val errorMessage: String? = null
 ) {
     val currentDisplayList: List<FlickReelsItem>
         get() = when (selectedTab) {
             "UNTUK ANDA" -> forYouItems.ifEmpty { trendingItems }
+            "JELAJAH" -> exploreItems
             else -> trendingItems
         }
+
+    val canLoadMore: Boolean
+        get() = selectedTab == "JELAJAH" && exploreCursor != null
 }
 
 class FlickReelsHomeViewModel(
@@ -41,6 +54,19 @@ class FlickReelsHomeViewModel(
 
     fun selectTab(tab: String) {
         _uiState.update { it.copy(selectedTab = tab) }
+        if (tab == "JELAJAH" && !_uiState.value.exploreLoaded) {
+            loadExplore(reset = true)
+        }
+    }
+
+    fun setChannel(value: String) = updateFilter { it.copy(selectedChannel = value) }
+    fun setRegion(value: String) = updateFilter { it.copy(selectedRegion = value) }
+    fun setSort(value: String) = updateFilter { it.copy(selectedSort = value) }
+    fun setTag(value: String) = updateFilter { it.copy(selectedTag = value) }
+
+    private fun updateFilter(transform: (FlickReelsHomeUiState) -> FlickReelsHomeUiState) {
+        _uiState.update(transform)
+        loadExplore(reset = true)
     }
 
     fun loadData() {
@@ -52,9 +78,8 @@ class FlickReelsHomeViewModel(
 
             val trending = trendingDeferred.await().getOrDefault(emptyList())
             val forYou = forYouDeferred.await().getOrDefault(emptyList())
-            val popular = trending.ifEmpty { forYou }
 
-            if (popular.isEmpty()) {
+            if (trending.isEmpty() && forYou.isEmpty()) {
                 _uiState.update {
                     it.copy(
                         isLoading = false,
@@ -65,12 +90,77 @@ class FlickReelsHomeViewModel(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        spotlightItems = popular.take(6),
-                        trendingItems = popular,
+                        spotlightItems = trending.take(6).ifEmpty { forYou.take(6) },
+                        trendingItems = trending,
                         forYouItems = forYou,
                         errorMessage = null
                     )
                 }
+            }
+        }
+    }
+
+    private fun loadExplore(reset: Boolean) {
+        val state = _uiState.value
+        viewModelScope.launch {
+            _uiState.update {
+                it.copy(
+                    loadingTab = true,
+                    errorMessage = if (reset) null else it.errorMessage
+                )
+            }
+            repository.getClassify(
+                tag = state.selectedTag.takeIf { v -> v != "All" },
+                channel = state.selectedChannel.takeIf { v -> v != "All" },
+                region = state.selectedRegion.takeIf { v -> v != "All" },
+                sort = state.selectedSort,
+                cursor = if (reset) null else state.exploreCursor
+            ).onSuccess { (items, cursor) ->
+                _uiState.update {
+                    it.copy(
+                        loadingTab = false,
+                        exploreLoaded = true,
+                        exploreItems = if (reset) items else it.exploreItems + items,
+                        exploreCursor = cursor
+                    )
+                }
+            }.onFailure { err ->
+                _uiState.update {
+                    it.copy(
+                        loadingTab = false,
+                        exploreLoaded = true,
+                        errorMessage = err.localizedMessage ?: "Gagal memuat FlickReels"
+                    )
+                }
+            }
+        }
+    }
+
+    fun loadMore() {
+        val state = _uiState.value
+        if (state.isLoading || state.isLoadingMore || state.loadingTab) return
+        if (state.selectedTab != "JELAJAH" || state.exploreCursor == null) return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingMore = true) }
+            repository.getClassify(
+                tag = state.selectedTag.takeIf { v -> v != "All" },
+                channel = state.selectedChannel.takeIf { v -> v != "All" },
+                region = state.selectedRegion.takeIf { v -> v != "All" },
+                sort = state.selectedSort,
+                cursor = state.exploreCursor
+            ).onSuccess { (items, cursor) ->
+                val existing = _uiState.value.exploreItems.map { it.id }.toSet()
+                val fresh = items.filterNot { it.id in existing }
+                _uiState.update {
+                    it.copy(
+                        isLoadingMore = false,
+                        exploreItems = it.exploreItems + fresh,
+                        exploreCursor = cursor
+                    )
+                }
+            }.onFailure {
+                _uiState.update { it.copy(isLoadingMore = false, exploreCursor = null) }
             }
         }
     }

@@ -146,6 +146,26 @@ Spec: `https://api.bagahproject.com/api/v1/openapi.json`.
 | `trending`/`ranking`              | ❌ statis (42-43 item)                                 |
 | `latest`                          | ⚠️ selalu kosong (bug data, belum terhubung)           |
 
+## Filter & parameter (hasil uji 2026-09-30)
+
+| Param              | Status | Catatan                                                            |
+| ------------------ | ------ | ------------------------------------------------------------------ |
+| `type=classify`    | ✅     | `tag`/`channel`/`region`/`sort` **benar-benar** mengubah hasil      |
+| `tag`              | ✅     | id seperti `1583` (CEO), `1560` (Dendam), `1687` (Heroine), …       |
+| `channel`          | ✅     | `1` Kanal Pria, `2` Kanal Wanita                                    |
+| `region`           | ✅     | `1` Barat, `2` Asia                                                 |
+| `sort`             | ✅     | `1` Populer, `2` Terbaru                                            |
+| `cursor` (nextCursor)| ✅   | `foryou`/`classify`                                                 |
+| `pages` (batch)    | ✅     | `pages=3` → 36 item (12×3)                                          |
+| `type=categories`  | ✅     | 6 baris: region, channel, tag1/2/3, sort                            |
+| `type=navigation`  | ⚠️     | `columns: []` (kosong saat ini)                                     |
+| `type=latest`      | ❌     | selalu 0 item                                                       |
+| `type=ranking`     | ⚠️     | identik dengan `trending`                                           |
+
+Baris `categories`: `row 21` region (`-1` Semua, `2` Asia, `1` Barat),
+`row 23` channel (`-1`, `2` Kanal Wanita, `1` Kanal Pria), `row 71/72/73` tag,
+`row 24` sort (`1` Popular, `2` Terbaru).
+
 ## Pemutaran
 
 - Format **HLS (.m3u8)** di `bestUrl` — Media3 ExoPlayer memutar langsung, **tanpa dekripsi**.

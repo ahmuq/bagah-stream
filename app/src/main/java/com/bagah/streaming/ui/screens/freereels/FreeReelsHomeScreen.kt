@@ -381,6 +381,23 @@ fun FreeReelsHomeScreen(
                     }
                 }
 
+                if (uiState.loadingTabs.contains(uiState.selectedTab)) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                color = AccentWhite,
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(26.dp)
+                            )
+                        }
+                    }
+                }
+
                 val items = uiState.currentDisplayList
                 items(items, key = { it.stableId() }) { item ->
                     FreeReelsCard(

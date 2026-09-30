@@ -23,6 +23,13 @@ class ReelShortRepositoryImpl(
         }
     }
 
+    override suspend fun getRanking(period: Int, page: Int): Result<List<ReelShortBook>> =
+        withContext(ioDispatcher) {
+            runCatching {
+                api.browseReelShort(type = "ranking", period = period, page = page).items
+            }
+        }
+
     override suspend fun getTrending(): Result<List<ReelShortBook>> = withContext(ioDispatcher) {
         runCatching { api.browseReelShort(type = "trending").items }
     }

@@ -163,6 +163,28 @@ Sama seperti satu entri `items` di atas (tanpa pembungkus `items`).
 | `freereels/search`                | ✅ cursor (`tab` = `mix` \| `dubbed` \| `origin`)                                                                                                                |
 | `sections`                        | statis per request; gunakan cursor milik section bila memuat lebih banyak item                                                                                   |
 
+## Filter & parameter (hasil uji 2026-09-30)
+
+Nama tab dari field `tab_name`:
+
+| `tab`    | Nama        | Item/page | Catatan                          |
+| -------- | ----------- | --------- | -------------------------------- |
+| `503`    | Populer     | 10        |                                  |
+| `505`    | New         | 10        |                                  |
+| `622`    | Segera hadir| 216       | respons besar, kembalikan semua  |
+| `516`    | Dubbing     | 10        |                                  |
+| `504`    | Perempuan   | 10        |                                  |
+| `506`    | Laki-Laki   | 10        |                                  |
+| `547`    | Anime       | 10        |                                  |
+| `foryou` | For You Feed| 10        | feed datar + cursor              |
+
+| Param            | Status | Catatan                                            |
+| ---------------- | ------ | -------------------------------------------------- |
+| `cursor`         | ✅     | lanjut halaman (`offset=...`)                      |
+| `pages` (batch)  | ✅     | `pages=3` → 32 item pada `tab=503`                 |
+| `search tab`     | ✅     | `mix` / `dubbed` / `origin` → hasil berbeda        |
+| `lang`           | ✅     | `id-ID`, `en-US`, `es-MX`, `pt-BR`, `zh-CN`        |
+
 ## Pemutaran
 
 - Format **HLS (.m3u8)**; pakai `h264_m3u8` lalu `best_url` (fallback `h265_m3u8`).

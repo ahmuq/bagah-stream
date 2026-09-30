@@ -50,6 +50,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bagah.streaming.R
 import com.bagah.streaming.ui.components.DramaCard
+import com.bagah.streaming.ui.components.FilterChip
+import com.bagah.streaming.ui.components.FilterChipRow
 import com.bagah.streaming.ui.theme.AccentBlack
 import com.bagah.streaming.ui.theme.AccentWhite
 import com.bagah.streaming.ui.theme.BgBlack
@@ -67,7 +69,7 @@ fun DramaHomeScreen(
     onDramaClick: (bookId: String) -> Unit,
     onSearchClick: () -> Unit
 ) {
-    val categories = listOf("Beranda", "Untukmu", "Kategori")
+    val categories = listOf("Beranda", "Untukmu", "Kategori", "Peringkat")
     val uiState by viewModel.uiState.collectAsState()
 
     Box(
@@ -161,6 +163,25 @@ fun DramaHomeScreen(
 
             Spacer(modifier = Modifier.height(4.dp))
 
+            when (uiState.selectedCategoryIndex) {
+                0 -> FilterChipRow(
+                    options = DRAMA_STATUS,
+                    selectedValue = uiState.statusFilter,
+                    onSelect = { viewModel.setStatusFilter(it) },
+                    leadingLabel = "Status",
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+                3 -> FilterChipRow(
+                    options = DRAMA_RANK_TYPES,
+                    selectedValue = uiState.rankType.toString(),
+                    onSelect = { viewModel.setRankType(it.toIntOrNull() ?: 1) },
+                    leadingLabel = "Urutan",
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
             // Drama Grid Content
             if (uiState.isLoading) {
                 Column(
@@ -250,3 +271,15 @@ fun DramaHomeScreen(
     }
 }
 
+
+private val DRAMA_STATUS = listOf(
+    FilterChip("Semua", "All"),
+    FilterChip("Tamat", "1"),
+    FilterChip("Berjalan", "2")
+)
+
+private val DRAMA_RANK_TYPES = listOf(
+    FilterChip("Trending", "1"),
+    FilterChip("Populer", "2"),
+    FilterChip("Terbaru", "3")
+)

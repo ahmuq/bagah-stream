@@ -31,9 +31,22 @@ Status temuan lama (diverifikasi ulang 2026-09-30):
 | D  | **Masih**: `flickreels/browse type=ranking` identik dengan `trending`.                                |
 | E  | **Masih**: `shortmax/search` dan `freereels/search` kadang mengirim `title` kosong.                   |
 
-Temuan baru pada `browse`: `dramabox/browse type=foryou` sering mengirim `total_episodes: 0`
-(pakai `type=classify` bila butuh jumlah episode), dan `flickreels/browse type=foryou`
-memakai cursor `nextCursor` (bukan `page`).
+Temuan baru pada `browse`:
+
+- **dramabox**: `type=classify` + `genre=<id>` selalu `items: []` (dicoba id enum spec
+  `1362`/`1394`/… maupun id dari `type=filters` `1323`/`1337`/…). `dub=1` mengembalikan
+  daftar `filters`, bukan item. Enum `genre` di OpenAPI tidak cocok dengan id di `type=filters`.
+  `channelId` tidak berpengaruh di `classify` (hanya mengubah jumlah kolom di `theater`).
+- **reelshort**: `type=classify` mengabaikan `tag`, `genre`, `region`, dan `dub`
+  (set 20 id identik dengan tanpa filter).
+- **shortmax**: `type=<classId>` mengembalikan set item identik antar kelas
+  (200001 = 200002 = 200003 = 200007), jadi filter kelas tidak berfungsi. `size` tampak diabaikan.
+- **dramabox `type=foryou`**: sering mengirim `total_episodes: 0` (pakai `type=classify` bila butuh jumlah episode).
+- **flickreels `type=foryou`**: memakai cursor `nextCursor` (bukan `page`).
+
+Yang berfungsi: `dramabox` `status`/`rankType`/`pageSize`/`pages`; `reelshort`
+`period`/`limit`/`lastBookId`/`pages`; `shortmax` `page` pada class; `freereels` semua `tab`
++ `cursor` + `search tab`; `flickreels` `tag`/`channel`/`region`/`sort`/`cursor`/`pages`.
 
 ---
 

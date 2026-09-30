@@ -24,6 +24,8 @@ data class ReelShortHomeUiState(
     val forYouBooks: List<ReelShortBook> = emptyList(),
     val allBooks: List<ReelShortBook> = emptyList(),
     val forYouPage: Int = 1,
+    val rankingPeriod: Int = 1,
+    val isLoadingRanking: Boolean = false,
     val endReached: Boolean = false,
     val errorMessage: String? = null
 ) {
@@ -54,6 +56,30 @@ class ReelShortHomeViewModel(
 
     fun selectTab(tab: String) {
         _uiState.update { it.copy(selectedTab = tab) }
+    }
+
+    /** Ranking period: 1 Harian, 4 Tahunan, 14 Rilis Baru, 15 Paling Dicari, 16 Anime. */
+    fun setRankingPeriod(period: Int) {
+        if (period == _uiState.value.rankingPeriod) return
+        _uiState.update { it.copy(rankingPeriod = period) }
+        loadRanking(period)
+    }
+
+    private fun loadRanking(period: Int) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingRanking = true) }
+            repository.getRanking(period)
+                .onSuccess { list ->
+                    _uiState.update {
+                        it.copy(isLoadingRanking = false, rankingBooks = list)
+                    }
+                }
+                .onFailure {
+                    _uiState.update {
+                        it.copy(isLoadingRanking = false, rankingBooks = emptyList())
+                    }
+                }
+        }
     }
 
     /**
@@ -98,11 +124,13 @@ class ReelShortHomeViewModel(
             val trendingDeferred = async { repository.getTrending() }
             val latestDeferred = async { repository.getLatest() }
             val forYouDeferred = async { repository.getForYou(1) }
+            val rankingDeferred = async { repository.getRanking(_uiState.value.rankingPeriod) }
 
             val homepageData = homepageDeferred.await().getOrNull()
             val trending = trendingDeferred.await().getOrDefault(emptyList())
             val latest = latestDeferred.await().getOrDefault(emptyList())
             val forYou = forYouDeferred.await().getOrDefault(emptyList())
+            val ranking = rankingDeferred.await().getOrDefault(emptyList())
 
             val popular = if (trending.isNotEmpty()) trending else homepageData?.items.orEmpty()
             val combined = (popular + latest + forYou).distinctBy { it.id }
@@ -121,7 +149,7 @@ class ReelShortHomeViewModel(
                         spotlightBooks = popular.take(6),
                         popularBooks = popular,
                         latestBooks = latest.ifEmpty { popular.reversed() },
-                        rankingBooks = popular.sortedByDescending { b -> b.chapterCount ?: 0 },
+                        rankingBooks = ranking,
                         forYouBooks = forYou,
                         allBooks = combined,
                         errorMessage = null
