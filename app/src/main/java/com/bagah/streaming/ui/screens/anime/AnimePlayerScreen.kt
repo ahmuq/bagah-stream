@@ -56,11 +56,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -68,6 +73,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import com.bagah.streaming.data.model.AnimeEpisodeData
 import com.bagah.streaming.data.repository.StreamingRepository
+import com.bagah.streaming.ui.components.KeepScreenOn
 import com.bagah.streaming.ui.theme.AccentBlack
 import com.bagah.streaming.ui.theme.AccentWhite
 import com.bagah.streaming.ui.theme.SurfaceCard
@@ -88,6 +94,7 @@ fun AnimePlayerScreen(
     onBackClick: () -> Unit
 ) {
     val context = LocalContext.current
+    KeepScreenOn()
     val episodeUrl = remember(episodeUrlEncoded) {
         URLDecoder.decode(episodeUrlEncoded, StandardCharsets.UTF_8.toString())
     }
@@ -113,6 +120,14 @@ fun AnimePlayerScreen(
     val exoPlayer = remember {
         ExoPlayer.Builder(context).build().apply {
             playWhenReady = true
+            setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(C.USAGE_MEDIA)
+                    .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
+                    .build(),
+                true
+            )
+            setHandleAudioBecomingNoisy(true)
             addListener(object : Player.Listener {
                 override fun onIsPlayingChanged(playing: Boolean) {
                     isPlaying = playing
@@ -143,6 +158,28 @@ fun AnimePlayerScreen(
             val activity = context as? Activity
             activity?.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         }
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var resumeOnStart by remember { mutableStateOf(false) }
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_STOP -> {
+                    resumeOnStart = exoPlayer.isPlaying
+                    exoPlayer.pause()
+                }
+                Lifecycle.Event.ON_START -> {
+                    if (resumeOnStart) {
+                        exoPlayer.play()
+                        resumeOnStart = false
+                    }
+                }
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     fun fetchStream(quality: String? = null) {

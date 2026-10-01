@@ -56,13 +56,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -165,6 +171,14 @@ fun DramaReelsPlayerScreen(
             .apply {
                 repeatMode = Player.REPEAT_MODE_OFF
                 playWhenReady = true
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(C.USAGE_MEDIA)
+                        .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
+                        .build(),
+                    true
+                )
+                setHandleAudioBecomingNoisy(true)
             }
     }
 
@@ -183,6 +197,28 @@ fun DramaReelsPlayerScreen(
         }
     }
 
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var resumeOnStart by remember { mutableStateOf(false) }
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_STOP -> {
+                    resumeOnStart = exoPlayer.isPlaying
+                    exoPlayer.pause()
+                }
+                Lifecycle.Event.ON_START -> {
+                    if (resumeOnStart) {
+                        exoPlayer.play()
+                        resumeOnStart = false
+                    }
+                }
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     LaunchedEffect(episodes, currentIndex, reloadKey) {
         val episode = episodes.getOrNull(currentIndex) ?: return@LaunchedEffect
         isLoadingStream = true
@@ -193,7 +229,20 @@ fun DramaReelsPlayerScreen(
                 keyHolder.keyHex = stream.keyHex
                 val url = stream.preferredUrl(DEFAULT_DRAMA_QUALITY)
                 if (url.isNotBlank()) {
-                    exoPlayer.setMediaItem(MediaItem.fromUri(Uri.parse(url)))
+                    val builder = MediaItem.Builder().setUri(Uri.parse(url))
+                    val subtitleUrl = stream.preferredSubtitleUrl()
+                    if (!subtitleUrl.isNullOrBlank()) {
+                        builder.setSubtitleConfigurations(
+                            listOf(
+                                MediaItem.SubtitleConfiguration.Builder(Uri.parse(subtitleUrl))
+                                    .setMimeType(MimeTypes.APPLICATION_SUBRIP)
+                                    .setLanguage(stream.preferredSubtitleLanguage())
+                                    .setSelectionFlags(C.SELECTION_FLAG_DEFAULT or C.SELECTION_FLAG_AUTOSELECT)
+                                    .build()
+                            )
+                        )
+                    }
+                    exoPlayer.setMediaItem(builder.build())
                     exoPlayer.prepare()
                     exoPlayer.play()
                     currentStreamUrl = url

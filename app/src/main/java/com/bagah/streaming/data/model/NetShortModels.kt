@@ -128,9 +128,15 @@ data class NetShortEpisodeResponse(
     @SerialName("video_url")
     val videoUrl: String = "",
     @SerialName("play_url")
-    val playUrl: String = ""
+    val playUrl: String = "",
+    val subtitles: List<NetShortSubtitle> = emptyList()
 ) {
     fun streamUrl(): String = videoUrl.ifBlank { playUrl }
+
+    fun preferredSubtitle(): NetShortSubtitle? {
+        val withUrl = subtitles.filter { it.url.isNotBlank() }
+        return withUrl.firstOrNull { it.lang.startsWith("id", true) } ?: withUrl.firstOrNull()
+    }
 }
 
 @Serializable

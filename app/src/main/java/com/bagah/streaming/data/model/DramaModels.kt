@@ -127,6 +127,14 @@ data class DramaEpisode(
 )
 
 @Serializable
+data class DramaSubtitle(
+    val language: String = "",
+    val url: String = "",
+    @SerialName("default")
+    val isDefault: Boolean = false
+)
+
+@Serializable
 data class DramaEpisodeResponse(
     val success: Boolean = false,
     @SerialName("series_id")
@@ -144,9 +152,25 @@ data class DramaEpisodeResponse(
     val encrypted: Boolean = false,
     @SerialName("key_hex")
     val keyHex: String? = null,
-    val qualities: Map<String, String> = emptyMap()
+    val qualities: Map<String, String> = emptyMap(),
+    @SerialName("subtitle_default")
+    val subtitleDefault: String? = null,
+    val subtitles: List<DramaSubtitle> = emptyList()
 ) {
     fun preferredUrl(preferredQuality: String = "720"): String {
         return qualities[preferredQuality] ?: bestUrl
+    }
+
+    fun preferredSubtitleUrl(): String? {
+        subtitleDefault?.takeIf { it.isNotBlank() }?.let { return it }
+        return subtitles.firstOrNull { it.isDefault && it.url.isNotBlank() }?.url
+            ?: subtitles.firstOrNull { it.url.isNotBlank() }?.url
+    }
+
+    fun preferredSubtitleLanguage(): String {
+        return subtitles.firstOrNull { it.url.isNotBlank() && it.isDefault }?.language
+            ?: subtitles.firstOrNull { it.url.isNotBlank() && it.language.startsWith("id", true) }?.language
+            ?: subtitles.firstOrNull { it.url.isNotBlank() && it.language.equals("in", true) }?.language
+            ?: "in"
     }
 }

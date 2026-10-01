@@ -18,6 +18,8 @@ data class NetShortPlayerUiState(
     val totalEpisodes: Int = 0,
     val episodes: List<NetShortEpisode> = emptyList(),
     val currentStreamUrl: String? = null,
+    val currentSubtitleUrl: String? = null,
+    val currentSubtitleLanguage: String = "id",
     val isLoading: Boolean = true,
     val errorMessage: String? = null
 )
@@ -78,18 +80,26 @@ class NetShortPlayerViewModel(
     }
 
     private suspend fun loadStream(seriesId: String, episode: Int) {
+        _uiState.update { it.copy(currentSubtitleUrl = null) }
         repository.getEpisode(seriesId, episode)
             .onSuccess { response ->
-                val fallback = _uiState.value.episodes
-                    .firstOrNull { it.episodeNum == episode }?.streamUrl()
+                val listEpisode = _uiState.value.episodes.firstOrNull { it.episodeNum == episode }
+                val fallback = listEpisode?.streamUrl()
                 val url = response.streamUrl().ifBlank { fallback.orEmpty() }
+                val subtitle = response.preferredSubtitle()?.url?.takeIf { it.isNotBlank() }
+                    ?: listEpisode?.subtitles?.firstOrNull { it.url.isNotBlank() }?.url
                 if (url.isBlank()) {
                     _uiState.update {
                         it.copy(isLoading = false, errorMessage = "URL video tidak tersedia.")
                     }
                 } else {
                     _uiState.update {
-                        it.copy(isLoading = false, currentStreamUrl = url, errorMessage = null)
+                        it.copy(
+                            isLoading = false,
+                            currentStreamUrl = url,
+                            currentSubtitleUrl = subtitle,
+                            errorMessage = null
+                        )
                     }
                 }
             }

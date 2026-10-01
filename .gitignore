@@ -57,6 +57,12 @@ screenshot*.png
 # Internal API reference (not for public repo)
 api_reference/
 
+# Kilo tooling / local session state
+.kilo/
+
+# Scratch assets
+logo.jpg
+
 # OS-specific files
 .DS_Store
 .DS_Store?
