@@ -199,8 +199,7 @@ fun FreeReelsPlayerScreen(
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        if (!uiState.currentStreamUrl.isNullOrBlank()) {
-            AndroidView(
+                    AndroidView(
                 factory = { ctx ->
                     PlayerView(ctx).apply {
                         player = exoPlayer
@@ -219,7 +218,6 @@ fun FreeReelsPlayerScreen(
                         showControls = !showControls
                     }
             )
-        }
 
         if (uiState.isLoading) {
             Box(

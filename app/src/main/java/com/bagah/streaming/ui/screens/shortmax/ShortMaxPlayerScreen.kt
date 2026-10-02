@@ -187,8 +187,7 @@ fun ShortMaxPlayerScreen(
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        if (!uiState.currentStreamUrl.isNullOrBlank()) {
-            AndroidView(
+                    AndroidView(
                 factory = { ctx ->
                     PlayerView(ctx).apply {
                         player = exoPlayer
@@ -207,7 +206,6 @@ fun ShortMaxPlayerScreen(
                         showControls = !showControls
                     }
             )
-        }
 
         if (uiState.isLoading) {
             Box(

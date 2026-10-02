@@ -287,8 +287,7 @@ fun DramaReelsPlayerScreen(
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        if (!currentStreamUrl.isNullOrBlank()) {
-            AndroidView(
+                    AndroidView(
                 factory = { ctx ->
                     PlayerView(ctx).apply {
                         player = exoPlayer
@@ -307,7 +306,6 @@ fun DramaReelsPlayerScreen(
                         showControls = !showControls
                     }
             )
-        }
 
         if (isLoadingStream) {
             Box(

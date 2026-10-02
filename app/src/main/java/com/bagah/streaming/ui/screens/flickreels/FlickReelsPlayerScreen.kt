@@ -178,8 +178,7 @@ fun FlickReelsPlayerScreen(
             .fillMaxSize()
             .background(Color.Black)
     ) {
-        if (!uiState.currentStreamUrl.isNullOrBlank()) {
-            AndroidView(
+                    AndroidView(
                 factory = { ctx ->
                     PlayerView(ctx).apply {
                         player = exoPlayer
@@ -198,7 +197,6 @@ fun FlickReelsPlayerScreen(
                         showControls = !showControls
                     }
             )
-        }
 
         if (uiState.isLoading) {
             Box(
