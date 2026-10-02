@@ -244,6 +244,13 @@ fun DramaReelsPlayerScreen(
                     }
                     exoPlayer.setMediaItem(builder.build())
                     exoPlayer.prepare()
+                    if (!subtitleUrl.isNullOrBlank()) {
+                        exoPlayer.trackSelectionParameters = exoPlayer.trackSelectionParameters
+                            .buildUpon()
+                            .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false)
+                            .setPreferredTextLanguage(stream.preferredSubtitleLanguage())
+                            .build()
+                    }
                     exoPlayer.play()
                     currentStreamUrl = url
                 } else {
@@ -267,6 +274,8 @@ fun DramaReelsPlayerScreen(
                     PlayerView(ctx).apply {
                         player = exoPlayer
                         useController = false
+                        subtitleView?.setApplyEmbeddedStyles(false)
+                    subtitleView?.setFixedTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 16f)
                         layoutParams = FrameLayout.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.MATCH_PARENT

@@ -80,7 +80,7 @@ class NetShortPlayerViewModel(
     }
 
     private suspend fun loadStream(seriesId: String, episode: Int) {
-        _uiState.update { it.copy(currentSubtitleUrl = null) }
+        _uiState.update { it.copy(currentStreamUrl = null, currentSubtitleUrl = null) }
         repository.getEpisode(seriesId, episode)
             .onSuccess { response ->
                 val listEpisode = _uiState.value.episodes.firstOrNull { it.episodeNum == episode }
