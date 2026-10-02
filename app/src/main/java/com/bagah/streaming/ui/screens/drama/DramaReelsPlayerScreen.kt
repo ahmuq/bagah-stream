@@ -4,6 +4,9 @@ import android.net.Uri
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.annotation.OptIn
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -30,6 +33,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.FormatListNumbered
+import androidx.compose.material.icons.rounded.Pause
+import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material3.BottomSheetDefaults
@@ -88,6 +93,7 @@ import com.bagah.streaming.ui.theme.SurfaceDark
 import com.bagah.streaming.ui.theme.TextMuted
 import com.bagah.streaming.ui.theme.TextPrimary
 import com.bagah.streaming.ui.theme.TextSecondary
+import kotlinx.coroutines.delay
 
 private const val DEFAULT_DRAMA_QUALITY = "720"
 
@@ -106,6 +112,8 @@ fun DramaReelsPlayerScreen(
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     var showEpisodeSheet by remember { mutableStateOf(false) }
+    var showControls by remember { mutableStateOf(true) }
+    var isPlaying by remember { mutableStateOf(true) }
 
     KeepScreenOn()
 
@@ -184,6 +192,10 @@ fun DramaReelsPlayerScreen(
 
     DisposableEffect(exoPlayer) {
         val listener = object : Player.Listener {
+            override fun onIsPlayingChanged(playing: Boolean) {
+                isPlaying = playing
+            }
+
             override fun onPlaybackStateChanged(state: Int) {
                 if (state == Player.STATE_ENDED && currentIndex < episodes.size - 1) {
                     currentIndex += 1
@@ -263,6 +275,13 @@ fun DramaReelsPlayerScreen(
         isLoadingStream = false
     }
 
+    LaunchedEffect(showControls) {
+        if (showControls) {
+            delay(4000)
+            showControls = false
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -285,7 +304,7 @@ fun DramaReelsPlayerScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .clickable {
-                        if (exoPlayer.isPlaying) exoPlayer.pause() else exoPlayer.play()
+                        showControls = !showControls
                     }
             )
         }
@@ -336,10 +355,15 @@ fun DramaReelsPlayerScreen(
             }
         }
 
+        AnimatedVisibility(
+            visible = showControls,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.TopCenter)
+        ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.TopCenter)
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(Color.Black.copy(alpha = 0.85f), Color.Transparent)
@@ -385,11 +409,17 @@ fun DramaReelsPlayerScreen(
                 }
             }
         }
+        }
 
+        AnimatedVisibility(
+            visible = showControls,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .align(Alignment.BottomCenter)
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.9f))
@@ -459,6 +489,28 @@ fun DramaReelsPlayerScreen(
                         tint = if (currentIndex < episodes.size - 1) AccentWhite else TextMuted
                     )
                 }
+            }
+        }
+        }
+
+        AnimatedVisibility(
+            visible = showControls,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.Center)
+        ) {
+            IconButton(
+                onClick = { if (exoPlayer.isPlaying) exoPlayer.pause() else exoPlayer.play() },
+                modifier = Modifier
+                    .size(64.dp)
+                    .background(AccentWhite, CircleShape)
+            ) {
+                Icon(
+                    imageVector = if (isPlaying) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                    contentDescription = "Putar/Jeda",
+                    tint = AccentBlack,
+                    modifier = Modifier.size(34.dp)
+                )
             }
         }
 
