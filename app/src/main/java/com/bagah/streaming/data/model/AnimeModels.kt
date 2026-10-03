@@ -64,6 +64,24 @@ data class AnimeDetailWrapper(
 )
 
 @Serializable
+data class AnimeSearchResponse(
+    val success: Boolean = false,
+    val message: String? = null,
+    val data: AnimeSearchData? = null
+)
+
+@Serializable
+data class AnimeSearchData(
+    val data: List<AnimeSearchGroup> = emptyList()
+)
+
+@Serializable
+data class AnimeSearchGroup(
+    val jumlah: Int = 0,
+    val result: List<AnimeItem> = emptyList()
+)
+
+@Serializable
 data class AnimeDetailItem(
     val id: Long? = null,
     val series_id: String? = null,
