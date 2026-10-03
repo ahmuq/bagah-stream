@@ -1,6 +1,7 @@
 package com.bagah.streaming.data.api
 
 import com.bagah.streaming.data.model.AnimeApiResponse
+import com.bagah.streaming.data.model.AnimeSearchResponse
 import com.bagah.streaming.data.model.ApiKeyCheckResponse
 import com.bagah.streaming.data.model.AnimeDetailWrapper
 import com.bagah.streaming.data.model.AnimeEpisodeData
@@ -67,7 +68,7 @@ interface StreamingApiService {
     @GET("api/animeplay/search")
     suspend fun searchAnime(
         @Query("keyword") keyword: String
-    ): AnimeApiResponse<List<AnimeItem>>
+    ): AnimeSearchResponse
 
     @GET("api/animeplay/detail")
     suspend fun getAnimeDetail(

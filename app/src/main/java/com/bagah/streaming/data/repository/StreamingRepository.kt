@@ -53,7 +53,7 @@ class StreamingRepository(
     suspend fun searchAnime(keyword: String): Result<List<AnimeItem>> = withContext(Dispatchers.IO) {
         runCatching {
             val response = api.searchAnime(keyword)
-            response.data ?: emptyList()
+            response.data?.data?.flatMap { it.result } ?: emptyList()
         }
     }
 

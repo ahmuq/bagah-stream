@@ -69,7 +69,7 @@ class AnimeRepositoryImpl(
     override suspend fun search(keyword: String): Result<List<AnimeItem>> = withContext(ioDispatcher) {
         runCatching {
             val response = api.searchAnime(keyword)
-            response.data ?: emptyList()
+            response.data?.data?.flatMap { it.result } ?: emptyList()
         }
     }
 }
