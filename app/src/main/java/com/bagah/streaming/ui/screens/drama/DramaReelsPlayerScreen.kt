@@ -1,5 +1,6 @@
 package com.bagah.streaming.ui.screens.drama
 
+import kotlinx.coroutines.withTimeoutOrNull
 import android.net.Uri
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -257,11 +258,17 @@ fun DramaReelsPlayerScreen(
                     exoPlayer.setMediaItem(builder.build())
                     exoPlayer.prepare()
                     if (!subtitleUrl.isNullOrBlank()) {
-                        exoPlayer.trackSelectionParameters = exoPlayer.trackSelectionParameters
+                        val params = exoPlayer.trackSelectionParameters
                             .buildUpon()
                             .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false)
                             .setPreferredTextLanguage(stream.preferredSubtitleLanguage())
+                            .setSelectUndeterminedTextLanguage(true)
                             .build()
+                        exoPlayer.trackSelectionParameters = params
+                        withTimeoutOrNull(8000) {
+                            while (exoPlayer.playbackState != Player.STATE_READY) delay(150)
+                            exoPlayer.trackSelectionParameters = params
+                        }
                     }
                     exoPlayer.play()
                     currentStreamUrl = url

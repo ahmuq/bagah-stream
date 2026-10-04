@@ -1,5 +1,6 @@
 package com.bagah.streaming.ui.screens.freereels
 
+import kotlinx.coroutines.withTimeoutOrNull
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -184,11 +185,17 @@ fun FreeReelsPlayerScreen(
             exoPlayer.setMediaItem(builder.build())
             exoPlayer.prepare()
             if (!subtitleUrl.isNullOrBlank()) {
-                exoPlayer.trackSelectionParameters = exoPlayer.trackSelectionParameters
+                val params = exoPlayer.trackSelectionParameters
                     .buildUpon()
                     .setTrackTypeDisabled(C.TRACK_TYPE_TEXT, false)
                     .setPreferredTextLanguage(uiState.currentSubtitleLanguage)
+                    .setSelectUndeterminedTextLanguage(true)
                     .build()
+                exoPlayer.trackSelectionParameters = params
+                withTimeoutOrNull(8000) {
+                    while (exoPlayer.playbackState != Player.STATE_READY) delay(150)
+                    exoPlayer.trackSelectionParameters = params
+                }
             }
             exoPlayer.play()
         }
