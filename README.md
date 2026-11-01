@@ -1,112 +1,114 @@
 # Bagah Streaming
 
-Aplikasi Android untuk menonton anime dan serial pendek (short drama) dari beberapa platform
-dalam satu app. Dibangun dengan Kotlin dan Jetpack Compose.
+**English** | [Bahasa Indonesia](README.id.md)
 
-Repo ini memakai API pihak ketiga `api.bagahproject.com` dan memerlukan API key untuk masuk.
+An Android app for watching anime and short dramas from several platforms in one place.
+Built with Kotlin and Jetpack Compose.
+
+This repository uses the third-party `api.bagahproject.com` API and requires an API key to sign in.
 
 ## API Key
 
-- **Key gratis untuk mencoba:** `dramakey` (kuota terbatas, saat ini 10.000 request).
-- **Untuk API key unlimited**, order di: https://api.bagahproject.com/
+- **Free key for testing:** `dramakey` (limited quota, currently 10,000 requests).
+- **Unlimited API key:** order at https://api.bagahproject.com/
 
-Setelah punya key, masukkan di halaman login aplikasi. Key divalidasi ke endpoint
-`check-key` lalu disimpan, jadi tidak perlu login ulang setelahnya.
+Enter the key on the app's login screen. It is validated against the `check-key` endpoint and
+stored locally, so you do not need to sign in again.
 
-## Fitur
+## Features
 
-- **8 platform serial pendek**: DramaBox, ReelShort, FreeReels, FlickReels, NetShort, PineDrama, Melolo, MyDrama.
-- **Anime Play Indonesia**: rilisan terbaru, ongoing dengan jadwal harian, movie, dan rekomendasi.
-- **Login dengan API key**: validasi ke endpoint `check-key`, sesi disimpan sehingga tidak perlu login ulang kecuali data app dihapus atau app di-uninstall.
-- **Halaman Profil**: info akun (nama, email, tier, role, kuota), tombol bersihkan cache, dan keluar.
-- **Player seragam di semua platform**: durasi berjalan, tombol mundur/maju 10 detik, lanjut episode otomatis, dan layar tetap menyala saat menonton.
-- **Subtitle Indonesia** otomatis di FreeReels.
-- **Pencarian lintas platform** dengan pagination.
-- **Filter per platform**: DramaBox (status, genre, urutan), ReelShort (periode ranking, genre, wilayah), FlickReels (urutkan, kanal, wilayah, tag), FreeReels (kategori), NetShort (ranking dan channel).
-- **Performa**: cache disk (OkHttp) + cache memori dengan TTL per jenis endpoint, plus pull-to-refresh untuk memaksa data terbaru.
+- **8 short-drama platforms**: DramaBox, ReelShort, FreeReels, FlickReels, NetShort, PineDrama, Melolo, MyDrama.
+- **Anime Play Indonesia**: latest releases, ongoing shows with a daily schedule, movies, and recommendations.
+- **API-key login**: validated against `check-key`; the session is persisted until app data is cleared or the app is uninstalled.
+- **Profile screen**: account info (name, email, tier, role, quota), clear-cache button, and sign out.
+- **Consistent player on every platform**: elapsed time, 10-second rewind/forward, auto-play next episode, and keep-screen-on.
+- **Indonesian subtitles** automatically on FreeReels.
+- **Cross-platform search** with pagination.
+- **Per-platform filters**: DramaBox (status, genre, sort), ReelShort (ranking period, genre, region), FlickReels (sort, channel, region, tag), FreeReels (category), NetShort (ranking and channel).
+- **Performance**: OkHttp disk cache + in-memory TTL cache per endpoint type, plus pull-to-refresh to force fresh data.
 
-## Screenshot
+## Screenshots
 
 <p>
-  <img src="docs/screenshots/anime-home.png" width="30%" alt="Home Anime" />
-  <img src="docs/screenshots/drama-platforms.png" width="30%" alt="Platform Drama" />
-  <img src="docs/screenshots/reelshort-home.png" width="30%" alt="Home ReelShort" />
+  <img src="docs/screenshots/anime-home.png" width="30%" alt="Anime home" />
+  <img src="docs/screenshots/drama-platforms.png" width="30%" alt="Drama platforms" />
+  <img src="docs/screenshots/reelshort-home.png" width="30%" alt="ReelShort home" />
 </p>
 <p>
-  <img src="docs/screenshots/melolo-home.png" width="23%" alt="Home Melolo" />
-  <img src="docs/screenshots/mydrama-home.png" width="23%" alt="Home MyDrama" />
-  <img src="docs/screenshots/melolo-player.png" width="23%" alt="Player Melolo" />
-  <img src="docs/screenshots/mydrama-player.png" width="23%" alt="Player MyDrama" />
+  <img src="docs/screenshots/melolo-home.png" width="23%" alt="Melolo home" />
+  <img src="docs/screenshots/mydrama-home.png" width="23%" alt="MyDrama home" />
+  <img src="docs/screenshots/melolo-player.png" width="23%" alt="Melolo player" />
+  <img src="docs/screenshots/mydrama-player.png" width="23%" alt="MyDrama player" />
 </p>
 
-Atas: Home Anime, daftar platform drama, dan Home ReelShort. Bawah: Home Melolo, Home MyDrama,
-player Melolo (dekripsi CENC di app), dan player MyDrama dengan subtitle Indonesia.
+Top: Anime home, drama platform list, and ReelShort home. Bottom: Melolo home, MyDrama home,
+Melolo player (CENC decryption in the app), and MyDrama player with Indonesian subtitles.
 
-## Platform
+## Platforms
 
-| Platform   | Konten                          | Pemutaran                  |
+| Platform   | Content                         | Playback                   |
 | ---------- | ------------------------------- | -------------------------- |
-| AnimePlay  | Anime (sub Indo)                | Media3 ExoPlayer           |
-| DramaBox   | Serial pendek                   | MP4 terenkripsi (dekripsi AES-128-ECB per sample) |
-| ReelShort  | Drama vertikal pendek           | HLS                        |
-| FreeReels  | Serial pendek gratis + subtitle | HLS                        |
-| FlickReels | Serial pendek internasional     | HLS                        |
-| NetShort   | Serial pendek NetShort          | MP4 langsung               |
-| PineDrama  | Katalog mini drama              | MP4 langsung               |
-| Melolo     | Serial pendek viral             | MP4 CENC AES-128-CTR (dekripsi di app) |
-| MyDrama    | Drama vertikal internasional    | HLS + subtitle             |
+| AnimePlay  | Anime (Indonesian subtitles)    | Media3 ExoPlayer           |
+| DramaBox   | Short drama                     | Encrypted MP4 (per-sample AES-128-ECB decryption) |
+| ReelShort  | Vertical short drama            | HLS                        |
+| FreeReels  | Free short drama + subtitles    | HLS                        |
+| FlickReels | International short drama       | HLS                        |
+| NetShort   | NetShort short drama            | Direct MP4                 |
+| PineDrama  | Mini-drama catalog              | Direct MP4                 |
+| Melolo     | Viral short drama               | CENC AES-128-CTR MP4 (decrypted in the app) |
+| MyDrama    | International vertical drama    | HLS + subtitles            |
 
-## Teknologi
+## Tech Stack
 
 - Kotlin 2.0, Jetpack Compose (Material 3)
-- AndroidX Media3 ExoPlayer (MP4 dan HLS)
+- AndroidX Media3 ExoPlayer (MP4 and HLS)
 - Retrofit + kotlinx.serialization
-- OkHttp (disk cache API) + cache memori
-- Coil (gambar)
+- OkHttp (API disk cache) + in-memory cache
+- Coil (images)
 - Navigation Compose
-- Arsitektur MVVM dengan repository
+- MVVM with repositories
 
 Min SDK 24, target/compile SDK 35.
 
-## Menjalankan
+## Getting Started
 
-1. Buka project di Android Studio (JDK 21 disarankan).
-2. Build dan pasang ke perangkat atau emulator:
+1. Open the project in Android Studio (JDK 21 recommended).
+2. Build and install on a device or emulator:
 
    ```bash
    ./gradlew :app:assembleDebug
    ./gradlew :app:installDebug
    ```
 
-3. Buka app, masukkan API key di halaman login, lalu mulai menonton.
+3. Open the app, enter the API key on the login screen, and start watching.
 
 ## Login
 
-- Masukkan API key di halaman login. Key gratis untuk coba: `dramakey`. Untuk unlimited, order di https://api.bagahproject.com/ .
-- API key divalidasi lewat `GET /api/check-key`.
-- Key disimpan di `SharedPreferences` (nama `bagah_session`) melalui `SessionStore`.
-- `NetworkClient` memakai key dinamis, tidak ada key yang ditulis di kode.
+- Enter the API key on the login screen. Free key for testing: `dramakey`. For unlimited access, order at https://api.bagahproject.com/ .
+- The API key is validated through `GET /api/check-key`.
+- The key is stored in `SharedPreferences` (name `bagah_session`) via `SessionStore`.
+- `NetworkClient` uses the dynamic key; no key is hard-coded.
 
-## Struktur Proyek
+## Project Structure
 
 ```
 app/src/main/java/com/bagah/streaming/
   data/
-    api/          Retrofit service, NetworkClient, interceptor dan cache
-    cache/        Cache memori (TTL)
-    model/        Model data per platform
-    player/       Data source dekripsi DramaBox dan Melolo
-    repository/   Repository per platform dan auth
-    session/      Penyimpanan sesi (API key)
+    api/          Retrofit service, NetworkClient, interceptors, and cache
+    cache/        In-memory TTL cache
+    model/        Per-platform data models
+    player/       Decryption data sources for DramaBox and Melolo
+    repository/   Per-platform and auth repositories
+    session/      Session storage (API key)
   ui/
-    components/   Komponen bersama (kartu, tab, bottom nav, kontrol player)
-    navigation/   Definisi route
-    screens/      Layar per fitur (auth, profile, anime, per platform)
-    theme/        Warna dan tipografi
+    components/   Shared components (cards, tabs, bottom nav, player controls)
+    navigation/   Route definitions
+    screens/      Feature screens (auth, profile, anime, per platform)
+    theme/        Colors and typography
   MainActivity.kt
 ```
 
-## Catatan
+## Notes
 
-- Aplikasi ini bergantung pada API pihak ketiga. Ketersediaan konten dan stabilitas bisa berubah tanpa pemberitahuan.
-- Beberapa feed (mis. "Untuk Anda" di ReelShort, Melolo, atau MyDrama) jumlah item uniknya terbatas karena respons halaman dari API.
+- The app depends on a third-party API. Content availability and stability may change without notice.
+- Some feeds (e.g. "For You" on ReelShort, Melolo, or MyDrama) expose a limited number of unique items because of the API's paged responses.
