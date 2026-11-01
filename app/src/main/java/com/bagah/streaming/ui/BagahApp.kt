@@ -38,6 +38,12 @@ import com.bagah.streaming.ui.screens.freereels.FreeReelsDetailScreen
 import com.bagah.streaming.ui.screens.freereels.FreeReelsHomeScreen
 import com.bagah.streaming.ui.screens.freereels.FreeReelsPlayerScreen
 import com.bagah.streaming.ui.screens.hub.PlatformHubScreen
+import com.bagah.streaming.ui.screens.melolo.MeloloDetailScreen
+import com.bagah.streaming.ui.screens.melolo.MeloloHomeScreen
+import com.bagah.streaming.ui.screens.melolo.MeloloPlayerScreen
+import com.bagah.streaming.ui.screens.mydrama.MyDramaDetailScreen
+import com.bagah.streaming.ui.screens.mydrama.MyDramaHomeScreen
+import com.bagah.streaming.ui.screens.mydrama.MyDramaPlayerScreen
 import com.bagah.streaming.ui.screens.netshort.NetShortDetailScreen
 import com.bagah.streaming.ui.screens.netshort.NetShortHomeScreen
 import com.bagah.streaming.ui.screens.netshort.NetShortPlayerScreen
@@ -49,9 +55,6 @@ import com.bagah.streaming.ui.screens.reelshort.ReelShortDetailScreen
 import com.bagah.streaming.ui.screens.reelshort.ReelShortHomeScreen
 import com.bagah.streaming.ui.screens.reelshort.ReelShortPlayerScreen
 import com.bagah.streaming.ui.screens.search.SearchScreen
-import com.bagah.streaming.ui.screens.shortmax.ShortMaxDetailScreen
-import com.bagah.streaming.ui.screens.shortmax.ShortMaxHomeScreen
-import com.bagah.streaming.ui.screens.shortmax.ShortMaxPlayerScreen
 import com.bagah.streaming.ui.screens.splash.SplashPopUpIntro
 import com.bagah.streaming.ui.theme.BgBlack
 
@@ -76,7 +79,8 @@ fun BagahApp() {
         Screen.ReelShortHome.route,
         Screen.FreeReelsHome.route,
         Screen.FlickReelsHome.route,
-        Screen.ShortMaxHome.route,
+        Screen.MeloloHome.route,
+        Screen.MyDramaHome.route,
         Screen.PineDramaHome.route,
         Screen.NetShortHome.route,
         Screen.Search.route,
@@ -322,33 +326,31 @@ fun BagahApp() {
                     )
                 }
 
-                composable(Screen.ShortMaxHome.route) {
-                    ShortMaxHomeScreen(
+                composable(Screen.MeloloHome.route) {
+                    MeloloHomeScreen(
                         onSeriesClick = { seriesId ->
-                            navController.navigate(Screen.ShortMaxDetail.createRoute(seriesId))
+                            navController.navigate(Screen.MeloloDetail.createRoute(seriesId))
                         },
-                        onSearchClick = {
-                            navController.navigate(Screen.Search.route)
-                        }
+                        onSearchClick = { navController.navigate(Screen.Search.route) }
                     )
                 }
 
                 composable(
-                    route = Screen.ShortMaxDetail.route,
+                    route = Screen.MeloloDetail.route,
                     arguments = listOf(navArgument("seriesId") { type = NavType.StringType })
                 ) { backStack ->
                     val seriesId = backStack.arguments?.getString("seriesId") ?: ""
-                    ShortMaxDetailScreen(
+                    MeloloDetailScreen(
                         seriesId = seriesId,
                         onBackClick = { navController.popBackStack() },
                         onPlayEpisode = { sId, epNum ->
-                            navController.navigate(Screen.ShortMaxPlayer.createRoute(sId, epNum))
+                            navController.navigate(Screen.MeloloPlayer.createRoute(sId, epNum))
                         }
                     )
                 }
 
                 composable(
-                    route = Screen.ShortMaxPlayer.route,
+                    route = Screen.MeloloPlayer.route,
                     arguments = listOf(
                         navArgument("seriesId") { type = NavType.StringType },
                         navArgument("episodeNum") { type = NavType.IntType; defaultValue = 1 }
@@ -356,7 +358,46 @@ fun BagahApp() {
                 ) { backStack ->
                     val seriesId = backStack.arguments?.getString("seriesId") ?: ""
                     val episodeNum = backStack.arguments?.getInt("episodeNum") ?: 1
-                    ShortMaxPlayerScreen(
+                    MeloloPlayerScreen(
+                        seriesId = seriesId,
+                        initialEpisode = episodeNum,
+                        onBackClick = { navController.popBackStack() }
+                    )
+                }
+
+                composable(Screen.MyDramaHome.route) {
+                    MyDramaHomeScreen(
+                        onSeriesClick = { seriesId ->
+                            navController.navigate(Screen.MyDramaDetail.createRoute(seriesId))
+                        },
+                        onSearchClick = { navController.navigate(Screen.Search.route) }
+                    )
+                }
+
+                composable(
+                    route = Screen.MyDramaDetail.route,
+                    arguments = listOf(navArgument("seriesId") { type = NavType.StringType })
+                ) { backStack ->
+                    val seriesId = backStack.arguments?.getString("seriesId") ?: ""
+                    MyDramaDetailScreen(
+                        seriesId = seriesId,
+                        onBackClick = { navController.popBackStack() },
+                        onPlayEpisode = { sId, epNum ->
+                            navController.navigate(Screen.MyDramaPlayer.createRoute(sId, epNum))
+                        }
+                    )
+                }
+
+                composable(
+                    route = Screen.MyDramaPlayer.route,
+                    arguments = listOf(
+                        navArgument("seriesId") { type = NavType.StringType },
+                        navArgument("episodeNum") { type = NavType.IntType; defaultValue = 1 }
+                    )
+                ) { backStack ->
+                    val seriesId = backStack.arguments?.getString("seriesId") ?: ""
+                    val episodeNum = backStack.arguments?.getInt("episodeNum") ?: 1
+                    MyDramaPlayerScreen(
                         seriesId = seriesId,
                         initialEpisode = episodeNum,
                         onBackClick = { navController.popBackStack() }
@@ -460,14 +501,17 @@ fun BagahApp() {
                         onFlickReelsClick = { seriesId ->
                             navController.navigate(Screen.FlickReelsDetail.createRoute(seriesId))
                         },
-                        onShortMaxClick = { seriesId ->
-                            navController.navigate(Screen.ShortMaxDetail.createRoute(seriesId))
-                        },
                         onNetShortClick = { seriesId ->
                             navController.navigate(Screen.NetShortDetail.createRoute(seriesId))
                         },
                         onPineDramaClick = { seriesId ->
                             navController.navigate(Screen.PineDramaDetail.createRoute(seriesId))
+                        },
+                        onMeloloClick = { seriesId ->
+                            navController.navigate(Screen.MeloloDetail.createRoute(seriesId))
+                        },
+                        onMyDramaClick = { seriesId ->
+                            navController.navigate(Screen.MyDramaDetail.createRoute(seriesId))
                         }
                     )
                 }

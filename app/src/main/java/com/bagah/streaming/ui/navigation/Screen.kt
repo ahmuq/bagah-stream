@@ -66,14 +66,26 @@ sealed class Screen(val route: String) {
         fun createRoute(seriesId: String, episodeNum: Int = 1): String = "flickreels_player/$seriesId/$episodeNum"
     }
 
-    object ShortMaxHome : Screen("shortmax_home")
+    object MeloloHome : Screen("melolo_home")
 
-    object ShortMaxDetail : Screen("shortmax_detail/{seriesId}") {
-        fun createRoute(seriesId: String): String = "shortmax_detail/$seriesId"
+    object MeloloDetail : Screen("melolo_detail/{seriesId}") {
+        fun createRoute(seriesId: String): String = "melolo_detail/$seriesId"
     }
 
-    object ShortMaxPlayer : Screen("shortmax_player/{seriesId}/{episodeNum}") {
-        fun createRoute(seriesId: String, episodeNum: Int = 1): String = "shortmax_player/$seriesId/$episodeNum"
+    object MeloloPlayer : Screen("melolo_player/{seriesId}/{episodeNum}") {
+        fun createRoute(seriesId: String, episodeNum: Int = 1): String =
+            "melolo_player/$seriesId/$episodeNum"
+    }
+
+    object MyDramaHome : Screen("mydrama_home")
+
+    object MyDramaDetail : Screen("mydrama_detail/{seriesId}") {
+        fun createRoute(seriesId: String): String = "mydrama_detail/$seriesId"
+    }
+
+    object MyDramaPlayer : Screen("mydrama_player/{seriesId}/{episodeNum}") {
+        fun createRoute(seriesId: String, episodeNum: Int = 1): String =
+            "mydrama_player/$seriesId/$episodeNum"
     }
 
     object PineDramaHome : Screen("pinedrama_home")

@@ -27,25 +27,33 @@ class StreamingApiTest {
 
     @Test
     fun testDramaPopularApi() = runBlocking {
-        val result = dramaRepository.getPopular()
+        val result = dramaRepository.getRanking(1)
         assertTrue("Drama Popular call should succeed: ${result.exceptionOrNull()?.message}", result.isSuccess)
         val list = result.getOrNull()
         assertNotNull(list)
         assertTrue("Drama list should not be empty", list!!.isNotEmpty())
         val first = list.first()
-        println("TEST DRAMA POPULAR -> Title: ${first.bookName}, BookId: ${first.bookId}, Chapters: ${first.chapterCount}")
+        println("TEST DRAMA POPULAR -> Title: ${first.title}, BookId: ${first.bookId}, Chapters: ${first.chapterCount}")
     }
 
     @Test
-    fun testDramaChaptersStreamApi() = runBlocking {
-        val result = dramaRepository.getChapters("42000028264")
-        assertTrue("Drama Chapters call should succeed: ${result.exceptionOrNull()?.message}", result.isSuccess)
-        val chapters = result.getOrNull()
-        assertNotNull(chapters)
-        assertTrue("Chapters should not be empty", chapters!!.isNotEmpty())
-        val ep1 = chapters.first()
-        val videoUrl = ep1.getPreferredVideoUrl()
-        println("TEST DRAMA EP1 STREAM -> Chapter: ${ep1.chapterName}, VideoUrl: $videoUrl")
-        assertNotNull("Video stream URL should be resolved", videoUrl)
+    fun testDramaEpisodeStreamApi() = runBlocking {
+        val popular = dramaRepository.getRanking(1).getOrNull().orEmpty()
+        assertTrue("Need a drama to test episodes", popular.isNotEmpty())
+        val bookId = popular.first().bookId
+
+        val episodesResult = dramaRepository.getEpisodes(bookId)
+        assertTrue("Drama episodes call should succeed: ${episodesResult.exceptionOrNull()?.message}", episodesResult.isSuccess)
+        val episodes = episodesResult.getOrNull()
+        assertNotNull(episodes)
+        assertTrue("Episodes should not be empty", episodes!!.isNotEmpty())
+        println("TEST DRAMA EP1 EPISODES -> Chapter: ${episodes.first().title}")
+
+        val streamResult = dramaRepository.getEpisodeStream(bookId, 1)
+        assertTrue("Episode stream should succeed: ${streamResult.exceptionOrNull()?.message}", streamResult.isSuccess)
+        val stream = streamResult.getOrNull()
+        assertNotNull(stream)
+        println("TEST DRAMA EP1 STREAM -> Title: ${stream!!.title}, VideoUrl: ${stream.bestUrl}")
+        assertTrue("Video stream URL should be resolved", stream.bestUrl.isNotBlank())
     }
 }
