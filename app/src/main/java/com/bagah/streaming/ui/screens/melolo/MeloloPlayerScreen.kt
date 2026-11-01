@@ -1,15 +1,12 @@
-package com.bagah.streaming.ui.screens.shortmax
+package com.bagah.streaming.ui.screens.melolo
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.material.icons.rounded.Pause
-import androidx.compose.material.icons.rounded.PlayArrow
-import kotlinx.coroutines.delay
 import android.net.Uri
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.annotation.OptIn
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -36,6 +33,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.FormatListNumbered
+import androidx.compose.material.icons.rounded.Pause
+import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material3.BottomSheetDefaults
@@ -68,9 +67,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -80,7 +79,8 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.PlayerView
 import com.bagah.streaming.data.api.NetworkClient
-import com.bagah.streaming.data.player.ShortMaxDecryptDataSource
+import com.bagah.streaming.data.player.MeloloDecryptDataSource
+import com.bagah.streaming.data.player.MeloloKeyHolder
 import com.bagah.streaming.ui.components.KeepScreenOn
 import com.bagah.streaming.ui.components.PlaybackTimeControls
 import com.bagah.streaming.ui.theme.AccentBlack
@@ -95,10 +95,10 @@ import com.bagah.streaming.ui.theme.TextSecondary
 
 @OptIn(UnstableApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun ShortMaxPlayerScreen(
+fun MeloloPlayerScreen(
     seriesId: String,
     initialEpisode: Int = 1,
-    viewModel: ShortMaxPlayerViewModel = viewModel(),
+    viewModel: MeloloPlayerViewModel = viewModel(),
     onBackClick: () -> Unit
 ) {
     val context = LocalContext.current
@@ -111,25 +111,26 @@ fun ShortMaxPlayerScreen(
         viewModel.initPlayer(seriesId, initialEpisode)
     }
 
+    val keyHolder = remember { MeloloKeyHolder() }
     val exoPlayer = remember {
-        val decryptFactory = ShortMaxDecryptDataSource.Factory(NetworkClient.okHttpClient)
-        val mediaSourceFactory = DefaultMediaSourceFactory(decryptFactory)
-            .setDataSourceFactory(decryptFactory)
+        val decryptFactory = MeloloDecryptDataSource.Factory(NetworkClient.okHttpClient, keyHolder)
         ExoPlayer.Builder(context)
-            .setMediaSourceFactory(mediaSourceFactory)
+            .setMediaSourceFactory(
+                DefaultMediaSourceFactory(context).setDataSourceFactory(decryptFactory)
+            )
             .build()
             .apply {
-                playWhenReady = true
-                setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setUsage(C.USAGE_MEDIA)
-                        .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
-                        .build(),
-                    true
-                )
-                setHandleAudioBecomingNoisy(true)
-                repeatMode = Player.REPEAT_MODE_OFF
-            }
+            playWhenReady = true
+            setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(C.USAGE_MEDIA)
+                    .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
+                    .build(),
+                true
+            )
+            setHandleAudioBecomingNoisy(true)
+            repeatMode = Player.REPEAT_MODE_OFF
+        }
     }
 
     KeepScreenOn()
@@ -173,9 +174,11 @@ fun ShortMaxPlayerScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    LaunchedEffect(uiState.currentStreamUrl) {
+    LaunchedEffect(uiState.currentStreamUrl, uiState.currentKeyHex) {
         val streamUrl = uiState.currentStreamUrl
+        val keyHex = uiState.currentKeyHex
         if (!streamUrl.isNullOrBlank()) {
+            keyHolder.keyHex = keyHex.orEmpty()
             exoPlayer.setMediaItem(MediaItem.fromUri(Uri.parse(streamUrl)))
             exoPlayer.prepare()
             exoPlayer.play()
@@ -187,25 +190,23 @@ fun ShortMaxPlayerScreen(
             .fillMaxSize()
             .background(Color.Black)
     ) {
-                    AndroidView(
-                factory = { ctx ->
-                    PlayerView(ctx).apply {
-                        player = exoPlayer
-                        useController = false
-                        subtitleView?.setApplyEmbeddedStyles(false)
+        AndroidView(
+            factory = { ctx ->
+                PlayerView(ctx).apply {
+                    player = exoPlayer
+                    useController = false
+                    subtitleView?.setApplyEmbeddedStyles(false)
                     subtitleView?.setFixedTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 16f)
-                        layoutParams = FrameLayout.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.MATCH_PARENT
-                        )
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxSize()
-                    .clickable {
-                        showControls = !showControls
-                    }
-            )
+                    layoutParams = FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                }
+            },
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable { showControls = !showControls }
+        )
 
         if (uiState.isLoading) {
             Box(
@@ -267,55 +268,55 @@ fun ShortMaxPlayerScreen(
             exit = fadeOut(),
             modifier = Modifier.align(Alignment.TopCenter)
         ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(Color.Black.copy(alpha = 0.85f), Color.Transparent)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(Color.Black.copy(alpha = 0.85f), Color.Transparent)
+                        )
                     )
-                )
-                .statusBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                    .statusBarsPadding()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                IconButton(
-                    onClick = onBackClick,
-                    modifier = Modifier
-                        .size(38.dp)
-                        .background(Color.Black.copy(alpha = 0.5f), CircleShape)
-                        .border(1.dp, CardBorderDark, CircleShape)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                        contentDescription = "Kembali",
-                        tint = AccentWhite,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = uiState.title.ifBlank { "ShortMax Serial" },
-                        color = TextPrimary,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = "Episode ${uiState.currentEpisode} / ${uiState.totalEpisodes.coerceAtLeast(1)}",
-                        color = TextSecondary,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    IconButton(
+                        onClick = onBackClick,
+                        modifier = Modifier
+                            .size(38.dp)
+                            .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                            .border(1.dp, CardBorderDark, CircleShape)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                            contentDescription = "Kembali",
+                            tint = AccentWhite,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = uiState.title.ifBlank { "Melolo Serial" },
+                            color = TextPrimary,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = "Episode ${uiState.currentEpisode} / " +
+                                "${uiState.totalEpisodes.coerceAtLeast(1)}",
+                            color = TextSecondary,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
                 }
             }
-        }
-
         }
 
         AnimatedVisibility(
@@ -324,81 +325,84 @@ fun ShortMaxPlayerScreen(
             exit = fadeOut(),
             modifier = Modifier.align(Alignment.BottomCenter)
         ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.9f))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.9f))
+                        )
                     )
-                )
-                .navigationBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 14.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .navigationBarsPadding()
+                    .padding(horizontal = 16.dp, vertical = 14.dp)
             ) {
-                IconButton(
-                    onClick = { viewModel.playPrevious() },
-                    enabled = uiState.currentEpisode > 1,
-                    modifier = Modifier
-                        .size(42.dp)
-                        .background(Color.Black.copy(alpha = 0.6f), CircleShape)
-                        .border(1.dp, CardBorderDark, CircleShape)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.SkipPrevious,
-                        contentDescription = "Sebelumnya",
-                        tint = if (uiState.currentEpisode > 1) AccentWhite else TextMuted
-                    )
-                }
-
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Row(
+                    IconButton(
+                        onClick = { viewModel.playPrevious() },
+                        enabled = uiState.currentEpisode > 1,
                         modifier = Modifier
-                            .clip(RoundedCornerShape(20.dp))
-                            .background(AccentWhite)
-                            .clickable { showEpisodeSheet = true }
-                            .padding(horizontal = 18.dp, vertical = 10.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                            .size(42.dp)
+                            .background(Color.Black.copy(alpha = 0.6f), CircleShape)
+                            .border(1.dp, CardBorderDark, CircleShape)
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.FormatListNumbered,
-                            contentDescription = "Pilih Episode",
-                            tint = AccentBlack,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "Episode ${uiState.currentEpisode}",
-                            color = AccentBlack,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold
+                            imageVector = Icons.Rounded.SkipPrevious,
+                            contentDescription = "Sebelumnya",
+                            tint = if (uiState.currentEpisode > 1) AccentWhite else TextMuted
                         )
                     }
-                    Spacer(modifier = Modifier.height(6.dp))
-                    PlaybackTimeControls(player = exoPlayer)
-                }
 
-                IconButton(
-                    onClick = { viewModel.playNext() },
-                    enabled = uiState.currentEpisode < uiState.totalEpisodes,
-                    modifier = Modifier
-                        .size(42.dp)
-                        .background(Color.Black.copy(alpha = 0.6f), CircleShape)
-                        .border(1.dp, CardBorderDark, CircleShape)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.SkipNext,
-                        contentDescription = "Berikutnya",
-                        tint = if (uiState.currentEpisode < uiState.totalEpisodes) AccentWhite else TextMuted
-                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Row(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(AccentWhite)
+                                .clickable { showEpisodeSheet = true }
+                                .padding(horizontal = 18.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.FormatListNumbered,
+                                contentDescription = "Pilih Episode",
+                                tint = AccentBlack,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Episode ${uiState.currentEpisode}",
+                                color = AccentBlack,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(6.dp))
+                        PlaybackTimeControls(player = exoPlayer)
+                    }
+
+                    IconButton(
+                        onClick = { viewModel.playNext() },
+                        enabled = uiState.currentEpisode < uiState.totalEpisodes,
+                        modifier = Modifier
+                            .size(42.dp)
+                            .background(Color.Black.copy(alpha = 0.6f), CircleShape)
+                            .border(1.dp, CardBorderDark, CircleShape)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.SkipNext,
+                            contentDescription = "Berikutnya",
+                            tint = if (uiState.currentEpisode < uiState.totalEpisodes) {
+                                AccentWhite
+                            } else {
+                                TextMuted
+                            }
+                        )
+                    }
                 }
             }
-        }
-
         }
 
         AnimatedVisibility(
@@ -443,7 +447,9 @@ fun ShortMaxPlayerScreen(
                         modifier = Modifier.padding(bottom = 12.dp)
                     )
 
-                    val episodesCount = uiState.totalEpisodes.coerceAtLeast(uiState.episodes.size).coerceAtLeast(1)
+                    val episodesCount = uiState.totalEpisodes
+                        .coerceAtLeast(uiState.episodes.size)
+                        .coerceAtLeast(1)
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(5),
                         contentPadding = PaddingValues(bottom = 24.dp),

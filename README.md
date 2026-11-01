@@ -15,7 +15,7 @@ Setelah punya key, masukkan di halaman login aplikasi. Key divalidasi ke endpoin
 
 ## Fitur
 
-- **7 platform serial pendek**: DramaBox, ReelShort, FreeReels, FlickReels, ShortMax, NetShort, PineDrama.
+- **8 platform serial pendek**: DramaBox, ReelShort, FreeReels, FlickReels, NetShort, PineDrama, Melolo, MyDrama.
 - **Anime Play Indonesia**: rilisan terbaru, ongoing dengan jadwal harian, movie, dan rekomendasi.
 - **Login dengan API key**: validasi ke endpoint `check-key`, sesi disimpan sehingga tidak perlu login ulang kecuali data app dihapus atau app di-uninstall.
 - **Halaman Profil**: info akun (nama, email, tier, role, kuota), tombol bersihkan cache, dan keluar.
@@ -32,8 +32,15 @@ Setelah punya key, masukkan di halaman login aplikasi. Key divalidasi ke endpoin
   <img src="docs/screenshots/drama-platforms.png" width="30%" alt="Platform Drama" />
   <img src="docs/screenshots/reelshort-home.png" width="30%" alt="Home ReelShort" />
 </p>
+<p>
+  <img src="docs/screenshots/melolo-home.png" width="23%" alt="Home Melolo" />
+  <img src="docs/screenshots/mydrama-home.png" width="23%" alt="Home MyDrama" />
+  <img src="docs/screenshots/melolo-player.png" width="23%" alt="Player Melolo" />
+  <img src="docs/screenshots/mydrama-player.png" width="23%" alt="Player MyDrama" />
+</p>
 
-Kiri ke kanan: Home Anime, daftar platform drama, dan Home ReelShort.
+Atas: Home Anime, daftar platform drama, dan Home ReelShort. Bawah: Home Melolo, Home MyDrama,
+player Melolo (dekripsi CENC di app), dan player MyDrama dengan subtitle Indonesia.
 
 ## Platform
 
@@ -44,9 +51,10 @@ Kiri ke kanan: Home Anime, daftar platform drama, dan Home ReelShort.
 | ReelShort  | Drama vertikal pendek           | HLS                        |
 | FreeReels  | Serial pendek gratis + subtitle | HLS                        |
 | FlickReels | Serial pendek internasional     | HLS                        |
-| ShortMax   | Serial pendek populer           | HLS dengan segmen terenkripsi (dekripsi AES-128-CBC) |
 | NetShort   | Serial pendek NetShort          | MP4 langsung               |
 | PineDrama  | Katalog mini drama              | MP4 langsung               |
+| Melolo     | Serial pendek viral             | MP4 CENC AES-128-CTR (dekripsi di app) |
+| MyDrama    | Drama vertikal internasional    | HLS + subtitle             |
 
 ## Teknologi
 
@@ -87,7 +95,7 @@ app/src/main/java/com/bagah/streaming/
     api/          Retrofit service, NetworkClient, interceptor dan cache
     cache/        Cache memori (TTL)
     model/        Model data per platform
-    player/       Data source dekripsi DramaBox dan ShortMax
+    player/       Data source dekripsi DramaBox dan Melolo
     repository/   Repository per platform dan auth
     session/      Penyimpanan sesi (API key)
   ui/
@@ -101,4 +109,4 @@ app/src/main/java/com/bagah/streaming/
 ## Catatan
 
 - Aplikasi ini bergantung pada API pihak ketiga. Ketersediaan konten dan stabilitas bisa berubah tanpa pemberitahuan.
-- Beberapa feed (mis. "Untuk Anda" di ReelShort/ShortMax) jumlah item uniknya terbatas karena respons halaman dari API.
+- Beberapa feed (mis. "Untuk Anda" di ReelShort, Melolo, atau MyDrama) jumlah item uniknya terbatas karena respons halaman dari API.

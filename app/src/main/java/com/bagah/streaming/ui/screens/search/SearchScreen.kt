@@ -54,7 +54,6 @@ import com.bagah.streaming.ui.components.FlickReelsCard
 import com.bagah.streaming.ui.components.FreeReelsCard
 import com.bagah.streaming.ui.components.NetShortCard
 import com.bagah.streaming.ui.components.SimpleMediaCard
-import com.bagah.streaming.ui.components.ShortMaxCard
 import com.bagah.streaming.ui.components.ReelShortCard
 import com.bagah.streaming.ui.theme.AccentWhite
 import com.bagah.streaming.ui.theme.BgBlack
@@ -74,9 +73,10 @@ fun SearchScreen(
     onReelShortClick: (bookId: String) -> Unit = {},
     onFreeReelsClick: (seriesId: String) -> Unit = {},
     onFlickReelsClick: (seriesId: String) -> Unit = {},
-    onShortMaxClick: (seriesId: String) -> Unit = {},
     onNetShortClick: (seriesId: String) -> Unit = {},
-    onPineDramaClick: (seriesId: String) -> Unit = {}
+    onPineDramaClick: (seriesId: String) -> Unit = {},
+    onMeloloClick: (seriesId: String) -> Unit = {},
+    onMyDramaClick: (seriesId: String) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val focusManager = LocalFocusManager.current
@@ -104,9 +104,10 @@ fun SearchScreen(
                                 2 -> "Cari ReelShort..."
                                 3 -> "Cari FreeReels..."
                                 4 -> "Cari FlickReels..."
-                                5 -> "Cari ShortMax..."
-                                6 -> "Cari NetShort..."
-                                7 -> "Cari PineDrama..."
+                                5 -> "Cari NetShort..."
+                                6 -> "Cari PineDrama..."
+                                7 -> "Cari Melolo..."
+                                8 -> "Cari MyDrama..."
                                 else -> "Cari short drama..."
                             },
                             color = TextMuted,
@@ -233,7 +234,7 @@ fun SearchScreen(
                     onClick = { viewModel.onTabSelect(5) },
                     text = {
                         Text(
-                            text = "ShortMax",
+                            text = "NetShort",
                             color = if (uiState.selectedTab == 5) TextPrimary else TextMuted,
                             fontWeight = if (uiState.selectedTab == 5) FontWeight.Bold else FontWeight.Medium
                         )
@@ -244,7 +245,7 @@ fun SearchScreen(
                     onClick = { viewModel.onTabSelect(6) },
                     text = {
                         Text(
-                            text = "NetShort",
+                            text = "PineDrama",
                             color = if (uiState.selectedTab == 6) TextPrimary else TextMuted,
                             fontWeight = if (uiState.selectedTab == 6) FontWeight.Bold else FontWeight.Medium
                         )
@@ -255,9 +256,20 @@ fun SearchScreen(
                     onClick = { viewModel.onTabSelect(7) },
                     text = {
                         Text(
-                            text = "PineDrama",
+                            text = "Melolo",
                             color = if (uiState.selectedTab == 7) TextPrimary else TextMuted,
                             fontWeight = if (uiState.selectedTab == 7) FontWeight.Bold else FontWeight.Medium
+                        )
+                    }
+                )
+                Tab(
+                    selected = uiState.selectedTab == 8,
+                    onClick = { viewModel.onTabSelect(8) },
+                    text = {
+                        Text(
+                            text = "MyDrama",
+                            color = if (uiState.selectedTab == 8) TextPrimary else TextMuted,
+                            fontWeight = if (uiState.selectedTab == 8) FontWeight.Bold else FontWeight.Medium
                         )
                     }
                 )
@@ -410,26 +422,6 @@ fun SearchScreen(
                         }
                     }
                     5 -> {
-                        if (uiState.shortMaxResults.isEmpty()) {
-                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                Text(text = "Tidak ada ShortMax yang cocok dengan \"${uiState.query}\"", color = TextMuted, fontSize = 13.sp)
-                            }
-                        } else {
-                            LazyVerticalGrid(
-                                columns = GridCells.Fixed(3),
-                                state = gridState,
-                                contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 90.dp),
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                verticalArrangement = Arrangement.spacedBy(14.dp)
-                            ) {
-                                items(uiState.shortMaxResults, key = { it.stableId() }) { item ->
-                                    ShortMaxCard(item = item, onClick = { onShortMaxClick(item.stableId()) })
-                                }
-                                item(span = { GridItemSpan(maxLineSpan) }) { loadMoreFooter() }
-                            }
-                        }
-                    }
-                    6 -> {
                         if (uiState.netShortResults.isEmpty()) {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 Text(text = "Tidak ada NetShort yang cocok dengan \"${uiState.query}\"", color = TextMuted, fontSize = 13.sp)
@@ -449,7 +441,7 @@ fun SearchScreen(
                             }
                         }
                     }
-                    7 -> {
+                    6 -> {
                         if (uiState.pineDramaResults.isEmpty()) {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                                 Text(text = "Tidak ada PineDrama yang cocok dengan \"${uiState.query}\"", color = TextMuted, fontSize = 13.sp)
@@ -469,6 +461,58 @@ fun SearchScreen(
                                         episodeCount = item.totalEpisodes,
                                         badgeText = "PINEDRAMA",
                                         onClick = { onPineDramaClick(item.stableId()) }
+                                    )
+                                }
+                                item(span = { GridItemSpan(maxLineSpan) }) { loadMoreFooter() }
+                            }
+                        }
+                    }
+                    7 -> {
+                        if (uiState.meloloResults.isEmpty()) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text(text = "Tidak ada Melolo yang cocok dengan \"${uiState.query}\"", color = TextMuted, fontSize = 13.sp)
+                            }
+                        } else {
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(3),
+                                state = gridState,
+                                contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 90.dp),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(14.dp)
+                            ) {
+                                items(uiState.meloloResults, key = { it.stableId() }) { item ->
+                                    SimpleMediaCard(
+                                        title = item.title,
+                                        cover = item.cover,
+                                        episodeCount = item.totalEpisodes,
+                                        badgeText = "MELOLO",
+                                        onClick = { onMeloloClick(item.stableId()) }
+                                    )
+                                }
+                                item(span = { GridItemSpan(maxLineSpan) }) { loadMoreFooter() }
+                            }
+                        }
+                    }
+                    8 -> {
+                        if (uiState.myDramaResults.isEmpty()) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text(text = "Tidak ada MyDrama yang cocok dengan \"${uiState.query}\"", color = TextMuted, fontSize = 13.sp)
+                            }
+                        } else {
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(3),
+                                state = gridState,
+                                contentPadding = PaddingValues(start = 14.dp, end = 14.dp, bottom = 90.dp),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalArrangement = Arrangement.spacedBy(14.dp)
+                            ) {
+                                items(uiState.myDramaResults, key = { it.stableId() }) { item ->
+                                    SimpleMediaCard(
+                                        title = item.displayTitle(),
+                                        cover = item.displayCover(),
+                                        episodeCount = item.totalEpisodes,
+                                        badgeText = "MYDRAMA",
+                                        onClick = { onMyDramaClick(item.stableId()) }
                                     )
                                 }
                                 item(span = { GridItemSpan(maxLineSpan) }) { loadMoreFooter() }

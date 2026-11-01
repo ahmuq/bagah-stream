@@ -31,10 +31,14 @@ import com.bagah.streaming.data.model.ReelShortBrowseResponse
 import com.bagah.streaming.data.model.ReelShortDetailResponse
 import com.bagah.streaming.data.model.ReelShortEpisodeResponse
 import com.bagah.streaming.data.model.ReelShortSearchResponse
-import com.bagah.streaming.data.model.ShortMaxDetailResponse
-import com.bagah.streaming.data.model.ShortMaxEpisodeResponse
-import com.bagah.streaming.data.model.ShortMaxListResponse
-import com.bagah.streaming.data.model.ShortMaxSearchResponse
+import com.bagah.streaming.data.model.MeloloBrowseResponse
+import com.bagah.streaming.data.model.MeloloDetailResponse
+import com.bagah.streaming.data.model.MeloloEpisodeResponse
+import com.bagah.streaming.data.model.MeloloSearchResponse
+import com.bagah.streaming.data.model.MyDramaBrowseResponse
+import com.bagah.streaming.data.model.MyDramaDetailResponse
+import com.bagah.streaming.data.model.MyDramaEpisodeResponse
+import com.bagah.streaming.data.model.MyDramaSearchResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -211,34 +215,62 @@ interface StreamingApiService {
         @Query("lang") lang: String = "id"
     ): FlickReelsSearchResponse
 
-    @GET("api/shortmax/browse")
-    suspend fun browseShortMax(
-        @Query("type") type: String = "trending",
-        @Query("page") page: Int? = null,
+    @GET("api/melolo/browse")
+    suspend fun browseMelolo(
+        @Query("type") type: String = "foryou",
+        @Query("page") page: Int = 1,
         @Query("size") size: Int? = null,
         @Query("lang") lang: String = "id"
-    ): ShortMaxListResponse
+    ): MeloloBrowseResponse
 
-    @GET("api/shortmax/detail")
-    suspend fun getShortMaxDetail(
+    @GET("api/melolo/detail")
+    suspend fun getMeloloDetail(
         @Query("seriesId") seriesId: String,
         @Query("lang") lang: String = "id"
-    ): ShortMaxDetailResponse
+    ): MeloloDetailResponse
 
-    @GET("api/shortmax/episode")
-    suspend fun getShortMaxEpisode(
+    @GET("api/melolo/episode")
+    suspend fun getMeloloEpisode(
         @Query("seriesId") seriesId: String,
-        @Query("episode") episode: Int,
+        @Query("episode") episode: Int = 1,
         @Query("lang") lang: String = "id"
-    ): ShortMaxEpisodeResponse
+    ): MeloloEpisodeResponse
 
-    @GET("api/shortmax/search")
-    suspend fun searchShortMax(
+    @GET("api/melolo/search")
+    suspend fun searchMelolo(
         @Query("keyword") keyword: String,
         @Query("page") page: Int = 1,
         @Query("size") size: Int = 20,
         @Query("lang") lang: String = "id"
-    ): ShortMaxSearchResponse
+    ): MeloloSearchResponse
+
+    @GET("api/mydrama/browse")
+    suspend fun browseMyDrama(
+        @Query("cursor") cursor: String? = null,
+        @Query("lang") lang: String = "id"
+    ): MyDramaBrowseResponse
+
+    @GET("api/mydrama/detail")
+    suspend fun getMyDramaDetail(
+        @Query("seriesId") seriesId: String,
+        @Query("lang") lang: String = "id"
+    ): MyDramaDetailResponse
+
+    @GET("api/mydrama/episode")
+    suspend fun getMyDramaEpisode(
+        @Query("seriesId") seriesId: String,
+        @Query("episode") episode: Int = 1,
+        @Query("quality") quality: String = "auto",
+        @Query("lang") lang: String = "id"
+    ): MyDramaEpisodeResponse
+
+    @GET("api/mydrama/search")
+    suspend fun searchMyDrama(
+        @Query("keyword") keyword: String,
+        @Query("page") page: Int = 1,
+        @Query("size") size: Int = 20,
+        @Query("lang") lang: String = "id"
+    ): MyDramaSearchResponse
 
     @GET("api/pinedrama/browse")
     suspend fun browsePineDrama(

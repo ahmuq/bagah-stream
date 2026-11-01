@@ -59,9 +59,10 @@ fun PlatformHubScreen(
         PlatformEntry("ReelShort", "Drama vertikal pendek", "reelshort_home", R.drawable.logo_reelshort),
         PlatformEntry("FreeReels", "Serial pendek gratis", "freereels_home", R.drawable.logo_freereels),
         PlatformEntry("FlickReels", "Serial pendek internasional", "flickreels_home", R.drawable.logo_flickreels),
-        PlatformEntry("ShortMax", "Serial pendek populer", "shortmax_home", R.drawable.logo_shortmax),
         PlatformEntry("NetShort", "Serial pendek NetShort", "netshort_home", R.drawable.logo_netshort),
-        PlatformEntry("PineDrama", "Katalog mini drama", "pinedrama_home", R.drawable.logo_pinedrama)
+        PlatformEntry("PineDrama", "Katalog mini drama", "pinedrama_home", R.drawable.logo_pinedrama),
+        PlatformEntry("Melolo", "Serial pendek viral", "melolo_home", R.drawable.logo_melolo),
+        PlatformEntry("MyDrama", "Drama vertikal internasional", "mydrama_home", R.drawable.logo_mydrama)
     )
 
     LazyColumn(

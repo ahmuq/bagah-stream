@@ -6,10 +6,11 @@ import com.bagah.streaming.data.model.AnimeItem
 import com.bagah.streaming.data.model.DramaItem
 import com.bagah.streaming.data.model.FlickReelsItem
 import com.bagah.streaming.data.model.FreeReelsItem
+import com.bagah.streaming.data.model.MeloloItem
+import com.bagah.streaming.data.model.MyDramaItem
 import com.bagah.streaming.data.model.NetShortItem
 import com.bagah.streaming.data.model.PineDramaItem
 import com.bagah.streaming.data.model.ReelShortBook
-import com.bagah.streaming.data.model.ShortMaxItem
 import com.bagah.streaming.data.repository.anime.AnimeRepository
 import com.bagah.streaming.data.repository.anime.AnimeRepositoryImpl
 import com.bagah.streaming.data.repository.drama.DramaRepository
@@ -18,13 +19,15 @@ import com.bagah.streaming.data.repository.flickreels.FlickReelsRepository
 import com.bagah.streaming.data.repository.flickreels.FlickReelsRepositoryImpl
 import com.bagah.streaming.data.repository.freereels.FreeReelsRepository
 import com.bagah.streaming.data.repository.freereels.FreeReelsRepositoryImpl
+import com.bagah.streaming.data.repository.melolo.MeloloRepository
+import com.bagah.streaming.data.repository.melolo.MeloloRepositoryImpl
+import com.bagah.streaming.data.repository.mydrama.MyDramaRepository
+import com.bagah.streaming.data.repository.mydrama.MyDramaRepositoryImpl
 import com.bagah.streaming.data.repository.netshort.NetShortRepository
 import com.bagah.streaming.data.repository.netshort.NetShortRepositoryImpl
 import com.bagah.streaming.data.repository.pinedrama.PineDramaRepository
 import com.bagah.streaming.data.repository.pinedrama.PineDramaRepositoryImpl
 import com.bagah.streaming.data.repository.reelshort.ReelShortRepository
-import com.bagah.streaming.data.repository.shortmax.ShortMaxRepository
-import com.bagah.streaming.data.repository.shortmax.ShortMaxRepositoryImpl
 import com.bagah.streaming.data.repository.reelshort.ReelShortRepositoryImpl
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -40,7 +43,8 @@ data class SearchUiState(
     val reelShortResults: List<ReelShortBook> = emptyList(),
     val freeReelsResults: List<FreeReelsItem> = emptyList(),
     val flickReelsResults: List<FlickReelsItem> = emptyList(),
-    val shortMaxResults: List<ShortMaxItem> = emptyList(),
+    val meloloResults: List<MeloloItem> = emptyList(),
+    val myDramaResults: List<MyDramaItem> = emptyList(),
     val netShortResults: List<NetShortItem> = emptyList(),
     val pineDramaResults: List<PineDramaItem> = emptyList(),
     val isSearching: Boolean = false,
@@ -51,7 +55,7 @@ data class SearchUiState(
     val errorMessage: String? = null
 ) {
     val canLoadMore: Boolean
-        get() = (selectedTab == 1 || selectedTab == 2 || selectedTab == 5 || selectedTab == 6 || selectedTab == 7) && !endReached
+        get() = selectedTab in setOf(1, 2, 5, 6, 7, 8) && !endReached
 }
 
 class SearchViewModel(
@@ -60,7 +64,8 @@ class SearchViewModel(
     private val reelShortRepo: ReelShortRepository = ReelShortRepositoryImpl(),
     private val freeReelsRepo: FreeReelsRepository = FreeReelsRepositoryImpl(),
     private val flickReelsRepo: FlickReelsRepository = FlickReelsRepositoryImpl(),
-    private val shortMaxRepo: ShortMaxRepository = ShortMaxRepositoryImpl(),
+    private val meloloRepo: MeloloRepository = MeloloRepositoryImpl(),
+    private val myDramaRepo: MyDramaRepository = MyDramaRepositoryImpl(),
     private val netShortRepo: NetShortRepository = NetShortRepositoryImpl(),
     private val pineDramaRepo: PineDramaRepository = PineDramaRepositoryImpl()
 ) : ViewModel() {
@@ -152,17 +157,6 @@ class SearchViewModel(
                         }
                 }
                 5 -> {
-                    shortMaxRepo.search(q, 1)
-                        .onSuccess { list ->
-                            _uiState.update {
-                                it.copy(isSearching = false, shortMaxResults = list.distinctBy { s -> s.stableId() }, page = 1, endReached = list.isEmpty())
-                            }
-                        }
-                        .onFailure { err ->
-                            _uiState.update { it.copy(isSearching = false, errorMessage = err.localizedMessage) }
-                        }
-                }
-                6 -> {
                     netShortRepo.search(q, 1)
                         .onSuccess { list ->
                             _uiState.update {
@@ -173,11 +167,33 @@ class SearchViewModel(
                             _uiState.update { it.copy(isSearching = false, errorMessage = err.localizedMessage) }
                         }
                 }
-                7 -> {
+                6 -> {
                     pineDramaRepo.search(q, 1)
                         .onSuccess { list ->
                             _uiState.update {
                                 it.copy(isSearching = false, pineDramaResults = list.distinctBy { d -> d.stableId() }, page = 1, endReached = list.isEmpty())
+                            }
+                        }
+                        .onFailure { err ->
+                            _uiState.update { it.copy(isSearching = false, errorMessage = err.localizedMessage) }
+                        }
+                }
+                7 -> {
+                    meloloRepo.search(q, 1)
+                        .onSuccess { list ->
+                            _uiState.update {
+                                it.copy(isSearching = false, meloloResults = list.distinctBy { m -> m.stableId() }, page = 1, endReached = list.isEmpty())
+                            }
+                        }
+                        .onFailure { err ->
+                            _uiState.update { it.copy(isSearching = false, errorMessage = err.localizedMessage) }
+                        }
+                }
+                8 -> {
+                    myDramaRepo.search(q, 1)
+                        .onSuccess { list ->
+                            _uiState.update {
+                                it.copy(isSearching = false, myDramaResults = list.distinctBy { d -> d.stableId() }, page = 1, endReached = list.isEmpty())
                             }
                         }
                         .onFailure { err ->
@@ -224,20 +240,7 @@ class SearchViewModel(
                     }
                 }.onFailure { _uiState.update { it.copy(isLoadingMore = false, endReached = true) } }
 
-                5 -> shortMaxRepo.search(q, nextPage).onSuccess { list ->
-                    val existing = _uiState.value.shortMaxResults.map { it.stableId() }.toSet()
-                    val fresh = list.filterNot { it.stableId() in existing }
-                    _uiState.update {
-                        it.copy(
-                            isLoadingMore = false,
-                            shortMaxResults = (it.shortMaxResults + fresh).distinctBy { s -> s.stableId() },
-                            page = nextPage,
-                            endReached = list.isEmpty() || fresh.isEmpty()
-                        )
-                    }
-                }.onFailure { _uiState.update { it.copy(isLoadingMore = false, endReached = true) } }
-
-                6 -> netShortRepo.search(q, nextPage).onSuccess { list ->
+                5 -> netShortRepo.search(q, nextPage).onSuccess { list ->
                     val existing = _uiState.value.netShortResults.map { it.stableId() }.toSet()
                     val fresh = list.filterNot { it.stableId() in existing }
                     _uiState.update {
@@ -250,13 +253,39 @@ class SearchViewModel(
                     }
                 }.onFailure { _uiState.update { it.copy(isLoadingMore = false, endReached = true) } }
 
-                7 -> pineDramaRepo.search(q, nextPage).onSuccess { list ->
+                6 -> pineDramaRepo.search(q, nextPage).onSuccess { list ->
                     val existing = _uiState.value.pineDramaResults.map { it.stableId() }.toSet()
                     val fresh = list.filterNot { it.stableId() in existing }
                     _uiState.update {
                         it.copy(
                             isLoadingMore = false,
                             pineDramaResults = (it.pineDramaResults + fresh).distinctBy { d -> d.stableId() },
+                            page = nextPage,
+                            endReached = list.isEmpty() || fresh.isEmpty()
+                        )
+                    }
+                }.onFailure { _uiState.update { it.copy(isLoadingMore = false, endReached = true) } }
+
+                7 -> meloloRepo.search(q, nextPage).onSuccess { list ->
+                    val existing = _uiState.value.meloloResults.map { it.stableId() }.toSet()
+                    val fresh = list.filterNot { it.stableId() in existing }
+                    _uiState.update {
+                        it.copy(
+                            isLoadingMore = false,
+                            meloloResults = (it.meloloResults + fresh).distinctBy { m -> m.stableId() },
+                            page = nextPage,
+                            endReached = list.isEmpty() || fresh.isEmpty()
+                        )
+                    }
+                }.onFailure { _uiState.update { it.copy(isLoadingMore = false, endReached = true) } }
+
+                8 -> myDramaRepo.search(q, nextPage).onSuccess { list ->
+                    val existing = _uiState.value.myDramaResults.map { it.stableId() }.toSet()
+                    val fresh = list.filterNot { it.stableId() in existing }
+                    _uiState.update {
+                        it.copy(
+                            isLoadingMore = false,
+                            myDramaResults = (it.myDramaResults + fresh).distinctBy { d -> d.stableId() },
                             page = nextPage,
                             endReached = list.isEmpty() || fresh.isEmpty()
                         )
